@@ -1,0 +1,19 @@
+.bodySearchContacts {
+  height: 40px;
+  position: relative;
+}
+
+.bodySearchContacts .searchBar input {
+  width: 100%;
+  padding: 10px;
+  outline: none;
+  border-style: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 18px;
+  /* top: 3px; */
+  transform: translateY(50%);
+}

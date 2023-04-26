@@ -1,0 +1,6 @@
+.chatBody {
+  background-image: url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/whats_app_background_mlfbo2.png);
+  height: calc(100vh - 100px);
+  width: 100%;
+  position: cover;
+}

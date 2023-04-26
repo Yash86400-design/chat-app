@@ -1,0 +1,8 @@
+.chatInfo {
+  padding: 5px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+.chatInfo h4 {
+  margin-bottom: 3px;
+}

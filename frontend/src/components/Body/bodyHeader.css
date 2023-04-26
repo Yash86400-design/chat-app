@@ -1,0 +1,29 @@
+.body__header-container {
+  height: 50px;
+  background: rgba(85, 85, 85, 0.2);
+  /* border-right: 1px solid; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.body__header-container_profile {
+  height: 40px;
+  width: 40px;
+  margin-left: 10px;
+}
+
+.body__header-container_profile img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.body__header-container_icons {
+  width: 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+

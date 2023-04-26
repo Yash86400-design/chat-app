@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Login route
-router.post('/login', (req, res) => {
+router.post('/login', async(req, res) => {
   // handle login request
   /* 
     // Old way to do this, but after cookie things changed
@@ -18,7 +18,7 @@ router.post('/login', (req, res) => {
       res.redirect('/login.html?error=authentication');
     }
   */
-  const user = getUserFromDatabase(req.body.email, req.body.password);
+  const user = await getUserFromDatabase(req.body.email, req.body.password);
 
   if (user) {
     // Set a cookie with the user's authentication token

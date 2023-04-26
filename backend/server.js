@@ -4,7 +4,7 @@ const port = process.env.PORT || 5000;
 const morgan = require('morgan');
 const authRoutes = require('./routes/auth');
 const cookieParser = require('cookie-parser');
-// const db = require('./db');
+const bodyParser = require('body-parser');
 const connectDB = require('./db');
 
 const app = express();
@@ -14,8 +14,10 @@ app.use(morgan('dev'));
 
 // Cookie Middleware
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Body parser middleware
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Routes
 app.use('/auth', authRoutes);
@@ -27,5 +29,5 @@ app.get('/', (req, res) => {
 // Connect to database
 connectDB();
 
-app.listen(port, () => console.log(`Server started on port ${port}`))
-// console.log('hellow world');
+// app.listen(port, () => console.log(`Server started on port ${port}`))  // Old way
+app.listen(port, () => console.log(`Server started at http://localhost:${port}`));

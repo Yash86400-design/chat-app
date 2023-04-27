@@ -3,7 +3,6 @@ const router = express.Router();
 
 // Login route
 router.post('/login', async(req, res) => {
-  // handle login request
   /* 
     // Old way to do this, but after cookie things changed
     const { email, password } = req.body;
@@ -35,7 +34,6 @@ router.post('/login', async(req, res) => {
 
 // Logout route
 router.post('/logout', (req, res) => {
-  // handle logout request
   // clear authenticated cookie
   res.clearCookie('authenticated');
 
@@ -45,7 +43,6 @@ router.post('/logout', (req, res) => {
 
 // Signup route
 router.post('/signup', (req, res) => {
-  // handle signup request
   const { email, password, username } = req.body;
 
   // perform signup logic here

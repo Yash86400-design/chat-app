@@ -9,7 +9,7 @@ const connectDB = require('./models/db');
 
 // Import routes
 // const authRoutes = require('./controllers/auth'); //before arranging code
-const { authRoutes, profileRoute } = require('./routes/index');
+const { authRoutes, profileRoutes } = require('./routes/index');
 const { errorHandler } = require("./middlewares/errorHandler");
 
 
@@ -27,10 +27,13 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Connect to database
+connectDB();
+
 // Routes
 // app.use('/auth', authRoutes);
 app.use(authRoutes);  // removed auth cause it's already been prefixed in routes/index.js file...
-app.use(profileRoute);
+app.use(profileRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: "Hi There, Welcome To My Server" });
@@ -39,8 +42,6 @@ app.get('/', (req, res) => {
 // Error Handler
 app.use(errorHandler);
 
-// Connect to database
-connectDB();
 
 // app.listen(port, () => console.log(`Server started on port ${port}`))  // Old way
 app.listen(port, () => console.log(`Server started at http://localhost:${port}`.bgCyan));

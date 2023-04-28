@@ -12,9 +12,10 @@ const authenticateToken = (req, res, next) => {
   try {
     // Verify the JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     // Add the user ID to the request object
-    req.userId = decoded.userId;
+    // req.userId = decoded.userId;
+    // req.userEmail = decoded.email;
+    req.user = decoded.user;
 
     // Call the next middleware
     next();

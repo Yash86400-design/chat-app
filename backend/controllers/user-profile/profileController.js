@@ -5,6 +5,7 @@ const { authenticateToken } = require('../../middlewares/authMiddleware');
 const UserProfile = require('../../models/user-profile/User_v2');
 
 router.get('/', authenticateToken, async (req, res) => {
+  console.log('Hi');
   try {
     // Get the user profile data from the database
     const userProfile = await UserProfile.findOne({ email: req.user.email });

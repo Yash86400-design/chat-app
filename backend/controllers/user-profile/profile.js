@@ -1,9 +1,10 @@
 // Fetching the users information once he logged in
-const express = express.Router();
+const express = require('express');
+const router = express.Router();
 const authMiddleware = require('../../middlewares/authMiddleware');
 const UserProfile = require('../../models/user-profile/User_v2');
 
-router.get('/user-profile', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     // Get the user profile data from the database
     const userProfile = await UserProfile.findOne({ email: req.user.email });

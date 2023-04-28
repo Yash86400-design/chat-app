@@ -9,8 +9,11 @@ const connectDB = require('./models/db');
 
 // Import routes
 // const authRoutes = require('./controllers/auth'); //before arranging code
-const authRoutes = require('./routes/index');
+const { authRoutes, profileRoute } = require('./routes/index');
 const { errorHandler } = require("./middlewares/errorHandler");
+
+
+
 
 const app = express();
 
@@ -27,6 +30,7 @@ app.use(bodyParser.json());
 // Routes
 // app.use('/auth', authRoutes);
 app.use(authRoutes);  // removed auth cause it's already been prefixed in routes/index.js file...
+app.use(profileRoute);
 
 app.get('/', (req, res) => {
   res.json({ message: "Hi There, Welcome To My Server" });

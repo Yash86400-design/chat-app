@@ -2,12 +2,23 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { check, validationResult } = require('express-validator');
 const User = require('../../models/user/User.js');
 const { authenticateToken } = require('../../middlewares/authMiddleware.js');
 
 // Register a new user
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  check('name').notEmpty().withMessage('Name is required'),
+  check('email').notEmpty().withMessage('Email is required'),
+  check('password').notEmpty().withMessage('Password is requried').isLength({ min: 6 }).withMessage('Password should be at least 6 characters long')
+], async (req, res) => {
   try {
+    // Check if there are any validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
     const { name, email, password } = req.body;
 
     // Check if user already exists

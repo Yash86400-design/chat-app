@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const colors = require('colors');
 
 // mongoose.connect(process.env.MONGODB_URI, {
 //   useNewUrlParser: true,

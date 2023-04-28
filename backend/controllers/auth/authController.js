@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User.js');
+const { authenticateToken } = require('../../middlewares/authMiddleware.js');
 
 // Register a new user
 router.post('/register', async (req, res) => {
@@ -56,7 +57,7 @@ router.post('/login', async (req, res) => {
     // Set the token as a cookie
     res.cookie('token', token, { httpOnly: true, secure: true });
 
-    res.json({ message: 'User logged in successfully' });
+    res.json({ message: 'User logged in successfully', token_value: token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -64,7 +65,7 @@ router.post('/login', async (req, res) => {
 });
 
 // User logout
-router.get('/logout', async (req, res) => {
+router.get('/logout', authenticateToken, async (req, res) => {
   try {
     // Clear the JWT token cookie
     res.clearCookie('token');

@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken');
 // Middleware to authenticate JWT token
 const authenticateToken = (req, res, next) => {
   // Get the JWT token from the cookie
-  const token = req.cookies.token;
+  // const token = req.cookies.token;  // Will use
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -15,7 +17,8 @@ const authenticateToken = (req, res, next) => {
     // Add the user ID to the request object
     // req.userId = decoded.userId;
     // req.userEmail = decoded.email;
-    req.user = decoded.user;
+    req.user = decoded;
+    // console.log(req.user);
 
     // Call the next middleware
     next();

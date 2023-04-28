@@ -10,6 +10,7 @@ const connectDB = require('./models/db');
 // Import routes
 // const authRoutes = require('./controllers/auth'); //before arranging code
 const authRoutes = require('./routes/index');
+const { errorHandler } = require("./middlewares/errorHandler");
 
 const app = express();
 
@@ -23,12 +24,6 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Error handling
-app.use(function (err, req, res, next) {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
-
 // Routes
 // app.use('/auth', authRoutes);
 app.use(authRoutes);  // removed auth cause it's already been prefixed in routes/index.js file...
@@ -36,6 +31,9 @@ app.use(authRoutes);  // removed auth cause it's already been prefixed in routes
 app.get('/', (req, res) => {
   res.json({ message: "Hi There, Welcome To My Server" });
 });
+
+// Error Handler
+app.use(errorHandler);
 
 // Connect to database
 connectDB();

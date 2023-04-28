@@ -14,15 +14,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  avatar: {
-    type: String
-  },
   date: {
     type: Date,
     default: Date.now
   }
 });
 
-const User = mongoose.model('User', userSchema);
+const AuthUser = mongoose.model('AuthUser', userSchema);
 
-module.exports = User;
+module.exports = AuthUser;

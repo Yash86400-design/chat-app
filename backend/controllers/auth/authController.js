@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcry');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User.js');
 
@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    res.json({ message: 'User registered successfully' });
+    res.json({ message: 'User registered successfully'.green });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Create and sign a JWT token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
     // Set the token as a cookie
     res.cookie('token', token, { httpOnly: true, secure: true });

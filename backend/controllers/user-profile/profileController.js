@@ -24,8 +24,19 @@ router.patch('/', authenticateToken, async (req, res) => {
     const { name, bio, avatar } = req.body;
     const userId = req.user.userId;
 
+    let updateData = {};
+    if (name) {
+      updateData.name = name;
+    }
+    if (bio) {
+      updateData.bio = bio;
+    }
+    if (avatar) {
+      updateData.avatar = avatar;
+    }
+
     // Update user profile in the database
-    await AuthUser.updateOne({ _id: userId }, { name, bio, avatar });
+    await AuthUser.updateOne({ _id: userId }, updateData);
 
     // Return success response
     res.json({ success: true, message: 'User profile updated successfully' });

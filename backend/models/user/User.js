@@ -14,12 +14,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  date: {
-    type: Date,
-    default: Date.now
+  avatar: {
+    type: String // you can store the URL of the avatar image
   },
   bio: {
     type: String
+  },
+  date: {
+    type: Date,
+    default: Date.now
   },
   location: {
     type: String

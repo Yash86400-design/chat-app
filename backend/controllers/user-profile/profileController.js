@@ -18,4 +18,22 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Update user profile
+router.patch('/', authenticateToken, async (req, res) => {
+  try {
+    const { name, bio, avatar } = req.body;
+    const userId = req.user.userId;
+
+    // Update user profile in the database
+    await AuthUser.updateOne({ _id: userId }, { name, bio, avatar });
+
+    // Return success response
+    res.json({ success: true, message: 'User profile updated successfully' });
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

@@ -34,7 +34,11 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  joinedChatrooms: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chatroom'
+  }]
 });
 
 const AuthUser = mongoose.model('AuthUser', userSchema);

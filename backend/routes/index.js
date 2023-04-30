@@ -14,4 +14,4 @@ const profileRoutes = router.use('/api/profile', profileController);
 // Chatroom API routes
 const chatroomRoutes = router.use('/api/chatrooms', chatroomController);
 
-module.exports = { authRoutes, profileRoutes, chatroomController };
+module.exports = { authRoutes, profileRoutes, chatroomRoutes };

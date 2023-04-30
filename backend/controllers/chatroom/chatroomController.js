@@ -25,7 +25,7 @@ router.get('/', authenticateToken, async (req, res) => {
         { owner: req.user._id }, // Chats owned by the user
         { members: req.user._id } // Chats the user is a member of
       ],
-      createdBy: req.user._id // Only return chatrooms created by the user
+      createdBy: req.user.userId // Only return chatrooms created by the user
     });
     res.status(200).json({ chatrooms: userChats });
   } catch (error) {

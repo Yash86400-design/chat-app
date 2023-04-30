@@ -42,4 +42,4 @@ app.use(errorHandler);
 
 
 // app.listen(port, () => console.log(`Server started on port ${port}`))  // Old way
-app.listen(port, () => console.log(`Server started at http://localhost:${port}`.bgCyan));
+app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));

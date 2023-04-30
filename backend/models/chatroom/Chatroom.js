@@ -11,12 +11,12 @@ const chatRoomSchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'AuthUser',
     required: true
   },
   members: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'AuthUser'
   }],
   messages: [{
     type: mongoose.Schema.Types.ObjectId,

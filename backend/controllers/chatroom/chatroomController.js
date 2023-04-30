@@ -8,7 +8,7 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, description } = req.body;
     const createdBy = req.user.userId;
-    const chatroom = new Chatroom({ name, description, createdBy });
+    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy] });
     await chatroom.save();
     res.status(201).json({ chatroom, message: 'New Chatroom Created' });
   } catch (error) {
@@ -31,6 +31,26 @@ router.get('/', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// GET /api/chatrooms/:id
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+    console.log(chatroom);
+    // Check if the user is authorized to access the chatroom
+    if (!chatroom.members.some(member => member._id.toString() === req.user.userId.toString())) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    res.status(200).json({ chatroom });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Chatroom = require('../../models/chatroom/Chatroom');
 const { authenticateToken } = require("../../middlewares/authMiddleware");
+const Joi = require("joi");
 
 // POST /api/chatrooms
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, description } = req.body;
     const createdBy = req.user.userId;
-    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy] });
+    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy] });
     await chatroom.save();
     res.status(201).json({ chatroom, message: 'New Chatroom Created' });
   } catch (error) {
@@ -47,6 +48,46 @@ router.get('/:id', authenticateToken, async (req, res) => {
     if (!chatroom.members.some(member => member._id.toString() === req.user.userId.toString())) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
+    res.status(200).json({ chatroom });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Put request to update chatroom details
+router.patch('/:id', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const { name, description } = req.body;
+
+    // Validate the request body
+    const schema = Joi.object({
+      name: Joi.string().min(3).max(30).trim().required(),
+      description: Joi.string().min(10).max(200).trim().required(),
+    });
+
+    const { error } = schema.validate({ name, description });
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // Find the chatroom by ID
+    const chatroom = await Chatroom.findById(chatroomId);
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is authorized to update the chatroom
+    if (!chatroom.admins.includes(req.user.userId)) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Update the chatroom name and description
+    chatroom.name = name;
+    chatroom.description = description;
+    await chatroom.save();
+
     res.status(200).json({ chatroom });
   } catch (error) {
     console.error(error);

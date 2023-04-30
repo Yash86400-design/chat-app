@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
   joinedChatrooms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'
+  }],
+  adminOf: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Chatroom',
   }]
 });
 

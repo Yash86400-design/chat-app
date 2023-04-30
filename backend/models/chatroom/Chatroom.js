@@ -18,6 +18,11 @@ const chatRoomSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser'
   }],
+  admins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AuthUser',
+    required: true,
+  }],
   messages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message'

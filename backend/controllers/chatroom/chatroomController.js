@@ -39,14 +39,21 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const chatroomId = req.params.id;
-    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+
+    // Find the chatroom by ID and populate the member field
+    const chatroom = await Chatroom.findById(chatroomId)
+      .populate('members', '_id name email')
+      .populate('joinRequests', '_id name email');
+
     if (!chatroom) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
+
     // Check if the user is authorized to access the chatroom
     if (!chatroom.members.some(member => member._id.toString() === req.user.userId.toString())) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
+
     res.status(200).json({ chatroom });
   } catch (error) {
     console.error(error);
@@ -116,6 +123,113 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     await chatroom.remove();
 
     res.status(200).json({ message: 'Chatroom deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Request to join the chatroom
+router.post('/:id/request', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const userId = req.user.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is already a member
+    if (chatroom.members.some(member => member._id.toString() === userId.toString())) {
+      return res.status(400).json({ message: 'User is already a member of the chatroom' });
+    }
+
+    // Check if the user has already requested to join
+    if (chatroom.joinRequests.some(request => request.toString() === userId.toString())) {
+      return res.status(400).json({ message: 'User has already requested to join the chatroom' });
+    }
+
+    chatroom.joinRequests.push(userId);
+    await chatroom.save();
+
+    res.status(200).json({ message: 'Join request sent successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// PUT request for accepting the request to join chatroom
+router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const userId = req.params.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email').populate('joinRequests', '_id name email');
+
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is an admin of the chatroom
+    const isMember = chatroom.members.some(member => member._id.toString() === req.user.userId);
+
+    if (!isMember) {
+      return res.status(401).json({ message: 'Only members are allowed to accept join requests' });
+    }
+
+    // Find the user in the join requests array
+    const joinRequestIndex = chatroom.joinRequests.findIndex(request => request._id.toString() === userId.toString());
+
+    if (joinRequestIndex === -1) {
+      return res.status(404).json({ message: 'Join request not found' });
+    }
+
+    // Remove the user from the join requests array and add them to the members array
+    chatroom.joinRequests.splice(joinRequestIndex, 1);
+    chatroom.members.push(userId);
+    await chatroom.save();
+
+    res.status(200).json({ message: 'User has been added to the chatroom' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Put request for rejecting the joining chatroom request
+router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const userId = req.params.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email').populate('joinRequests', '_id name email');
+
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is a member of the chatroom
+    const isMember = chatroom.members.some(member => member._id.toString() === req.user.userId);
+
+    if (!isMember) {
+      return res.status(401).json({ message: 'Only members are allowed to reject join requests' });
+    }
+
+    // Find the user in the join requests array
+    const joinRequestIndex = chatroom.joinRequests.findIndex(request => request._id.toString() === userId.toString());
+
+    if (joinRequestIndex === -1) {
+      return res.status(404).json({ message: 'Join request not found' });
+    }
+
+    // Remove the user from the join requests array
+    chatroom.joinRequests.splice(joinRequestIndex, 1);
+    await chatroom.save();
+
+    res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });

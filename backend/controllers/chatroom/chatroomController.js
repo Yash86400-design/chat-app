@@ -236,4 +236,123 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
   }
 });
 
+// Promoting a member as admin
+router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const userId = req.params.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is an admin of the chatroom
+    const isAdmin = chatroom.admins.includes(req.user.userId);
+    if (!isAdmin) {
+      return res.status(401).json({ message: 'Only admins are allowed to promote members' });
+    }
+
+    // Check if the user to be promoted is already a member of the chatroom
+    const isMember = chatroom.members.some(member => member._id.toString() === userId);
+    if (!isMember) {
+      return res.status(404).json({ message: 'User is not a member of the chatroom' });
+    }
+
+    // Check if the user to be promoted is already an admin of the chatroom
+    const isAlreadyAdmin = chatroom.admins.includes(userId);
+    if (isAlreadyAdmin) {
+      return res.status(400).json({ message: 'User is already an admin of the chatroom' });
+    }
+
+    // Promote the user to be an admin of the chatroom
+    chatroom.admins.push(userId);
+    await chatroom.save();
+
+    res.status(200).json({ message: 'User has been promoted to an admin of the chatroom' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Admin role is taken up by other admin
+router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, res) => {
+  try {
+
+    const chatroomId = req.params.id;
+    const userId = req.params.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is an admin of the chatroom
+    const isAdmin = chatroom.admins.includes(req.user.userId);
+    if (!isAdmin) {
+      return res.status(401).json({ message: 'Only admins are allowed to remove admin role from members' });
+    }
+
+    // Check if the user to be removed is an admin of the chatroom
+    if (!chatroom.admins.includes(userId)) {
+      return res.status(404).json({ message: 'User is not an admin of the chatroom' });
+    }
+
+    // Remove the user's admin role
+    chatroom.admins = chatroom.admins.filter(admin => admin.toString() !== userId.toString());
+
+    await chatroom.save();
+
+    res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Admin role is given up by current logged in user
+router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
+  try {
+
+    const chatroomId = req.params.id;
+    const userId = req.user.userId;
+
+    const chatroom = await Chatroom.findById(chatroomId).populate('members', '_id name email');
+
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is an admin of the chatroom
+    const isAdmin = chatroom.admins.includes(userId);
+    if (!isAdmin) {
+      return res.status(401).json({ message: 'Only admins are allowed to leave admin role' });
+    }
+
+    // If the user is the only admin of the chatroom, randomly assign admin role to another member
+    if (chatroom.admins.length === 1) {
+      const members = chatroom.members.filter(member => member._id.toString() !== userId.toString());
+      if (members.length > 0) {
+        const newAdminIndex = Math.floor(Math.random() * members.length);
+        const newAdmin = chatroom.members[newAdminIndex];
+        chatroom.admins.push(newAdmin);
+      }
+    } else {
+      // Remove the user's admin role
+      const adminIndex = chatroom.admins.findIndex(admin => admin.toString() === userId.toString());
+      if (adminIndex === -1) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
+      chatroom.admins = chatroom.admins.filter(admin => admin.toString() !== userId.toString());
+    }
+    await chatroom.save();
+
+    res.status(200).json({ message: 'User has left their admin role in the chatroom' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 module.exports = router;

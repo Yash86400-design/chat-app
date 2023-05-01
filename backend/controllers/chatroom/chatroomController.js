@@ -43,7 +43,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
     if (!chatroom) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
-    console.log(chatroom);
     // Check if the user is authorized to access the chatroom
     if (!chatroom.members.some(member => member._id.toString() === req.user.userId.toString())) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -89,6 +88,34 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     await chatroom.save();
 
     res.status(200).json({ chatroom });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Delete the chatroom
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+
+    const chatroomId = req.params.id;
+
+    // Find the chatroom by ID if any
+    const chatroom = await Chatroom.findById(chatroomId);
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    // Check if the user is an admin of the chatroom 
+    const isAdmin = chatroom.admins.includes(req.user.userId);
+    if (!isAdmin) {
+      return res.status(401).json({ message: 'Not allowed, Only admin can do this action!' });
+    }
+
+    // Delete the chatroom
+    await chatroom.remove();
+
+    res.status(200).json({ message: 'Chatroom deleted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });

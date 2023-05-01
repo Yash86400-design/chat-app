@@ -4,19 +4,25 @@ const chatRoomSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    minlength: 3,
+    maxlength: 30,
+    trim: true,
   },
   description: {
     type: String,
     required: true,
+    minlength: 10,
+    maxlength: 200,
+    trim: true,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',
-    required: true
+    required: true,
   },
   members: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AuthUser'
+    ref: 'AuthUser',
   }],
   admins: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +31,7 @@ const chatRoomSchema = new mongoose.Schema({
   }],
   messages: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message'
+    ref: 'Message',
   }]
 });
 

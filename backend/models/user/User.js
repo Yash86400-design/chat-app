@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'
   }],
+  // array for saving whom I'm talking to one on one
+  joinedPersonalChats: [{
+
+  }],
   adminOf: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom',

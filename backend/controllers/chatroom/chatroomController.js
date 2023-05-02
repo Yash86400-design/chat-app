@@ -1,15 +1,22 @@
 const express = require("express");
 const router = express.Router();
 const Chatroom = require('../../models/chatroom/Chatroom');
+const User = require('../../models/user/User');
 const { authenticateToken } = require("../../middlewares/authMiddleware");
 const Joi = require("joi");
 
-// POST /api/chatrooms
+// POST /api/chatrooms: Creating a chatroom
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, description } = req.body;
+    const user = await User.findById(req.user.userId);
+
     const createdBy = req.user.userId;
     const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy] });
+
+    // Update the user joinedChatrooms
+    user.joinedChatrooms.push(chatroom._id);
+
     await chatroom.save();
     res.status(201).json({ chatroom, message: 'New Chatroom Created' });
   } catch (error) {
@@ -18,7 +25,7 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/chatrooms
+// GET /api/chatrooms: Getting all the chatrooms of the user: This should also be inside userController
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userChats = await Chatroom.find({
@@ -54,7 +61,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    res.status(200).json({ chatroom });
+    // res.status(200).json({ chatroom });
+
+    // Redirect the user to the messages page if they are a member of the chatroom
+    res.redirect(`/chatroom/${chatroomId}/messages`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -106,6 +116,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   try {
 
     const chatroomId = req.params.id;
+    const user = await User.findById(req.user.userId);
 
     // Find the chatroom by ID if any
     const chatroom = await Chatroom.findById(chatroomId);
@@ -119,6 +130,9 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       return res.status(401).json({ message: 'Not allowed, Only admin can do this action!' });
     }
 
+    // Deleting the chatroom id from the joinedChatrooms array
+    user.joinedChatrooms = user.joinedChatrooms.filter(room => room._id.toString() !== chatroomId.toString());
+
     // Delete the chatroom
     await chatroom.remove();
 
@@ -129,7 +143,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Request to join the chatroom
+// Request to join the chatroom : This should be inside userController
 router.post('/:id/request', authenticateToken, async (req, res) => {
   try {
     const chatroomId = req.params.id;

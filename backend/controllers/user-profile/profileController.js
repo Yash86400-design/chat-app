@@ -34,13 +34,13 @@ const storage = multer.diskStorage({
 
 
 
-router.get('/');
-router.post('/new-chatroom');
-router.get('/view-profile');
-router.post('/view-profile/edit');
-router.post('/search-chatroom');
-router.get('/notifications');
-router.post('/auth/logout');
+// router.get('/');
+// router.post('/new-chatroom');
+// router.get('/view-profile');
+// router.post('/view-profile/edit');
+// router.post('/search-chatroom');
+// router.get('/notifications');
+// router.post('/auth/logout');
 
 
 router.get('/', authenticateToken, async (req, res) => {
@@ -71,12 +71,13 @@ router.post('/new-chatroom', authenticateToken, async (req, res) => {
     user.joinedChatrooms.push(chatroom._id);
     user.adminOf.push(chatroom._id);
 
+    await user.save();
     await chatroom.save();
     await newListChatroom.save();
     res.status(201).json({ chatroom, message: 'New Chatroom Created' });
 
     // Redirect to the new chatroom page
-    res.redirect(`/api/profile/chatrooms/${chatroom._id}`);
+    // res.redirect(`/api/profile/chatrooms/${chatroom._id}`);  //It will cause error in frontend...
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });

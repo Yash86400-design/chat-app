@@ -19,16 +19,25 @@ const profileRoutes = router.use('/api/profile', profileController);
 // Nested Chatroom API routes within profileRoutes
 // profileRoutes.use('/chatrooms/', groupChatroomController);
 
-profileRoutes.use('/chatrooms/', (req, res, next) => {
-  const id = req.params.id;
-  const isUser = ListOfChats.findById(id);
+profileRoutes.use('/chatrooms/:id', async (req, res, next) => {
+  const chatroomId = req.params.id;
+  const chatroom = await ListOfChats.findById(chatroomId);
+  try {
+    if (!chatroom) {
+      return res.status(404).json({ message: 'Person/Chatroom Not Found' });
+    }
 
-  if (isUser === 'User') {
-    personalChatroomController(req, res, next);
-  } else {
-    groupChatroomController(req, res, next);
+    if (chatroom.type === 'User') {
+      req.chatroomId = chatroomId;
+      personalChatroomController(req, res, next);
+    } else if (chatroom.type == 'Chatroom') {
+      req.chatroomId = chatroomId;
+      groupChatroomController(req, res, next);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
 });
 
 

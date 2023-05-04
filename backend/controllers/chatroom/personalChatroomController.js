@@ -3,16 +3,19 @@ const { authenticateToken } = require('../../middlewares/authMiddleware');
 const router = express.Router();
 
 
-router.post('/:id', authenticateToken, async (req, res) => {
-  const { message } = req.body;
-  const sender = req.user.userId;
+router.post('/', authenticateToken, async (req, res) => {
+  console.log(req);
+  // const { message } = req.body;
+  // const sender = req.user.userId;
+  // console.log(`Welcome in the user room ${message} from ${sender}`);
 
-  try {
-    const receiverId = req.params.id;
-    console.log('Welcome in the user room');
-  } catch (error) {
+  // try {
+  //   const receiverId = req.params.id;
+  // } catch (error) {
 
-  }
+  // }
+
+  next();
 });
 
 

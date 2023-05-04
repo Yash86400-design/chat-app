@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const User = require('../../models/user/User.js');
 const { authenticateToken } = require('../../middlewares/authMiddleware.js');
+const listOfChats = require('../../models/listofchats/ListOfChats.js');
+
 
 // Register a new user
 router.post('/register', [
@@ -34,7 +36,12 @@ router.post('/register', [
 
     // Create a new user
     const user = new User({ name, email, password: hashedPassword });
+
+    // Create a new user for listOfSearch too
+    const newListUser = new listOfChats({ name: name, _id: user._id, type: 'User' });
+
     await user.save();
+    await newListUser.save();
 
     res.json({ message: 'User registered successfully'.green });
   } catch (error) {

@@ -2,9 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../../middlewares/authMiddleware');
-const AuthUser = require('../../models/user/User');
+const User = require('../../models/user/User');
+const Chatroom = require('../../models/chatroom/Chatroom');
+const listOfChats = require('../../models/listofchats/ListOfChats');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
+const searchServices = require('../../services/searchServices');
 const upload = multer({ dest: 'uploads/' });
 // const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -29,11 +32,22 @@ const storage = multer.diskStorage({
 });
 */
 
+
+
+router.get('/');
+router.post('/new-chatroom');
+router.get('/view-profile');
+router.post('/view-profile/edit');
+router.post('/search-chatroom');
+router.get('/notifications');
+router.post('/auth/logout');
+
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     // Get the user profile data from the database
-    const userProfile = await AuthUser.findOne({ email: req.user.userEmail });
-    console.log(userProfile);
+    const userProfile = await User.findOne({ email: req.user.userEmail });
+    // console.log(userProfile);
 
     // Return the user profile data
     res.json(userProfile);
@@ -43,10 +57,50 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Update user profile
-router.patch('/', authenticateToken, async (req, res) => {
+// Create a new chatroom
+router.post('/new-chatroom', authenticateToken, async (req, res) => {
   try {
-    const { name, bio, avatar } = req.body;
+    const { name, description } = req.body;
+    const user = await User.findById(req.user.userId);
+
+    const createdBy = req.user.userId;
+    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy] });
+    const newListChatroom = new listOfChats({ name: name, _id: chatroom._id, type: 'Chatroom' });
+
+    // Update the user joinedChatrooms
+    user.joinedChatrooms.push(chatroom._id);
+    user.adminOf.push(chatroom._id);
+
+    await chatroom.save();
+    await newListChatroom.save();
+    res.status(201).json({ chatroom, message: 'New Chatroom Created' });
+
+    // Redirect to the new chatroom page
+    res.redirect(`/api/profile/chatrooms/${chatroom._id}`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// View Profile
+router.get('/view-profile', authenticateToken, async (req, res) => {
+  try {
+    const userProfile = await User.findById(req.user.userId);
+
+    res.status(200).json({ profile: userProfile.avatar, bio: userProfile.bio, name: userProfile.name });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Update user profile (including avatar)
+router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), async (req, res) => {
+  try {
+    const { name, bio } = req.body;
+    const avatarPath = req.file.path;
     const userId = req.user.userId;
 
     let updateData = {};
@@ -56,12 +110,15 @@ router.patch('/', authenticateToken, async (req, res) => {
     if (bio) {
       updateData.bio = bio;
     }
-    if (avatar) {
-      updateData.avatar = avatar;
+    if (avatarPath) {
+      // updateData.avatar = avatar;
+      const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: 'avatar' });
+      const avatarUrl = result.url;
+      updateData.avatar = avatarUrl;
     }
 
     // Update user profile in the database
-    await AuthUser.updateOne({ _id: userId }, updateData);
+    await User.updateOne({ _id: userId }, updateData);
 
     // Return success response
     res.json({ success: true, message: 'User profile updated successfully' });
@@ -72,88 +129,26 @@ router.patch('/', authenticateToken, async (req, res) => {
   }
 });
 
-/*
-// router.post('/:userId/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
+// For auto suggestion
+router.get('/search', authenticateToken, async (req, res) => {
+  const partialQuery = req.query.q; // retrieve the partial query from the query parameters
 
-//   console.log(req.file);
-//   try {
+  // retrieve a list of suggested search terms or results that match the partial query
+  const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery);
 
-//     const storage = new CloudinaryStorage({
-//       cloudinary: cloudinary,
-//       params: {
-//         // folder: (req, file) => `Chat App/avatars/${req.params.userId}`,
-//         folder: 'Chat App',
-//         // public_id: 'avatar',
-//         overwrite: true,
-//         width: 200,
-//         height: 200,
-//         crop: 'limit'
-//       }
-//     });
-
-//     const upload = multer({ storage: storage }).single('avatar');
-
-//     upload(req, res, async (err) => {
-//       if (err) {
-//         console.log("Error uploading image: ", err);
-//         return res.status(400).json({ success: false, message: "error uploading image" });
-//       }
-//     });
-
-//     const file = req.file;
-//     const userId = req.params.userId;
-
-//     // Upload the image to cloudinary
-//     Saving in server than on cloud
-//     const result = await cloudinary.uploader.upload(file.tempFilePath, {
-//       folder: `Chat App/avatars/${req.params.userId}`,
-//       public_id: 'avatar',
-//       overwrite: true,
-//       width: 200,
-//       height: 200,
-//       crop: 'limit'
-//     });
-//     
-
-//     // Return error if no file is uploaded
-//     if (!file) {
-//       return res.status(400).json({ success: false, message: "No file uploaded" });
-//     }
-
-//     // Update the user's avatar URL in the database
-//     // const avatarUrl = file.path;
-//     const avatarUrl = file.url;
-//     await AuthUser.updateOne({ _id: userId }, { avatar: avatarUrl });
-
-//     // Return success response
-//     res.json({ success: true, message: "Avatar uploaded successfully" });
-//   } catch (error) {
-//     console.log("22");
-//     console.error(error.message);
-//     res.status(500).send('Server Error');
-//   }
-// });
-*/
-
-// Avatar Change Of User
-router.post('/:userId/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
-  try {
-    console.log(req.file);
-    const result = await cloudinary.uploader.upload(req.file.path, { folder: 'Chat App', overwrite: true, public_id: 'avatar' });
-
-    const avatarUrl = result.url;
-    await AuthUser.updateOne({ _id: req.params.userId }, { avatar: avatarUrl });
-
-    res.json({ success: true, message: "Avatar uploaded successfully" });
-
-  } catch (error) {
-    // console.log(error.message);
-    res.status(500).send('Server Error');
-  }
+  res.json({ suggestedTerms });  // return the suggested terms as a JSON object
 });
 
+// For getting query after auto suggestion didn't work. (will work after hitting enter)
+router.post('/search-result', authenticateToken, async (req, res) => {
+  const query = req.body.query;  // retrieve the complete search query from the request body
 
-// This Controller Needs so many things to handle...
+  // process the search query and retrieve the search results
+  const searchResults = await searchServices.getSearchResults(query);
+
+  res.json({ searchResults });  // return the search results as a JSON object 
+});
+
 
 
 module.exports = router;

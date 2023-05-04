@@ -5,7 +5,8 @@ const User = require('../../models/user/User');
 const { authenticateToken } = require("../../middlewares/authMiddleware");
 const Joi = require("joi");
 
-// POST /api/chatrooms: Creating a chatroom
+/* Removed during reshuffling
+POST /api/chatrooms: Creating a chatroom
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -24,8 +25,11 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+*/
 
-// GET /api/chatrooms: Getting all the chatrooms of the user: This should also be inside userController
+
+/* Removed during reshuffling
+GET /api/chatrooms: Getting all the chatrooms of the user: This should also be inside userController
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userChats = await Chatroom.find({
@@ -41,9 +45,14 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+*/
 
-// GET /api/chatrooms/:id
+// Fetch all the messages of the group
 router.get('/:id', authenticateToken, async (req, res) => {
+
+  const { message } = req.body;
+  const sender = req.user.userId
+
   try {
     const chatroomId = req.params.id;
 
@@ -64,12 +73,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
     // res.status(200).json({ chatroom });
 
     // Redirect the user to the messages page if they are a member of the chatroom
+    res.status(200).json({});  // show all the message and then redirect him to chat with someone
     res.redirect(`/chatroom/${chatroomId}/messages`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+// Send message in the group
+router.post('/:id', authenticateToken, async (req, rest) => {
+  console.log('Welcome in the chatroom');
+})
 
 // Put request to update chatroom details
 router.patch('/:id', authenticateToken, async (req, res) => {
@@ -112,7 +127,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
 });
 
 // Delete the chatroom
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
   try {
 
     const chatroomId = req.params.id;

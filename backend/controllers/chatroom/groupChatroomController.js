@@ -4,6 +4,7 @@ const Chatroom = require('../../models/chatroom/Chatroom');
 const User = require('../../models/user/User');
 const { authenticateToken } = require("../../middlewares/authMiddleware");
 const Joi = require("joi");
+const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const Message = require("../../models/message/Message");
 const { isMember } = require("./IsUserMember");
@@ -52,33 +53,12 @@ router.get('/', authenticateToken, async (req, res) => {
 
 const upload = multer();
 
-// Get all the info about the ChatGroup: Only members allowed
-router.get('/:id/info', authenticateToken, async (req, res) => {
-  const senderId = req.user.userId;
-  const chatroomId = req.params.id;
-
-  try {
-    // Check if the sender is the member of chatroom or not
-    const chatroomInfo = await Chatroom.findById(chatroomId);
-    if (!chatroomInfo.members.includes(senderId)) {
-      res.status(404).json({ message: 'Action not allowed' });
-      return;
-    }
-
-    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
-    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
-
-
-    res.status(200).json({ listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests });
-
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-
+// Configure Cloudinary with your account credentials
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
 
 // Fetch all the messages of the group
 router.get('/:id', authenticateToken, async (req, res) => {
@@ -153,11 +133,46 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
   }
 });
 
+// Get all the info about the ChatGroup: Only members allowed
+router.get('/:id/info', authenticateToken, async (req, res) => {
+  const senderId = req.user.userId;
+  const chatroomId = req.params.id;
+
+  try {
+    // Check if the sender is the member of chatroom or not
+    const chatroomInfo = await Chatroom.findById(chatroomId);
+    if (!chatroomInfo.members.includes(senderId)) {
+      res.status(404).json({ message: 'Action not allowed' });
+      return;
+    }
+
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
+    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
+    // await Chatroom.populate(chatroomInfo, {  //This fucking error killed my 2 hours... 
+    //   path: 'avatar',
+    //   select: 'avatar'
+    // });
+
+    res.status(200).json({ listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests, avatar: chatroomInfo.avatar });
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+
+});
+
 // Put request to update chatroom details
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     const chatroomId = req.params.id;
+    if (!await (isMember(chatroomId, req.user.userId))) {
+      res.status(404).json({ message: 'User is not a member of group' });
+    }
+
     const { name, description } = req.body;
+    const avatarPath = req.file.path;
 
     // Validate the request body
     const schema = Joi.object({
@@ -179,6 +194,15 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     // Check if the user is authorized to update the chatroom
     if (!chatroom.admins.includes(req.user.userId)) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Update the avatar of group if exist
+    if (avatarPath) {
+      const result = await cloudinary.uploader.upload(avatarPath, {
+        folder: 'Chat App', overwrite: true, public_id: `avatar_${chatroomId}`
+      });
+      const avatarUrl = result.url;
+      chatroom.avatar = avatarUrl;
     }
 
     // Update the chatroom name and description

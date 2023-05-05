@@ -15,6 +15,10 @@ const chatRoomSchema = new mongoose.Schema({
     maxlength: 200,
     trim: true,
   },
+  avatar: {
+    type: String, // URL of the avatar image
+    default: null
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',

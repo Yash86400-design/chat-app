@@ -8,6 +8,7 @@ const listOfChats = require('../../models/listofchats/ListOfChats');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const searchServices = require('../../services/searchServices');
+const Joi = require('joi');
 const upload = multer({ dest: 'uploads/' });
 // const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -58,14 +59,35 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Create a new chatroom
-router.post('/new-chatroom', authenticateToken, async (req, res) => {
+router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     const { name, description } = req.body;
+    const avatarPath = req.file.path;
     const user = await User.findById(req.user.userId);
 
     const createdBy = req.user.userId;
-    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy] });
-    const newListChatroom = new listOfChats({ name: name, _id: chatroom._id, type: 'Chatroom' });
+
+    const schema = Joi.object({
+      name: Joi.string().min(3).max(30).trim().required(),
+      description: Joi.string().min(10).max(200).trim().required()
+    });
+
+    const { error } = schema.validate({ name, description });
+
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    let avatarUrl = undefined;
+    if (avatarPath != undefined) {
+      const result = await cloudinary.uploader.upload(avatarPath, {
+        folder: 'Chat App', overwrite: true, public_id: `avatar_${createdBy}`
+      });
+      avatarUrl = result.secure_url;
+    }
+
+    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl });
+    const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom' });
 
     // Update the user joinedChatrooms
     user.joinedChatrooms.push(chatroom._id);
@@ -113,7 +135,7 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     }
     if (avatarPath) {
       // updateData.avatar = avatar;
-      const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: 'avatar' });
+      const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: `avatar_${userId}` });
       const avatarUrl = result.url;
       updateData.avatar = avatarUrl;
     }

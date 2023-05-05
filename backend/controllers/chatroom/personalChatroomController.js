@@ -14,12 +14,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
   const receiverId = req.params.id;
 
   try {
-    // Check if the receiver is in the joinedPersonalChats array of the sender
-    // const sender = await User.findById(senderId);
-    // if (!sender.joinedPersonalChats.includes(receiverId)) {
-    //   res.status(404).json({ message: 'Action not allowed' });
-    //   return;
-    // }
+
     if (!await (isUserInJoinedChatrooms(senderId, receiverId))) {
       res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }

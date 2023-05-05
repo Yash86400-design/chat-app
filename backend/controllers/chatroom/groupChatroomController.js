@@ -4,6 +4,9 @@ const Chatroom = require('../../models/chatroom/Chatroom');
 const User = require('../../models/user/User');
 const { authenticateToken } = require("../../middlewares/authMiddleware");
 const Joi = require("joi");
+const multer = require('multer');
+const Message = require("../../models/message/Message");
+const { isMember } = require("./IsUserMember");
 
 /* Removed during reshuffling
 POST /api/chatrooms: Creating a chatroom
@@ -47,34 +50,72 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 */
 
-// Fetch all the messages of the group
-router.get('/:id', authenticateToken, async (req, res) => {
+const upload = multer();
 
-  const { message } = req.body;
-  const sender = req.user.userId
+// Get all the info about the ChatGroup: Only members allowed
+router.get('/:id/info', authenticateToken, async (req, res) => {
+  const senderId = req.user.userId;
+  const chatroomId = req.params.id;
 
   try {
-    const chatroomId = req.params.id;
+    // Check if the sender is the member of chatroom or not
+    const chatroomInfo = await Chatroom.findById(chatroomId);
+    if (!chatroomInfo.members.includes(senderId)) {
+      res.status(404).json({ message: 'Action not allowed' });
+      return;
+    }
+
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
+    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
+
+
+    res.status(200).json({ listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests });
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+
+});
+
+
+// Fetch all the messages of the group
+router.get('/:id', authenticateToken, async (req, res) => {
+  const chatroomId = req.params.id;
+  const senderId = req.user.userId;
+
+  try {
+
+    if (!await (isMember(chatroomId, senderId))) {
+      res.status(404).json({ message: 'User is not a member of group' });
+    }
+
+    // Check if the sender is the member of chatroom or not 
+    const chatroomInfo = await Chatroom.findById(chatroomId)
+      .populate({
+        path: 'members',
+        select: '_id name email'
+      })
+      .populate({
+        path: 'joinRequests',
+        select: '_id name email'
+      })
+      .populate({
+        path: 'admins',
+        select: '_id name email'
+      });
 
     // Find the chatroom by ID and populate the member field
-    const chatroom = await Chatroom.findById(chatroomId)
-      .populate('members', '_id name email')
-      .populate('joinRequests', '_id name email');
+    const messages = await Message.find({ chatroom: chatroomId })
+      .populate('sender', '_id name email');
 
-    if (!chatroom) {
+    if (!messages) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    // Check if the user is authorized to access the chatroom
-    if (!chatroom.members.some(member => member._id.toString() === req.user.userId.toString())) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+    res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
 
-    // res.status(200).json({ chatroom });
-
-    // Redirect the user to the messages page if they are a member of the chatroom
-    res.status(200).json({});  // show all the message and then redirect him to chat with someone
-    res.redirect(`/chatroom/${chatroomId}/messages`);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -82,9 +123,35 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Send message in the group
-router.post('/:id', authenticateToken, async (req, rest) => {
-  console.log('Welcome in the chatroom');
-})
+router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
+  const { message } = req.body;
+  const senderId = req.user.userId;
+  const chatroomId = req.params.id;
+
+  try {
+
+    if (!await (isMember(chatroomId, senderId))) {
+      res.status(404).json({ message: 'User is not a member of group' });
+    }
+
+    if (senderId === chatroomId) {
+      res.status(404).json({ message: 'Action not allowed' });
+    }
+
+    const newMessage = new Message({
+      chatroom: chatroomId,
+      sender: senderId,
+      content: message
+    });
+
+    const savedMessage = await newMessage.save();
+
+    res.status(200).json({ message: 'Message sent successfully', savedMessage });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // Put request to update chatroom details
 router.patch('/:id', authenticateToken, async (req, res) => {

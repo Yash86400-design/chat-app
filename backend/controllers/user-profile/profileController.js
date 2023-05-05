@@ -150,6 +150,4 @@ router.post('/search-result', authenticateToken, async (req, res) => {
   res.json({ searchResults });  // return the search results as a JSON object 
 });
 
-
-
 module.exports = router;

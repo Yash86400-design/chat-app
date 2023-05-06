@@ -38,7 +38,7 @@ router.post('/register', [
     const user = new User({ name, email, password: hashedPassword });
 
     // Create a new user for listOfSearch too
-    const newListUser = new listOfChats({ name: name, _id: user._id, type: 'User' });
+    const newListUser = new listOfChats({ name: name, roomId: user._id, type: 'User' });
 
     await user.save();
     await newListUser.save();

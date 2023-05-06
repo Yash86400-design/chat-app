@@ -10,12 +10,15 @@ const { isUserInJoinedChatrooms } = require('./isUserFriend');
 const upload = multer();
 
 router.get('/:id', authenticateToken, async (req, res) => {
-  const senderId = req.user.userId;
-  const receiverId = req.params.id;
 
   try {
 
-    if (!await (isUserInJoinedChatrooms(senderId, receiverId))) {
+    const senderId = req.user.userId;
+    const receiverId = req.params.id;
+
+    const { isUserFriend } = await isUserInJoinedChatrooms(senderId, receiverId);
+
+    if (!isUserFriend) {
       res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 

@@ -47,7 +47,7 @@ const storage = multer.diskStorage({
 router.get('/', authenticateToken, async (req, res) => {
   try {
     // Get the user profile data from the database
-    const userProfile = await User.findOne({ email: req.user.userEmail });
+    const userProfile = await User.findOne({ email: req.user.userId });
     // console.log(userProfile);
 
     // Return the user profile data
@@ -163,7 +163,7 @@ router.get('/search', authenticateToken, async (req, res) => {
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
-router.post('/search-result', authenticateToken, async (req, res) => {
+router.post('/search-result', authenticateToken, upload.single('none'), async (req, res) => {
   const query = req.body.query;  // retrieve the complete search query from the request body
 
   // process the search query and retrieve the search results

@@ -349,7 +349,10 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     // Remove the user from the join requests array and add them to the members array
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
     chatroomInfo.members.push(requestedUserId);
+
+
     await chatroomInfo.save();
+    await User.findByIdAndUpdate(requestedUserId, { joinedChatrooms: chatroomId });
 
     res.status(200).json({ message: 'User has been added to the chatroom' });
   } catch (error) {

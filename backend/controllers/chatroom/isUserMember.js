@@ -4,6 +4,8 @@ const User = require('../../models/user/User');
 
 async function isMember(chatroomId, userId) {
 
+  let chatroomNotFound;
+
   if (chatroomId === userId) {
     return false;
   }
@@ -11,14 +13,14 @@ async function isMember(chatroomId, userId) {
   const chatroom = await Chatroom.findById(chatroomId);
 
   if (!chatroom) {
-    return false;
+    chatroomNotFound = true;
   }
   const user = await User.findById(userId);
   if (!user) {
     return false;
   }
 
-  return chatroom.members.includes(user._id);
+  return { isGroupMember: chatroom.members.includes(userId), chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound };
 }
 
 module.exports = {

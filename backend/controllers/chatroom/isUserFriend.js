@@ -3,7 +3,6 @@
 const User = require('../../models/user/User');
 
 async function isUserInJoinedChatrooms(senderId, receiverId) {
-
   if (senderId === receiverId) {
     return false;
   }
@@ -16,7 +15,7 @@ async function isUserInJoinedChatrooms(senderId, receiverId) {
   }
 
   const joinedChatroomIds = sender.joinedChatrooms.map((chatroom) => chatroom._id.toString());
-  return joinedChatroomIds.includes(receiverId.toString());
+  return { isUserFriend: joinedChatroomIds.includes(receiverId.toString()), senderInfo: sender, receiverInfo: receiver };
 }
 
 module.exports = {

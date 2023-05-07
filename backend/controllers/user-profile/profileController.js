@@ -9,6 +9,7 @@ const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const searchServices = require('../../services/searchServices');
 const Joi = require('joi');
+const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
 const upload = multer({ dest: 'uploads/' });
 // const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -47,7 +48,7 @@ const storage = multer.diskStorage({
 router.get('/', authenticateToken, async (req, res) => {
   try {
     // Get the user profile data from the database
-    const userProfile = await User.findOne({ email: req.user.userId });
+    const userProfile = await User.findById(req.user.userId);
     // console.log(userProfile);
 
     // Return the user profile data
@@ -155,9 +156,10 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
 // For auto suggestion
 router.get('/search', authenticateToken, async (req, res) => {
   const partialQuery = req.query.q; // retrieve the partial query from the query parameters
+  const userId = req.user.userId;
 
   // retrieve a list of suggested search terms or results that match the partial query
-  const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery);
+  const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
   res.json({ suggestedTerms });  // return the suggested terms as a JSON object
 });
@@ -165,11 +167,61 @@ router.get('/search', authenticateToken, async (req, res) => {
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
 router.post('/search-result', authenticateToken, upload.single('none'), async (req, res) => {
   const query = req.body.query;  // retrieve the complete search query from the request body
+  const userId = req.user.userId;
 
   // process the search query and retrieve the search results
-  const searchResults = await searchServices.getSearchResults(query);
+  const searchResults = await searchServices.getSearchResults(query, userId);
 
   res.json({ searchResults });  // return the search results as a JSON object 
+});
+
+router.get('/notifications/requests/:userId/accept', authenticateToken, async (req, res) => {
+  try {
+    const receiverId = req.params.userId;
+    const senderId = req.user.userId;
+
+    const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
+
+    if (isUserFriend) {
+      res.status(404).json({ message: 'User is already a friend' });
+    }
+
+    // Update the current user's list and pending requests
+    currentUser.joinedPersonalChats.push(requester._id);
+    currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
+    await currentUser.save();
+
+    // Update the requester's friend list
+    requester.joinedPersonalChats.push(currentUser._id);
+    await requester.save();
+
+    res.status(200).json({ message: `Friend request from ${requester.name} accepted successfully.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/notifications/requests/:userId/reject', authenticateToken, async (req, res) => {
+  try {
+    const receiverId = req.params.userId;
+    const senderId = req.user.userId;
+
+    const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
+
+    if (isUserFriend) {
+      res.status(404).json({ message: 'User is already a friend' });
+    }
+
+    // Update the current user's pending requests
+    currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
+    await currentUser.save();
+
+    res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 module.exports = router;

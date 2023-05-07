@@ -292,7 +292,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     const chatroomId = req.params.id;
     const senderId = req.user.userId;
 
-    const { isGroupMember, chatroomInfo } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, senderInfo } = await (isMember(chatroomId, senderId));
 
     // Check if the user is already a member
     if (isGroupMember) {
@@ -310,7 +310,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'User has already requested to join the chatroom' });
     }
 
-    chatroomInfo.joinRequests.push(senderId);
+    chatroomInfo.joinRequests.push(senderInfo);
     await chatroomInfo.save();
 
     res.status(200).json({ message: 'Join request sent successfully' });

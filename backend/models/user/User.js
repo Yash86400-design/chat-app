@@ -35,17 +35,23 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  pendingRequests: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AuthUser'
+  }]
+  ,
   joinedChatrooms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'
   }],
   // array for saving whom I'm talking to one on one
   joinedPersonalChats: [{
-
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AuthUser'
   }],
   adminOf: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chatroom',
+    ref: 'Chatroom'
   }]
 });
 

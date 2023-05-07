@@ -2,7 +2,7 @@
 
 const User = require('../../models/user/User');
 
-async function isUserInJoinedChatrooms(senderId, receiverId) {
+async function isUserInJoinedPersonalChatrooms(senderId, receiverId) {
   if (senderId === receiverId) {
     return false;
   }
@@ -19,5 +19,5 @@ async function isUserInJoinedChatrooms(senderId, receiverId) {
 }
 
 module.exports = {
-  isUserInJoinedChatrooms
+  isUserInJoinedPersonalChatrooms
 };

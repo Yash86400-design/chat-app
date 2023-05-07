@@ -1,19 +1,18 @@
 const listOfChats = require('../models/listofchats/ListOfChats');
 
 class SearchService {
-  async getSuggestedTerms(partialQuery) {
+  async getSuggestedTerms(partialQuery, userId) {
     // retrieve a list of suggested search terms based on the partial query
     const regex = new RegExp(`^${partialQuery}`, 'i');
 
-    const matchingNames = await listOfChats.find({ name: regex }).distinct('name');
-    console.log(matchingNames);
+    const matchingNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const lowercaseQuery = partialQuery.toLowerCase();
     const suggestedTerms = matchingNames.filter(name => name.toLowerCase().indexOf(lowercaseQuery) === 0);
 
     return suggestedTerms;
   }
 
-  async getSearchResults(query) {
+  async getSearchResults(query, userId) {
     // retrieve the search results based on the query
     /*
     const lowercaseQuery = query.toLowerCase();
@@ -22,7 +21,7 @@ class SearchService {
     return searchResults;
     */
     const regex = new RegExp(`^${query}`, 'i');
-    const matchingNames = await listOfChats.find({ name: regex }).distinct('name');
+    const matchingNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const lowercaseQuery = query.toLowerCase();
     const suggestedTerms = matchingNames.filter(name => name.toLowerCase().indexOf(lowercaseQuery) === 0);
     return suggestedTerms;

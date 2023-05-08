@@ -63,7 +63,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     const { name, description } = req.body;
-    const avatarPath = req.file.path;
+    const avatarPath = req.file ? req.file.path : '';
     const user = await User.findById(req.user.userId);
 
     const createdBy = req.user.userId;
@@ -80,7 +80,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     }
 
     let avatarUrl = undefined;
-    if (avatarPath != undefined) {
+    if (avatarPath != '') {
       const result = await cloudinary.uploader.upload(avatarPath, {
         folder: 'Chat App', overwrite: true, public_id: `avatar_${createdBy}`
       });

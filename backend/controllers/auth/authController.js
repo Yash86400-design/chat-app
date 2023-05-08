@@ -43,10 +43,10 @@ router.post('/register', [
     await user.save();
     await newListUser.save();
 
-    res.json({ message: 'User registered successfully'.green });
+    return res.json({ message: 'User registered successfully'.green });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -75,10 +75,10 @@ router.post('/login', async (req, res) => {
     // Set the token as a cookie
     res.cookie('token', token, { httpOnly: true, secure: true });
 
-    res.json({ message: 'User logged in successfully', token_value: token });
+    return res.json({ message: 'User logged in successfully', token_value: token });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
@@ -88,10 +88,10 @@ router.get('/logout', authenticateToken, async (req, res) => {
     // Clear the JWT token cookie
     res.clearCookie('token');
 
-    res.json({ message: 'User logged out successfully' });
+    return res.json({ message: 'User logged out successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

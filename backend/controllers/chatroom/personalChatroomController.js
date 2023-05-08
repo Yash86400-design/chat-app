@@ -20,7 +20,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const { isUserFriend } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
-      res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
+      return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 
     // find messages sent between the sender and the receiver
@@ -31,10 +31,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ]
     }).sort('createdAt');
 
-    res.status(200).json(messages);
+    return res.status(200).json(messages);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -49,7 +49,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const { isUserFriend } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
-      res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
+      return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 
     const newMessage = new Message({
@@ -61,10 +61,10 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     await newMessage.save();
     console.log(`Message saved successfully: ${message}`);
-    res.status(200).json({ message: 'Message sent successfully' });
+    return res.status(200).json({ message: 'Message sent successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -77,13 +77,13 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     const { isUserFriend, receiverInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
-      res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
+      return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 
-    res.status(200).json(receiverInfo);
+    return res.status(200).json(receiverInfo);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -96,36 +96,36 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     const { isUserFriend, senderInfo, receiverInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (isUserFriend) {
-      res.status(404).json({ message: 'Action not allowed, Both of the user are friend' });
+      return res.status(404).json({ message: 'Action not allowed, Both of the user are friend' });
     }
 
     const isInPendingRequests = receiverInfo.pendingRequests.some(request => String(request) === String(senderInfo._id));
 
     if (isInPendingRequests) {
-      res.status(422).json({ message: 'You have already sent the request to this user!!!' });
+      return res.status(422).json({ message: 'You have already sent the request to this user!!!' });
     }
 
     receiverInfo.pendingRequests.push(senderInfo);
     await receiverInfo.save();
 
-    res.status(200).json('Request Sent Successfully');
+    return res.status(200).json('Request Sent Successfully');
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Edit message will look stupid, so only delete message api I'll allow. No let's build this too, It'll be fun..
-router.post('/:id/messageId/edit', authenticateToken, async (req, res) => {
+router.patch('/:id/:messageId/edit', authenticateToken, upload.none(), async (req, res) => {
   try {
     const senderId = req.user.userId;
     const receiverId = req.params.id;
-    const messageId = req.params.id;
+    const messageId = req.params.messageId;
 
     const { isUserFriend } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
-      res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
+      return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 
     // Find the message by messageId and userId
@@ -140,36 +140,34 @@ router.post('/:id/messageId/edit', authenticateToken, async (req, res) => {
     message.content = content;
     await message.save();
 
-    res.status(200).json({ message: 'Message updated successfully' });
+    return res.status(200).json({ message: 'Message updated successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Delete a particular message of the authenticated user
-router.delete('/:id/messageId/delete', authenticateToken, async (req, res) => {
+router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
   try {
-    const messageId = req.params.id;
+    const messageId = req.params.messageId;
     const senderId = req.user.userId;
     const receiverId = req.params.id;
 
     const { isUserFriend } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
-      res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
+      return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
     }
 
-    // Find the message by messageId and userId
-    const message = await Message.findOne({ _id: messageId, sender: senderId });
+    // Directly deleting the message, remove is taking time...
+    const result = await Message.deleteOne({ _id: messageId, sender: senderId });
 
-    if (!message) {
-      res.status(404).json({ message: 'Message not found or not authorized' });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Message not found or not authorized' });
     }
 
-    await message.remove();
-
-    res.status(200).json({ message: 'Message deleted successfully' });
+    return res.status(200).json({ message: 'Message deleted successfully' });
   } catch (error) {
 
   }

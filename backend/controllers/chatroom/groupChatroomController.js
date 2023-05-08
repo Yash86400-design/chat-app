@@ -27,7 +27,7 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json({ chatroom, message: 'New Chatroom Created' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 */
@@ -47,7 +47,7 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(200).json({ chatrooms: userChats });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 */
@@ -100,7 +100,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -137,7 +137,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     res.status(200).json({ message: 'Message sent successfully', savedMessage });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -174,7 +174,7 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 
 });
@@ -237,7 +237,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
     res.status(200).json({ chatroomInfo });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -282,7 +282,7 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'Chatroom deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -316,7 +316,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'Join request sent successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -357,7 +357,7 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     res.status(200).json({ message: 'User has been added to the chatroom' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -394,7 +394,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -444,7 +444,7 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     res.status(200).json({ message: 'User has been promoted to an admin of the chatroom' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -490,7 +490,7 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
     res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -547,8 +547,78 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'User has left their admin role in the chatroom' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+// Update a particular message in the group (User's own message)
+router.patch('/:id/:messageId/edit', authenticateToken, upload.none(), async (req, res) => {
+
+  try {
+    const { id, messageId } = req.params;
+    const { message } = req.body;
+    const senderId = req.user.userId;
+
+    const { isGroupMember, chatroomNotFound } = await isMember(id, senderId);
+
+    if (!isGroupMember) {
+      return res.status(404).json({ message: 'User is not a member of this group!' });
+    }
+
+    if (chatroomNotFound) {
+      return res.status(404).json({ message: 'Group chatroom not found' });
+    }
+
+    const updatedMessage = await Message.findOneAndUpdate(
+      { _id: messageId, sender: senderId },
+      { content: message },
+      { new: true }
+    );
+
+    if (!updatedMessage) {
+      return res.status(404).json({ message: 'Message not found or not authorized' });
+    }
+
+    return res.status(200).json({ message: 'Message updated successfully', message: updatedMessage });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Deleting a particular message (It's his own message not of the other users)
+router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
+
+  try {
+    const { id, messageId } = req.params;
+    const senderId = req.user.userId;
+
+    const { isGroupMember, chatroomNotFound } = await isMember(id, senderId);
+
+    if (!isGroupMember) {
+      return res.status(404).json({ message: 'User is not a member of this group!' });
+    }
+
+    if (chatroomNotFound) {
+      return res.status(404).json({ message: 'Group chatroom not found' });
+    }
+
+    const message = await Message.findOneAndDelete(
+      { _id: messageId, chatroom: id, sender: senderId, },
+    );
+
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found or not authorized' });
+    }
+
+    return res.status(200).json({ message: 'Message deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+module.exports = router;
+
 
 module.exports = router;

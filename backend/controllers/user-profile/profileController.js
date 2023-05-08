@@ -52,10 +52,10 @@ router.get('/', authenticateToken, async (req, res) => {
     // console.log(userProfile);
 
     // Return the user profile data
-    res.json(userProfile);
+    return res.json(userProfile);
   } catch (error) {
     console.error(error.message);
-    res.status(500).send('Server Error');
+    return res.status(500).send('Internal server error');
   }
 });
 
@@ -97,13 +97,13 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     await user.save();
     await chatroom.save();
     await newListChatroom.save();
-    res.status(201).json({ chatroom, message: 'New Chatroom Created' });
+    return res.status(201).json({ chatroom, message: 'New Chatroom Created' });
 
     // Redirect to the new chatroom page
     // res.redirect(`/api/profile/chatrooms/${chatroom._id}`);  //It will cause error in frontend...
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -112,11 +112,11 @@ router.get('/view-profile', authenticateToken, async (req, res) => {
   try {
     const userProfile = await User.findById(req.user.userId);
 
-    res.status(200).json({ profile: userProfile.avatar, bio: userProfile.bio, name: userProfile.name });
+    return res.status(200).json({ profile: userProfile.avatar, bio: userProfile.bio, name: userProfile.name });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -145,11 +145,11 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     await User.updateOne({ _id: userId }, updateData);
 
     // Return success response
-    res.json({ success: true, message: 'User profile updated successfully' });
+    return res.json({ success: true, message: 'User profile updated successfully' });
 
   } catch (error) {
     console.error(error.message);
-    res.status(500).send('Server Error');
+    return res.status(500).send('Server Error');
   }
 });
 
@@ -161,7 +161,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   // retrieve a list of suggested search terms or results that match the partial query
   const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
-  res.json({ suggestedTerms });  // return the suggested terms as a JSON object
+  return res.json({ suggestedTerms });  // return the suggested terms as a JSON object
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
@@ -172,7 +172,7 @@ router.post('/search-result', authenticateToken, upload.single('none'), async (r
   // process the search query and retrieve the search results
   const searchResults = await searchServices.getSearchResults(query, userId);
 
-  res.json({ searchResults });  // return the search results as a JSON object 
+  return res.json({ searchResults });  // return the search results as a JSON object 
 });
 
 router.get('/notifications/requests/:userId/accept', authenticateToken, async (req, res) => {
@@ -183,7 +183,7 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
     const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (isUserFriend) {
-      res.status(404).json({ message: 'User is already a friend' });
+      return res.status(404).json({ message: 'User is already a friend' });
     }
 
     // Update the current user's list and pending requests
@@ -195,10 +195,10 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
     requester.joinedPersonalChats.push(currentUser._id);
     await requester.save();
 
-    res.status(200).json({ message: `Friend request from ${requester.name} accepted successfully.` });
+    return res.status(200).json({ message: `Friend request from ${requester.name} accepted successfully.` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -210,17 +210,17 @@ router.get('/notifications/requests/:userId/reject', authenticateToken, async (r
     const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (isUserFriend) {
-      res.status(404).json({ message: 'User is already a friend' });
+      return res.status(404).json({ message: 'User is already a friend' });
     }
 
     // Update the current user's pending requests
     currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
     await currentUser.save();
 
-    res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
+    return res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 

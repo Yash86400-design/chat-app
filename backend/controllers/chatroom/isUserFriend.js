@@ -14,8 +14,8 @@ async function isUserInJoinedPersonalChatrooms(senderId, receiverId) {
     return false;
   }
 
-  const joinedChatroomIds = sender.joinedChatrooms.map((chatroom) => chatroom._id.toString());
-  return { isUserFriend: joinedChatroomIds.includes(receiverId.toString()), senderInfo: sender, receiverInfo: receiver };
+  const joinedPersonalChatroomIds = sender.joinedPersonalChats.map((chatroom) => chatroom._id.toString());
+  return { isUserFriend: joinedPersonalChatroomIds.includes(receiverId.toString()), senderInfo: sender, receiverInfo: receiver };
 }
 
 module.exports = {

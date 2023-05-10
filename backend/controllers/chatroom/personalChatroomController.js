@@ -5,6 +5,7 @@ const multer = require('multer');
 const Message = require('../../models/message/Message');
 const User = require('../../models/user/User');
 const { isUserInJoinedPersonalChatrooms } = require('./isUserFriend');
+const Notification = require('../../models/notification/Notification');
 
 
 const upload = multer();
@@ -46,7 +47,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const senderId = req.user.userId;
     const receiverId = req.params.id;
 
-    const { isUserFriend } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
+    const { isUserFriend, receiverInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
       return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
@@ -58,6 +59,19 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
       content: message
     });
 
+    // Create notification for the receiver
+    const notification = Notification({
+      type: 'personalMessage',
+      title: `${message.slice(10)}...`,
+      sender: senderId,
+      recipient: receiverId,
+      link: `/api/profile/personal-chat/${senderId}`
+    });
+
+    await notification.save();
+
+    receiverInfo.notifications.push(notification);
+    await receiverInfo.save();
 
     await newMessage.save();
     console.log(`Message saved successfully: ${message}`);
@@ -104,6 +118,19 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     if (isInPendingRequests) {
       return res.status(422).json({ message: 'You have already sent the request to this user!!!' });
     }
+
+    // Create notification for the receiver
+    const notification = new Notification({
+      type: 'friendRequest',
+      title: `A new friend request came from ${senderInfo.name}`,
+      sender: senderId,
+      recipient: receiverId,
+      link: `/api/profile/personal-chat/${senderId}`
+    });
+
+    await notification.save();
+
+    receiverInfo.notifications.push(notification);
 
     receiverInfo.pendingRequests.push(senderInfo);
     await receiverInfo.save();
@@ -169,7 +196,8 @@ router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
 
     return res.status(200).json({ message: 'Message deleted successfully' });
   } catch (error) {
-
+    console.error(error);
+    return res.status(404).json({ message: 'Internal server error' });
   }
 });
 

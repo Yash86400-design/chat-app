@@ -10,6 +10,7 @@ const multer = require('multer');
 const searchServices = require('../../services/searchServices');
 const Joi = require('joi');
 const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
+const Notification = require('../../models/notification/Notification');
 const upload = multer({ dest: 'uploads/' });
 // const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -33,8 +34,6 @@ const storage = multer.diskStorage({
   }
 });
 */
-
-
 
 // router.get('/');
 // router.post('/new-chatroom');
@@ -195,6 +194,19 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
     requester.joinedPersonalChats.push(currentUser._id);
     await requester.save();
 
+    // Send Notification to the requester
+    const notification = new Notification({
+      recipient: requester,
+      sender: currentUser,
+      type: 'friendRequest',
+      title: `Your friend request to ${currentUser.name} has been accepted.`,
+      link: `/api/profile/personal-chat/${senderId}`
+    });
+
+    requester.notifications.push(notification);
+    notification.save();
+    requester.save();
+
     return res.status(200).json({ message: `Friend request from ${requester.name} accepted successfully.` });
   } catch (error) {
     console.error(error);
@@ -217,6 +229,17 @@ router.get('/notifications/requests/:userId/reject', authenticateToken, async (r
     currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
     await currentUser.save();
 
+    // Send Notification to the requester
+    const notification = new Notification({
+      recipient: requester,
+      sender: currentUser,
+      type: 'friendRequest',
+      title: `Your friend request to ${currentUser.name} has been rejected.`,
+    });
+
+    requester.notifications.push(notification);
+    notification.save();
+    requester.save();
     return res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
   } catch (error) {
     console.error(error);

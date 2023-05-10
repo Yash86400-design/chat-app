@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 });
 
 
-app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
+server.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
 
 // Error Handler
 app.use(errorHandler);

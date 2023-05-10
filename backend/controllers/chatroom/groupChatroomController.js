@@ -9,6 +9,7 @@ const multer = require('multer');
 const Message = require("../../models/message/Message");
 const { isMember } = require("./IsUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
+const Notification = require("../../models/notification/Notification");
 
 /* Removed during reshuffling
 POST /api/chatrooms: Creating a chatroom
@@ -70,7 +71,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
@@ -96,7 +97,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
+    return res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
 
   } catch (error) {
     console.error(error);
@@ -112,10 +113,10 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const senderId = req.user.userId;
     const chatroomId = req.params.id;
 
-    const { isGroupMember, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomNotFound, chatroomInfo } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
@@ -134,7 +135,27 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     const savedMessage = await newMessage.save();
 
-    res.status(200).json({ message: 'Message sent successfully', savedMessage });
+    // Get the chatroom members
+    const chatroomMembers = chatroomInfo.select('members').populate('members', '-password');
+
+    // Create a new notification for each member of the chatroom except the sender
+    chatroomMembers.members.forEach(async (member) => {
+      if (String(member._id) !== String(senderId)) {
+        const notification = new Notification({
+          type: 'groupMessage',
+          title: `New message in group chatroom from ${member.name}`,
+          sender: senderId,
+          recipient: member._id,
+          link: `/api/profile/group-chat/${chatroomId}`
+        });
+
+        await notification.save();
+
+        await User.findByIdAndUpdate(member._id, { $push: { notifications: notification } });
+      };
+    });
+
+    return res.status(200).json({ message: 'Message sent successfully', savedMessage });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -151,7 +172,7 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
@@ -168,10 +189,9 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     //   path: 'avatar',
     //   select: 'avatar'
     // });
+    const responseData = { listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests, avatar: chatroomInfo.avatar };
 
-    res.status(200).json({ listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests, avatar: chatroomInfo.avatar });
-
-
+    return res.status(200).json(responseData);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -188,7 +208,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
@@ -234,7 +254,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
     chatroomInfo.description = description;
     await chatroomInfo.save();
 
-    res.status(200).json({ chatroomInfo });
+    return res.status(200).json({ chatroomInfo });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -251,18 +271,12 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
-
-    // Find the chatroom by ID if any
-    // const chatroom = await Chatroom.findById(chatroomId);
-    // if (!chatroom) {
-    //   return res.status(404).json({ message: 'Chatroom not found' });
-    // }
 
     // Check if the user is an admin of the chatroom 
     const isAdmin = chatroomInfo.admins.includes(senderId);
@@ -279,10 +293,33 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
     // Delete the chatroom
     await Chatroom.deleteOne({ _id: chatroomId });
 
-    res.status(200).json({ message: 'Chatroom deleted successfully' });
+    return res.status(200).json({ message: 'Chatroom deleted successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// View the pending request of the chatroom
+router.get('/:id/requests', authenticateToken, async (req, res) => {
+  try {
+
+    const chatroomId = req.params.id;
+    const userId = req.user.userId;
+
+    const { isGroupMember, chatroomInfo } = await isMember(chatroomId, userId);
+
+    // Check if the user is a member of the chatroom
+    if (!isGroupMember) {
+      return res.status(403).json({ message: 'User is not a member of the chatroom' });
+    }
+
+    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
+
+    return res.status(200).json(chatroomInfo.joinRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -299,7 +336,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'User is already a member of the chatroom' });
     }
 
-    Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
 
     // if (!chatroom) {
     //   return res.status(404).json({ message: 'Chatroom not found' });
@@ -313,7 +350,25 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     chatroomInfo.joinRequests.push(senderInfo);
     await chatroomInfo.save();
 
-    res.status(200).json({ message: 'Join request sent successfully' });
+    // Send notification to chatroom members
+    const notificationMessage = `${senderInfo.name} has requested to join the chatroom`;
+
+    // Create a notification for each member of the chatroom
+    for (const member of chatroomInfo.members) {
+      if (member._id.toString() !== senderId.toString()) {
+        const notification = new Notification({
+          recipient: member._id,
+          title: notificationMessage,
+          type: 'groupJoinRequest',
+          link: `/api/profile/chatrooms/${chatroomId}`
+        });
+
+        await User.findByIdAndUpdate(member._id, { $push: { notifications: notification } });
+        await notification.save();
+      }
+    }
+
+    return res.status(200).json({ message: 'Join request sent successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -337,6 +392,10 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
+    if (!senderInfo.isAdmin) {
+      return res.status(403).json({ message: 'Only admins can accept join requests' });
+    }
+
     await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
 
     // Find the user in the join requests array
@@ -350,11 +409,22 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
     chatroomInfo.members.push(requestedUserId);
 
+    // Send notification to the requester
+    const requester = await User.findById(requestedUserId);
+    const notificationMessage = `Your request to join ${chatroomInfo.name} has been accepted.`;
+    const notification = new Notification({
+      recipient: requester._id,
+      sender: senderId,
+      message: notificationMessage,
+      type: 'groupJoinRequest',
+      link: `/api/profile/chatrooms/${chatroomId}`,
+    });
 
+    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId }, $addToSet: { notifications: notification } });
     await chatroomInfo.save();
-    await User.findByIdAndUpdate(requestedUserId, { joinedChatrooms: chatroomId });
+    await notification.save();
 
-    res.status(200).json({ message: 'User has been added to the chatroom' });
+    return res.status(200).json({ message: 'User has been added to the chatroom' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -368,7 +438,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     const senderId = req.user.userId;
     const requestedUserId = req.params.userId;
 
-    const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
       return res.status(404).json({ message: 'User is not a member of group' });
@@ -376,6 +446,10 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
+    }
+
+    if (!senderInfo.isAdmin) {
+      return res.status(403).json({ message: 'Only admins can accept join requests' });
     }
 
     await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
@@ -391,7 +465,18 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
     await chatroomInfo.save();
 
-    res.status(200).json({ message: 'Join request has been rejected' });
+    // Create a notification for the requester that their request has been rejected
+    const notification = new Notification({
+      recipient: requestedUserId,
+      sender: senderId,
+      title: `Your request has been rejected for the group `,
+      type: 'groupJoinRequest',
+    });
+
+    await User.findByIdAndUpdate(requestedUserId, { $push: { notifications: notification } });
+    await notification.save();
+
+    return res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -408,14 +493,14 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
 
     // Check if the user is an admin of the chatroom
     const isAdmin = chatroomInfo.admins.includes(senderId);
@@ -432,8 +517,6 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     // Promote the user to be an admin of the chatroom
     chatroomInfo.admins.push(userId);
 
-    await chatroomInfo.save();
-    await User.findByIdAndUpdate(userId, { $push: { adminOf: chatroomId } });
 
     /* Or you can do this to save in adminOf
     const user = await User.findById(userId).exec();
@@ -441,7 +524,20 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     await user.save();
     */
 
-    res.status(200).json({ message: 'User has been promoted to an admin of the chatroom' });
+    // Create a notification for the user that was promoted to admin
+    const notification = new Notification({
+      recipient: userId,
+      sender: senderId,
+      message: `You have been promoted to admin in the chatroom ${chatroomInfo.name}`,
+      link: `/api/profile/chatrooms/${chatroomId}`,
+      type: 'admin_promotion',
+    });
+
+    await chatroomInfo.save();
+    await User.findByIdAndUpdate(userId, { $push: { adminOf: chatroomId }, $addToSet: { notifications: notification } });
+    await notification.save();
+
+    return res.status(200).json({ message: 'User has been promoted to an admin of the chatroom' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -456,17 +552,17 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
     const senderId = req.user.userId;
     const userId = req.params.userId;
 
-    const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, chatroomNotFound, senderInfo } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, {
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, {
       path: 'admins',
       select: '_id name email'
     });
@@ -487,7 +583,32 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
 
     await chatroomInfo.save();
 
-    res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
+    // Create a notification for the user who got removed from admin role
+    const notification = new Notification({
+      recipient: userId,
+      sender: senderId,
+      message: `You have been removed from the admin role in the chatroom "${chatroomInfo.name}".`,
+      type: 'admin_demotion',
+      link: `/api/profile/chatrooms/${chatroomId}`,
+    });
+
+    await User.findByIdAndUpdate(userId, { $push: { notifications: notification } });
+    await notification.save();
+
+    // Create a notification for the user who removed the admin role
+    const notification2 = new Notification({
+      sender: senderId,
+      recipient: senderId,
+      message: `You removed the admin role of user "${userId}" in the chatroom "${chatroomInfo.name}".`,
+      type: 'admin_demotion',
+      link: `/api/profile/chatrooms/${chatroomId}`,
+    });
+    await senderInfo.notifications.push(notification2);
+    await senderInfo.save();
+
+    await notification2.save();
+
+    return res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -501,17 +622,17 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
     const chatroomId = req.params.id;
     const senderId = req.user.userId;
 
-    const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, chatroomNotFound, senderInfo } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group' });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, {
+    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, {
       path: 'admins',
       select: '_id name email'
     });
@@ -533,6 +654,18 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
         const newAdminIndex = Math.floor(Math.random() * members.length);
         const newAdmin = chatroomInfo.members[newAdminIndex];
         chatroomInfo.admins.push(newAdmin);
+
+        // Notify the new admin
+        const newAdminNotification = new Notification({
+          recipient: newAdmin._id,
+          sender: senderId,
+          type: 'admin_promotion',
+          title: `You have been promoted to admin in the chatroom ${chatroomInfo.name}`,
+          link: `/api/profile/chatrooms/${chatroomId}`,
+        });
+
+        await User.findByIdAndUpdate(newAdmin._id, { $push: { notifications: newAdminNotification } });
+        await newAdminNotification.save();
       }
     } else {
       // Remove the user's admin role
@@ -541,6 +674,35 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
         return res.status(404).json({ message: 'Admin not found' });
       }
       chatroomInfo.admins = chatroomInfo.admins.filter(admin => admin.toString() !== senderId.toString());
+
+      // Notify the user who left admin role
+      const senderNotification = new Notification({
+        recipient: senderId,
+        sender: senderId,
+        type: 'admin_demotion',
+        title: `You have left your admin role in the chatroom ${chatroomInfo.name}`,
+        link: `/api/profile/chatrooms/${chatroomId}`,
+      });
+      senderInfo.notifications.push(senderNotification);
+
+      await senderInfo.save();
+      await senderNotification.save();
+
+      // Notify the remaining admins
+      chatroomInfo.admins.forEach(async (adminId) => {
+        if (adminId.toString() !== senderId.toString()) {
+          const adminNotification = new Notification({
+            recipient: adminId,
+            sender: senderId,
+            type: 'admin_demotion',
+            title: `Admin ${senderId.name} has left their admin role in the chatroom ${chatroomInfo.name}`,
+            link: `/api/profile/chatrooms/${chatroomId}`,
+          });
+
+          await adminNotification.save();
+          await User.findByIdAndUpdate(adminId, { $push: { notifications: adminNotification } });
+        }
+      });
     }
     await chatroomInfo.save();
 
@@ -617,8 +779,5 @@ router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-module.exports = router;
-
 
 module.exports = router;

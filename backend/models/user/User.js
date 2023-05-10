@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema({
   adminOf: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'
+  }],
+  notifications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Notification'
   }]
 });
 

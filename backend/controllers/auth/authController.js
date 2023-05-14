@@ -27,7 +27,7 @@ router.post('/register', [
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      return res.status(400).json({ error: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Hash password
@@ -58,14 +58,14 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid Email Address' });
     }
 
     // Check if password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid Password' });
     }
 
     // Create and sign a JWT token

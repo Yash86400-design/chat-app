@@ -15,7 +15,15 @@ const { authRoutes, profileRoutes, groupChat, personalChat } = require('./routes
 const { errorHandler } = require("./middlewares/errorHandler");
 
 const app = express();
-const server = http.createServer(app);
+// const server = http.createServer(app);  // We'll do in future
+
+// Enable CORS middleware
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELTE, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 // Logging middleware
 app.use(morgan('dev'));
@@ -41,9 +49,10 @@ app.get('/', (req, res) => {
 });
 
 
-server.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
+app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
+// server.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue)); // we'll do in future
 
 // Error Handler
 app.use(errorHandler);
 
-websocket.startWebSocketServer(server);
+// websocket.startWebSocketServer(server);  // We'll do in future

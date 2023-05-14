@@ -6,9 +6,9 @@ import logoutReducer from '../features/logoutSlice';
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  register: registerReducer,
-  login: loginReducer,
-  logout: logoutReducer,
+  // register: registerReducer,
+  // login: loginReducer,
+  // logout: logoutReducer,
 });
 
 const store = configureStore({

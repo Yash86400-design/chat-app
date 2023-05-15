@@ -36,6 +36,7 @@ const signin = async (userData) => {
 // Logout user
 const logout = async () => {
   localStorage.removeItem('userToken');
+  localStorage.removeItem('userProfile');
 };
 
 const authService = { register, signin, logout };

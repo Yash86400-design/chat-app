@@ -4,6 +4,7 @@ import './signin.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { reset, signin } from '../features/authSlice';
+import Spinner from '../components/Spinner/Spinner';
 
 function SignIn() {
   const navigate = useNavigate();
@@ -16,7 +17,6 @@ function SignIn() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log('Form data:', formData);
     dispatch(signin(formData));
   };
 
@@ -39,6 +39,10 @@ function SignIn() {
 
     dispatch(reset());
   }, [message, isError, navigate, dispatch, isSuccess, user]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="signin-page-container">

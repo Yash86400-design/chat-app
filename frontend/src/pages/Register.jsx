@@ -4,6 +4,7 @@ import './register.css';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { register, reset } from '../features/authSlice';
+import Spinner from '../components/Spinner/Spinner';
 
 function Register() {
 
@@ -53,6 +54,10 @@ function Register() {
 
     dispatch(reset());
   }, [isError, isSuccess, navigate, user, message, dispatch]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="register-page-container">

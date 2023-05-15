@@ -1,0 +1,34 @@
+.spinner {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 300px auto;
+}
+
+.spinner::before,
+.spinner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #3498db;
+  animation: spin 1s linear infinite;
+}
+
+.spinner::before {
+  animation-delay: 0.2s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

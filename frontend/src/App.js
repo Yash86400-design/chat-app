@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import Dashboard from './pages/Dashboard';
@@ -11,7 +11,6 @@ function App() {
     <>
       <Router>
         <Routes>
-          {/* <PrivateRoute exact path='/' component={Dashboard} /> */}
           <Route path='/' element={<Dashboard />} />
           <Route path='/signin' element={<SignIn />} />
           <Route path='/register' element={<Register />} />

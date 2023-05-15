@@ -3,17 +3,23 @@ import BodyContainer from '../components/Body/BodyContainer';
 import Chat from '../components/Chat/Chat';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import Spinner from '../components/Spinner/Spinner';
+import './dashboard.css'
 
 function Dashboard() {
   const navigate = useNavigate();
 
-  const { user } = useSelector((state) => state.auth);
+  const { userToken, isLoading } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!user) {
+    if (!userToken) {
       navigate('/signin');
     }
-  }, [user, navigate]);
+  }, [userToken, navigate]);
+
+  if (isLoading) {
+    <Spinner />;
+  }
 
   return (
     <div className="Dashboard">

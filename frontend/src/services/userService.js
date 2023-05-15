@@ -3,14 +3,14 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000/api/profile/';
 
 // Get userToken from localstorage
-const userToken = JSON.parse(localStorage.getItem('userToken')) ? JSON.parse(localStorage.getItem('userToken')).token_value : null;
+// const userToken = JSON.parse(localStorage.getItem('userToken')) ? JSON.parse(localStorage.getItem('userToken')).token_value : null;
 // console.log(userToken.token_value);
 
 // User data
-const signedUser = async () => {
+const signedUser = async (token) => {
   const response = await axios.get(API_URL, {
     headers: {
-      Authorization: `Bearer ${userToken}`
+      Authorization: `Bearer ${token}`
     }
   });
   // console.log(response);

@@ -4,7 +4,7 @@ import Chat from '../components/Chat/Chat';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Spinner from '../components/Spinner/Spinner';
-import './dashboard.css'
+import './dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();

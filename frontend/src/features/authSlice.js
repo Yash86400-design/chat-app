@@ -31,9 +31,11 @@ import authService from '../services/authService';
 
 // Get userToken from localstorage
 const userToken = JSON.parse(localStorage.getItem('userToken'));
+const userProfile = JSON.parse(localStorage.getItem('userProfile'));
 
 const initialState = {
   userToken: userToken ? userToken : null,
+  userProfile: userProfile ? userProfile : null,
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -115,17 +117,20 @@ export const authSlice = createSlice({
       .addCase(signin.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.userToken = action.payload;
+        state.userToken = action.payload.token;
+        state.userProfile = action.payload.userProfile;
       })
       .addCase(signin.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
         state.userToken = null;
+        state.userProfile = null;
       })
       .addCase(logout.fulfilled, (state) => {
-        state.userToken = null
-      })
+        state.userToken = null;
+        state.userProfile = null;
+      });
   }
 });
 

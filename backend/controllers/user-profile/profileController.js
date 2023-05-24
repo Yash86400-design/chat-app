@@ -123,7 +123,7 @@ router.get('/view-profile', authenticateToken, async (req, res) => {
 router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     const { name, bio } = req.body;
-    const avatarPath = req.file.path;
+    const avatarPath = req.file ? req.file.path : '';
     const userId = req.user.userId;
 
     let updateData = {};
@@ -138,6 +138,10 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
       const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: `avatar_${userId}` });
       const avatarUrl = result.url;
       updateData.avatar = avatarUrl;
+    }
+
+    if (!name && !bio && !avatarPath) {
+      return res.status(400).json({ success: false, message: 'No profile updates were provided' });
     }
 
     // Update user profile in the database

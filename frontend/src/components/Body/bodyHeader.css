@@ -52,6 +52,7 @@
   border: 1px solid #ccc;
   padding: 10px;
   width: 200px;
+  /* width: 25vw; */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
@@ -68,7 +69,105 @@
   cursor: pointer;
 }
 
-.body__header-container_icons.active {
-  background-color: #f0f0f0;
+.userInfoBox {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  left: 0;
+  /* bottom: 0; */
+  background: linear-gradient(to bottom right, #fddb92, #d1fdff);
+  z-index: 10;
+  height: calc(100vh - 50px);
+  /* width: 100%; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  /* overflow-wrap: break-word; */
+  overflow: hidden;
+}
+
+.userInfoBox .imgBox {
+  height: 350px;
+  width: 350px;
   border-radius: 50%;
+}
+
+.imgBox img {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+}
+
+.userInfoBox button {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  padding: 15px;
+  background: transparent;
+  outline: none;
+  border: 1px solid;
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.userInfoBox button:hover {
+  opacity: 1;
+}
+
+.infoEditForm {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  left: 0;
+  padding-top: 20px;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 40;
+}
+
+.infoEditForm form {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoEditForm label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.infoEditForm input[type="file"],
+.infoEditForm input[type="text"],
+.infoEditForm textarea {
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.infoEditForm input[type="file"]:focus,
+.infoEditForm input[type="text"]:focus,
+.infoEditForm textarea:focus {
+  outline: none;
+  border-color: #3366ff;
+  box-shadow: 0 0 5px rgba(51, 102, 255, 0.3);
+}
+
+.infoEditForm button {
+  padding: 10px 20px;
+  background-color: #3366ff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.infoEditForm button:hover {
+  background-color: #3355ff;
+}
+
+.infoEditForm button:active {
+  background-color: #3344ff;
 }

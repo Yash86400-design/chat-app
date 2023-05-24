@@ -3,11 +3,12 @@ import './bodyHeader.css';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
-import { editInfo, userData, userInfo } from '../../features/userSlice';
+import { editInfo, userData } from '../../features/userSlice';
+import Spinner from '../Spinner/Spinner';
 
 function BodyHeader() {
-  const { userProfile } = useSelector((state) => state.auth);
-  const { isError, isSuccess, isLoading, message } = useSelector((state) => state.userProfile);
+  // const { userProfile } = useSelector((state) => state.auth);
+  const { isLoading, userProfile } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showUserInfoBox, setShowUserInfoBox] = useState(false);
@@ -57,8 +58,19 @@ function BodyHeader() {
     formData.append('name', name);
     formData.append('bio', bio);
 
-    console.log(formData);
-    dispatch(editInfo(formData));
+    dispatch(editInfo(formData))
+      .then(() => {
+        setProfile('');
+        setName('');
+        setBio('');
+        setInfoButton(false);
+        dispatch(userData());
+      });
+
+    // Clear the form data --> Let's not do it, Cause through this I can show the user what's his current bio..
+    // setProfile('')
+    // setName('')
+    // setBio('')
   };
 
   const handleProfileChange = (event) => {
@@ -116,13 +128,28 @@ function BodyHeader() {
     };
   }, []);
 
-  // When the edit Info returns success
+  // When the edit Info returns success --> Handled inside submit form..
+  /*
   useEffect(() => {
     if (isSuccess) {
       console.log('Hi');
-      dispatch(userInfo());
+      dispatch(userData());
     }
   }, [isSuccess, dispatch]);
+  */
+
+  // Re-render the component when userProfile has some changes
+  useEffect(() => {
+    if (userProfile) {
+      setName(userProfile.name);
+      setBio(userProfile.bio);
+      setProfile(userProfile.avatar);
+    }
+  }, [userProfile]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className='body__header-container'>

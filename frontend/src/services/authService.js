@@ -1,5 +1,6 @@
 import axios from 'axios';
 import userService from './userService';
+// import userService from './userService';
 
 const API_URL = 'http://localhost:5000/auth/';
 
@@ -23,7 +24,7 @@ const signin = async (userData) => {
   if (response.data) {
     const token = response.data.token_value;
     localStorage.setItem('userToken', JSON.stringify(response.data));
-    userProfileValue = await userService.signedUser(token);
+    userProfileValue = await userService.signedUser();
     tokenValue = token;
   }
 

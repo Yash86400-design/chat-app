@@ -1,8 +1,16 @@
+.spinnerContainer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
 .spinner {
   position: relative;
   width: 100px;
   height: 100px;
   margin: 300px auto;
+  z-index: 2;
 }
 
 .spinner::before,

@@ -1,9 +1,11 @@
 import React from 'react';
-import './spinner.css'
+import './spinner.css';
 
 function Spinner() {
   return (
-    <div className='spinner'></div>
+    <div className="spinnerContainer">
+      <div className='spinner'></div>
+    </div>
   );
 }
 

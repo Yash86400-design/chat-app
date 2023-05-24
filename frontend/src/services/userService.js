@@ -3,14 +3,14 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000/api/profile/';
 
 // Get userToken from localstorage
-const userToken = JSON.parse(localStorage.getItem('userToken')).token_value;
+const userToken = JSON.parse(localStorage.getItem('userToken'))?.token_value || '';
 // console.log(userToken.token_value);
 
 // User data
-const signedUser = async (tokenFromAuthentication) => {
+const signedUser = async () => {
   const response = await axios.get(API_URL, {
     headers: {
-      Authorization: `Bearer ${tokenFromAuthentication}`
+      Authorization: `Bearer ${userToken}`
     }
   });
   // console.log(response);
@@ -21,18 +21,18 @@ const signedUser = async (tokenFromAuthentication) => {
 };
 
 // User Info
-const userInfo = async () => {
-  const response = await axios.get(API_URL + 'view-profile/', {
-    headers: {
-      Authorization: `Bearer ${userToken}`
-    }
-  });
+// const userInfo = async () => {
+//   const response = await axios.get(API_URL + 'view-profile/', {
+//     headers: {
+//       Authorization: `Bearer ${userToken}`
+//     }
+//   });
 
-  if (response.data) {
-    localStorage.setItem("userProfileInfo", JSON.stringify(response.data));
-  }
-  return response.data;
-};
+//   if (response.data) {
+//     localStorage.setItem("userProfileInfo", JSON.stringify(response.data));
+//   }
+//   return response.data;
+// };
 
 // Editing User Info
 const editInfo = async (userData) => {
@@ -42,11 +42,10 @@ const editInfo = async (userData) => {
       'Content-Type': 'multipart/form-data'
     }
   });
-  if (response.data) {
-    console.log(response.data);
-  }
+  return response.data;
 };
 
-const userService = { signedUser, userInfo, editInfo };
+// const userService = { signedUser, userInfo, editInfo };
+const userService = { signedUser, editInfo };
 
 export default userService;

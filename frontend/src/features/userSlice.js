@@ -3,9 +3,11 @@ import userService from '../services/userService';
 
 // Get User Data from localstorage
 // const userToken = JSON.parse(localStorage.getItem('userToken'));
+const userProfile = JSON.parse(localStorage.getItem('userProfile'));
 
 const initialState = {
   // userToken: userToken ? userToken : null,
+  userProfile: userProfile ? userProfile : null,
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -30,20 +32,20 @@ export const userData = createAsyncThunk(
 );
 
 // Getting the user info
-export const userInfo = createAsyncThunk(
-  "/info", async (_, thunkAPI) => {
-    try {
-      return await userService.signedUser();
-    } catch (error) {
-      const message = (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) || error.message || error.toString();
-      return thunkAPI.rejectWithValue(message);
-    }
-  }
-);
+// export const userInfo = createAsyncThunk(
+//   "/info", async (_, thunkAPI) => {
+//     try {
+//       return await userService.signedUser();
+//     } catch (error) {
+//       const message = (
+//         error.response &&
+//         error.response.data &&
+//         error.response.data.message
+//       ) || error.message || error.toString();
+//       return thunkAPI.rejectWithValue(message);
+//     }
+//   }
+// );
 
 // Editing User Info
 export const editInfo = createAsyncThunk(
@@ -72,7 +74,7 @@ export const userSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(userData.fulfilled, (state, action) => {
-        // state.userProfile = action.payload;
+        state.userProfile = action.payload;
         state.isLoading = false;
         state.isSuccess = true;
       })
@@ -80,24 +82,24 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
-        // state.userProfile = null;
+        state.userProfile = null;
       })
-      .addCase(userInfo.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(userInfo.fulfilled, (state) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-      })
-      .addCase(userInfo.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
-      })
+      // .addCase(userInfo.pending, (state) => {
+      //   state.isLoading = true;
+      // })
+      // .addCase(userInfo.fulfilled, (state) => {
+      //   state.isLoading = false;
+      //   state.isSuccess = true;
+      // })
+      // .addCase(userInfo.rejected, (state, action) => {
+      //   state.isLoading = false;
+      //   state.isError = true;
+      //   state.message = action.payload;
+      // })
       .addCase(editInfo.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(editInfo.fulfilled, (state) => {
+      .addCase(editInfo.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
       })

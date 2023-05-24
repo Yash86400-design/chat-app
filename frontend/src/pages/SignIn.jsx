@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { reset, signin } from '../features/authSlice';
 import Spinner from '../components/Spinner/Spinner';
+import { userData } from '../features/userSlice';
 
 function SignIn() {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ function SignIn() {
     }
 
     if (isSuccess || user) {
+      dispatch(userData())
       navigate('/');
     }
 

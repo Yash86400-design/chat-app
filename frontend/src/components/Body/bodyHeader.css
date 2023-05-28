@@ -22,25 +22,33 @@
 }
 
 .body__header-container_icons {
-  /* width: 10%; */
+  /* width: 10%;
   height: 40px;
   width: 40px;
   border-radius: 2px solid black;
   border-radius: 50%;
+  justify-content: space-between; */
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
   transition: 0.5s ease;
   margin-right: 5px;
 }
 
+.body__header-container_notification,
 .body__header-container_info {
-  height: 50%;
-  width: 50%;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 42px;
+  padding: 10px;
+  transition: 0.5s ease;
 }
 
-.body__header-container_icons:hover {
+.body__header-container_info {
+  margin-left: 50px;
+}
+
+.body__header-container_info:hover,
+.body__header-container_notification:hover {
   background: rgba(85, 85, 85, 0.1);
 }
 

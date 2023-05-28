@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5000/api/profile/';
 
 // Get userToken from localstorage
-const userToken = JSON.parse(localStorage.getItem('userToken'))?.token_value || '';
+let userToken = JSON.parse(localStorage.getItem('userToken'))?.token_value || null;
 // console.log(userToken.token_value);
 
 // User data
@@ -18,6 +18,16 @@ const signedUser = async () => {
     localStorage.setItem("userProfile", JSON.stringify(response.data));
   }
   return response.data;
+};
+
+// To Clear The Token Value From Slice When The User Log Out
+const clearToken = () => {
+  userToken = null;
+};
+
+// Filling the token back when user sign in
+const updateToken = () => {
+  userToken = JSON.parse(localStorage.getItem('userToken')).token_value;
 };
 
 // User Info
@@ -46,6 +56,6 @@ const editInfo = async (userData) => {
 };
 
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo };
+const userService = { signedUser, editInfo, clearToken, updateToken };
 
 export default userService;

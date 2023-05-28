@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './bodyHeader.css';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import { AiOutlineBell } from 'react-icons/ai';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
 import { editInfo, userData } from '../../features/userSlice';
@@ -156,9 +157,10 @@ function BodyHeader() {
       <div className="body__header-container_profile">
         <img src={userProfile ? userProfile.avatar : ''} alt="Profile" />
       </div>
-      <div className="body__header-container_icons" onClick={handleInfoButton}>
+      <div className="body__header-container_icons">
         {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
-        <BsThreeDotsVertical className='body__header-container_info' />
+        <AiOutlineBell className='body__header-container_notification' />
+        <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
       </div>
       {showInfoBox &&
         (

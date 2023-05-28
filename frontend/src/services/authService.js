@@ -23,7 +23,8 @@ const signin = async (userData) => {
 
   if (response.data) {
     const token = response.data.token_value;
-    localStorage.setItem('userToken', JSON.stringify(response.data));
+    localStorage.setItem('userToken', JSON.stringify(response.data))
+    userService.updateToken();
     userProfileValue = await userService.signedUser();
     tokenValue = token;
   }
@@ -38,6 +39,7 @@ const signin = async (userData) => {
 const logout = async () => {
   localStorage.removeItem('userToken');
   localStorage.removeItem('userProfile');
+  userService.clearToken();
 };
 
 const authService = { register, signin, logout };

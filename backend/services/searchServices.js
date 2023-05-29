@@ -5,9 +5,13 @@ class SearchService {
     // retrieve a list of suggested search terms based on the partial query
     const regex = new RegExp(`^${partialQuery}`, 'i');
 
-    const matchingNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
+    // const allUserNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
+    const allUserIds = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } });
+
+
     const lowercaseQuery = partialQuery.toLowerCase();
-    const suggestedTerms = matchingNames.filter(name => name.toLowerCase().indexOf(lowercaseQuery) === 0);
+    // const suggestedTerms = allUserNames.filter(name => name.toLowerCase().indexOf(lowercaseQuery) === 0);
+    const suggestedTerms = allUserIds.filter(user => user.name.toLowerCase().indexOf(lowercaseQuery) === 0);
 
     return suggestedTerms;
   }

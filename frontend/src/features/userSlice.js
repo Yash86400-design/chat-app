@@ -62,6 +62,20 @@ export const editInfo = createAsyncThunk(
   }
 );
 
+// Partial Query Suggestions (Friends/Groups)
+// export const partialQuery = createAsyncThunk('/search',
+//   async (searchQuery, thunkAPI) => {
+//     try {
+//       return await userService.fetchSuggestedTerms(searchQuery);
+//     } catch (error) {
+//       const message =
+//         (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+//       console.log(message);
+//       return thunkAPI.rejectWithValue(message);
+//     }
+//   }
+// );
+
 export const userSlice = createSlice({
   name: 'userProfile',
   initialState,

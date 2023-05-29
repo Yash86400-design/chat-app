@@ -7,7 +7,7 @@ function ChatContacts() {
   const { userProfile } = useSelector((state) => state.userProfile);
 
   // console.log(userProfile.joinedChatrooms, userProfile.joinedPersonalChats);
-  console.log(userProfile);
+  // console.log(userProfile);
 
   return (
     <div className='allChats'>

@@ -45,3 +45,4 @@ const logout = async () => {
 const authService = { register, signin, logout };
 
 export default authService;
+

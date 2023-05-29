@@ -6,8 +6,6 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const connectDB = require('./models/db');
-const http = require('http');
-const websocket = require('./socket/websocket');
 
 // Import routes
 // const authRoutes = require('./controllers/auth'); //before arranging code
@@ -15,7 +13,6 @@ const { authRoutes, profileRoutes, groupChat, personalChat } = require('./routes
 const { errorHandler } = require("./middlewares/errorHandler");
 
 const app = express();
-// const server = http.createServer(app);  // We'll do in future
 
 // Enable CORS middleware
 app.use((req, res, next) => {
@@ -50,9 +47,6 @@ app.get('/', (req, res) => {
 
 
 app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
-// server.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue)); // we'll do in future
 
 // Error Handler
 app.use(errorHandler);
-
-// websocket.startWebSocketServer(server);  // We'll do in future

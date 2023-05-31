@@ -54,7 +54,41 @@ router.get('/', authenticateToken, async (req, res) => {
     return res.json(userProfile);
   } catch (error) {
     console.error(error.message);
-    return res.status(500).send('Internal server error');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Getting the user's friend info to show on top of chat when rendering the list of chats
+router.get('/user/:id', authenticateToken, async (req, res) => {
+  try {
+    const userProfile = await User.findById(req.params.id).select('name avatar');
+
+    if (userProfile) {
+      return res.json(userProfile);
+    } else {
+      // If the userProfile not found
+      return res.status(404).json({ error: 'User profile not found' });
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Getting the user's groupchat infos to show on top of chat when rendering the list of chats
+router.get('/group/:id', authenticateToken, async (req, res) => {
+  try {
+    const groupProfile = await Chatroom.findById(req.params.id).select('name avatar');
+
+    if (groupProfile) {
+      return res.json(groupProfile);
+    } else {
+      // If the groupProfile not found
+      return res.status(404).json({ error: 'Group profile not found' });
+    }
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

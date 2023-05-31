@@ -73,7 +73,25 @@ const fetchSuggestedTerms = async (partialQuery) => {
   }
 };
 
+const userInfo = async (userId) => {
+  try {
+    const response = await axios.get(API_URL + `user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching user detail:', error);
+  }
+};
+
+const groupInfo = async (groupId) => {
+
+};
+
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, clearToken, updateToken };
 
 export default userService;

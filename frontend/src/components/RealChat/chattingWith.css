@@ -1,6 +1,24 @@
 .chatInfo {
-  padding: 5px;
+  padding: 10px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+}
+
+.chatInfo .friendProfileBox {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+}
+
+.chatInfo .friendProfileBox img {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .chatInfo h4 {

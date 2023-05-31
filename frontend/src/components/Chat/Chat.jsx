@@ -5,16 +5,16 @@ import ChatInput from './ChatInput';
 import ChatIdContext from '../../context/ChatIdContext';
 
 function Chat() {
-  const { chatId } = useContext(ChatIdContext);
-  console.log(chatId);
+  const { chatUserInfo } = useContext(ChatIdContext);
+  const { name, id, avatar } = chatUserInfo;
   // const chatId = useContext(ChatContext);
   // console.log(chatId);
 
   return (
     <div>
-      <ChatHeader />
-      <ChatBody />
-      <ChatInput />
+      <ChatHeader userId={id} userName={name} userAvatar={avatar} />
+      <ChatBody userId={id} />
+      <ChatInput userId={id} />
     </div>
   );
 }

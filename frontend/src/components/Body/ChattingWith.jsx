@@ -7,16 +7,18 @@ const ChatContext = createContext();
 
 function ChattingWith({ id, name, avatar }) {
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
-  const { setChatId } = useContext(ChatIdContext);
+  const { setChatUserInfo } = useContext(ChatIdContext);
   // const { setChatId } = useContext(ChatContext);
   // const [chatId, setChatId] = useState('');
 
   const handleClick = (event) => {
     const id = event.target.dataset.id;
-    setChatId(id);
+    const name = event.target.dataset.name;
+    const avatar = event.target.dataset.avatar;
+    setChatUserInfo({ id, name, avatar });
   };
   return (
-    <div className='chatInfo' onClick={handleClick} data-id={id}>
+    <div className='chatInfo' onClick={handleClick} data-id={id} data-name={name} data-avatar={avatar}>
       <div className="friendProfileBox">
         {
           avatar && (

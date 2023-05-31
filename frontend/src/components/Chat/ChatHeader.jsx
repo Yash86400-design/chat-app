@@ -2,14 +2,25 @@ import React from 'react';
 import './chatHeader.css';
 import { BsFileImage, BsThreeDotsVertical } from 'react-icons/bs';
 
-function ChatHeader() {
+function ChatHeader({ userId, userName, userAvatar }) {
+  const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
+
   return (
     <div className='chat__header-container'>
       <div className="chat__header-container_left">
         <div className="chat__header-container_left-profile">
-          <img src="https://res.cloudinary.com/duxhnzvyw/image/upload/v1682079122/Chat%20App/pexels-yaroslav-shuraev-7166122_je2dhj.jpg" alt="User" />
+          {
+            userAvatar && (<img src={userAvatar} alt="UserProfile" />)
+          }
+          {
+            !userAvatar && (
+              <img src={noProfileAvatar} alt="User" />
+            )
+          }
         </div>
-        <p>Harsh Pandey</p>
+        {
+          userName && (<p>{userName}</p>)
+        }
       </div>
       <div className="chat__header-container_right">
         <BsFileImage />

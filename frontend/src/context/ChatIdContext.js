@@ -5,10 +5,17 @@ const ChatIdContext = createContext();
 
 // Create the AppProvider component
 export const AppProvider = ({ children }) => {
-  const [chatId, setChatId] = useState('');
+  const [chatUserInfo, setChatUserInfo] = useState({
+    id: '',
+    name: '',
+    avatar: ''
+  });
+  // const [chatName, setChatName] = useState('');
+  // const [chatAvatar, setChatAvatar] = useState('');
 
   return (
-    <ChatIdContext.Provider value={{ chatId, setChatId }}>
+    // <ChatIdContext.Provider value={{ chatId, setChatId, chatName, setChatName, chatAvatar, setChatAvatar }}>
+    <ChatIdContext.Provider value={{ chatUserInfo, setChatUserInfo }}>
       {children}
     </ChatIdContext.Provider>
   );

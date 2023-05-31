@@ -4,12 +4,15 @@ import { Provider } from 'react-redux';
 import store from './app/store';
 import './index.css';
 import App from './App';
+import { AppProvider } from './context/ChatIdContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <AppProvider>
+        <App />
+      </AppProvider>
     </Provider>
   </React.StrictMode>
 );

@@ -88,7 +88,17 @@ const userInfo = async (userId) => {
 };
 
 const groupInfo = async (groupId) => {
+  try {
+    const response = await axios.get(API_URL + `group/${groupId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
 
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching user detail:', error);
+  }
 };
 
 // const userService = { signedUser, userInfo, editInfo };

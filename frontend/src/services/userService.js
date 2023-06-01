@@ -65,8 +65,8 @@ const fetchSuggestedTerms = async (partialQuery) => {
         Authorization: `Bearer ${userToken}`
       }
     });
-
-    return response.data.suggestedTerms;
+    // console.log(response.data);
+    return response.data;
   } catch (error) {
     console.log('Error fetching suggested terms:', error);
     return [];

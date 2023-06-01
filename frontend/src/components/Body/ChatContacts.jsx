@@ -64,10 +64,10 @@ function ChatContacts() {
       <ChattingWith name={'Pravin More'} message={"I'll catch you very soon..."} />
       <ChattingWith name={'Vishal Gautam'} message={'How you doin???'} /> */}
       {chattingWithUserData.map((data, index) => (
-        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} />
+        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio}/>
       ))}
       {groupChatData.map((data, index) => (
-        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} />
+        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio} />
       ))}
     </div>
   );

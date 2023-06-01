@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
 import { editInfo, userData } from '../../features/userSlice';
 import Spinner from '../Spinner/Spinner';
+import { toast } from 'react-toastify';
+
 
 function BodyHeader() {
   // const { userProfile } = useSelector((state) => state.auth);
@@ -55,6 +57,10 @@ function BodyHeader() {
     // dispatch(editInfo({ profile: profile, name: name, bio }));
 
     const formData = new FormData();
+    if (!name) {
+      return toast.error("Name field can't be empty");
+    }
+
     formData.append('avatar', profile);
     formData.append('name', name);
     formData.append('bio', bio);

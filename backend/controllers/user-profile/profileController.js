@@ -61,7 +61,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Getting the user's friend info to show on top of chat when rendering the list of chats
 router.get('/user/:id', authenticateToken, async (req, res) => {
   try {
-    const userProfile = await User.findById(req.params.id).select('name avatar');
+    const userProfile = await User.findById(req.params.id).select('name avatar bio');
 
     if (userProfile) {
       return res.json(userProfile);
@@ -78,7 +78,7 @@ router.get('/user/:id', authenticateToken, async (req, res) => {
 // Getting the user's groupchat infos to show on top of chat when rendering the list of chats
 router.get('/group/:id', authenticateToken, async (req, res) => {
   try {
-    const groupProfile = await Chatroom.findById(req.params.id).select('name avatar');
+    const groupProfile = await Chatroom.findById(req.params.id).select('name avatar bio');
 
     if (groupProfile) {
       return res.json(groupProfile);
@@ -164,8 +164,10 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     if (name) {
       updateData.name = name;
     }
-    if (bio) {
+    if (bio !== undefined) {
       updateData.bio = bio;
+    } else {
+      updateData.bio = null;
     }
     if (avatarPath) {
       // updateData.avatar = avatar;
@@ -198,7 +200,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   // retrieve a list of suggested search terms or results that match the partial query
   const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
-  return res.json({ suggestedTerms });  // return the suggested terms as a JSON object
+  return res.json(suggestedTerms);  // return the suggested terms as a JSON object
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)

@@ -29,7 +29,8 @@
   background-color: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-height: 200px;  /* Adjusting the search bar height*/
+  max-height: 200px;
+  /* Adjusting the search bar height*/
   overflow-y: auto;
 }
 
@@ -42,6 +43,21 @@
 .suggestedUsers ul li {
   padding: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.suggestedUsers ul li span {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+}
+
+.suggestedUsers ul li span img {
+  height: 100%;
+  width: 100%;
+  border-radius: 50%;
 }
 
 .suggestedUsers ul li.noUser {

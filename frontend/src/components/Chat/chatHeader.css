@@ -32,8 +32,37 @@
 }
 
 .chat__header-container_right {
-  width: 20%;
+  width: 10%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
+  transition: 0.5s ease;
+  margin-right: 20px;
+}
+
+.addPersonIcon,
+.infoIcon {
+  cursor: pointer;
+  /* border-radius: 50%; */
+  font-size: 42px;
+  padding: 10px;
+  transition: 0.5s ease;
+}
+
+.addPersonIcon.notKnown {
+  cursor: auto;
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.infoIcon.notKnown {
+  cursor: auto;
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.addPersonIcon:hover,
+.infoIcon:hover {
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
 }

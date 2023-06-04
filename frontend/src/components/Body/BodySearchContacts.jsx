@@ -33,7 +33,8 @@ function BodySearchContacts() {
     const avatar = event.target.dataset.avatar;
     const id = event.target.dataset.id;
     const bio = event.target.dataset.bio;
-    setChatUserInfo({ id, name, avatar, bio });
+    const type = event.target.dataset.type;
+    setChatUserInfo({ id, name, avatar, bio, type });
   };
 
   const inputClick = (event) => {
@@ -70,7 +71,7 @@ function BodySearchContacts() {
           <ul>
             {/* <li key={index} onClick={clickedUser} value={user[0].avatar}> */}
             {suggestedUsers.map((user, index) => (
-              <li key={index} onClick={clickedUser} data-id={user[0].id} data-name={user[0].name} data-avatar={user[0].avatar} data-bio={user[0].bio}>
+              <li key={index} onClick={clickedUser} data-id={user[0].id} data-name={user[0].name} data-avatar={user[0].avatar} data-bio={user[0].bio} data-type={user[0].type}>
 
                 <span>{user[0].avatar ? (
                   <img src={user[0].avatar} alt="User" />

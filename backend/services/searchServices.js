@@ -22,7 +22,8 @@ class SearchService {
             name: authUser.name,
             id: authUser.id,
             avatar: authUser.avatar,
-            bio: authUser.bio
+            bio: authUser.bio,
+            type: 'User'
           });
         } else if (user.type === 'Chatroom') {
           const chatroom = await Chatroom.findById(user.roomId).select('name avatar description');
@@ -30,7 +31,8 @@ class SearchService {
             name: chatroom.name,
             id: chatroom.id,
             avatar: chatroom.avatar,
-            bio: chatroom.description
+            bio: chatroom.description,
+            type: 'Chatroom'
           });
         }
 

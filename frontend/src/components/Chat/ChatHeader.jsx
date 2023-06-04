@@ -3,51 +3,92 @@ import './chatHeader.css';
 import { BsPersonAdd, BsThreeDotsVertical } from 'react-icons/bs';
 import { useSelector } from 'react-redux';
 
-function ChatHeader({ userId, userName, userAvatar, userBio }) {
-  const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
+function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
+  const noProfileAvatar =
+    'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
   const { userProfile } = useSelector((state) => state.userProfile);
-  // console.log(userProfile);
-  // If 2nd person is friend or 1st person or 2nd person (group) has 1st person as member then do something
-  // ---> Deactive the click on add button with a message
-  // ---> Allowed to click on info button
 
-  // If not then do something
-  // ---> Active the click on add button
-  // ---> Not allowed to click on info button
+  // const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
 
-  // What info button will include
-  // ---> Info About Person/Group
-  // ---> Unfriend/Exit the group
+  const isFriend = userProfile.joinedPersonalChats.includes(userId);
+  const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
 
-  const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
+  const renderAddButtonContent = () => {
 
-  console.log(allChats.includes(userId));
+    if (isFriend) {
+      return (
+        <>
+          <span className="tooltip">Already a friend</span>
+          <BsPersonAdd className="addPersonIcon disabled" />
+        </>
+      );
+    } else if (isChatroomMember) {
+      return (
+        <>
+          <span className="tooltip">Already a member</span>
+          <BsPersonAdd className="addPersonIcon disabled" />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <span className="tooltip">
+            {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
+          </span>
+          <BsPersonAdd className="addPersonIcon" />
+        </>
+      );
+    }
+  };
+
+  const renderInfoButtonContent = () => {
+    if (isFriend) {
+      return (
+        <>
+          <BsThreeDotsVertical className="infoIcon enabled" />
+        </>
+      );
+    } else if (isChatroomMember) {
+      return (
+        <>
+          <BsThreeDotsVertical className="infoIcon enabled" />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <span className='tooltip'>
+            {userType === 'Chatroom' ? 'Only for members' : 'Only for friends'}
+          </span>
+          <BsThreeDotsVertical className='infoIcon disabled' />
+        </>
+      );
+    }
+
+  };
 
   return (
-    <div className='chat__header-container'>
+    <div className="chat__header-container">
       <div className="chat__header-container_left">
         <div className="chat__header-container_left-profile">
-          {
-            userAvatar && (<img src={userAvatar} alt="UserProfile" />)
-          }
-          {
-            !userAvatar && (
-              <img src={noProfileAvatar} alt="User" />
-            )
-          }
+          {userAvatar && <img src={userAvatar} alt="UserProfile" />}
+          {!userAvatar && <img src={noProfileAvatar} alt="User" />}
         </div>
-        {
-          userName && <p>{userName} {
-            userBio && (
-              <strong> ({userBio}) </strong>
-            )
-          }</p>
-        }
+        {userName && (
+          <p>
+            {userName}
+            {userBio && <strong> ({userBio.slice(0, 15) + '...'}) </strong>}
+          </p>
+        )}
       </div>
       <div className="chat__header-container_right">
-        <BsPersonAdd className='addPersonIcon' />
-        <BsThreeDotsVertical className='infoIcon' />
+        <div className={`addIconContainer ${isFriend || isChatroomMember ? 'disabled' : ''}`}>
+          {renderAddButtonContent()}
+        </div>
+        <div className={`infoIconContainer ${isFriend || isChatroomMember ? '' : 'disabled'}`}>
+          {renderInfoButtonContent()}
+        </div>
       </div>
     </div>
   );

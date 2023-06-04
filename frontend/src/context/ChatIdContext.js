@@ -9,7 +9,8 @@ export const AppProvider = ({ children }) => {
     id: '',
     name: '',
     avatar: '',
-    bio: ''
+    bio: '',
+    type: ''
   });
   // const [chatName, setChatName] = useState('');
   // const [chatAvatar, setChatAvatar] = useState('');

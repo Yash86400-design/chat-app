@@ -6,13 +6,13 @@ import ChatIdContext from '../../context/ChatIdContext';
 
 function Chat() {
   const { chatUserInfo } = useContext(ChatIdContext);
-  const { name, id, avatar, bio } = chatUserInfo;
+  const { name, id, avatar, bio, type } = chatUserInfo;
   // const chatId = useContext(ChatContext);
   // console.log(chatId);
 
   return (
     <div>
-      <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} />
+      <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} />
       <ChatBody userId={id} />
       <ChatInput userId={id} />
     </div>

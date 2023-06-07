@@ -64,7 +64,9 @@ router.get('/user/:id', authenticateToken, async (req, res) => {
     const userProfile = await User.findById(req.params.id).select('name avatar bio');
 
     if (userProfile) {
-      return res.json(userProfile);
+      // return res.json(userProfile);
+      const { name, avatar, bio } = userProfile;
+      return res.json({ name, avatar, bio, type: 'User', _id: req.params.id }); // Quick fix of sending type of User and id
     } else {
       // If the userProfile not found
       return res.status(404).json({ error: 'User profile not found' });
@@ -81,7 +83,9 @@ router.get('/group/:id', authenticateToken, async (req, res) => {
     const groupProfile = await Chatroom.findById(req.params.id).select('name avatar bio');
 
     if (groupProfile) {
-      return res.json(groupProfile);
+      // return res.json(groupProfile);
+      const { name, avatar, bio } = groupProfile;
+      return res.json({ name, avatar, bio, type: 'Chatroom', _id: req.params.id }); // Quick fix of sending type of User and id
     } else {
       // If the groupProfile not found
       return res.status(404).json({ error: 'Group profile not found' });

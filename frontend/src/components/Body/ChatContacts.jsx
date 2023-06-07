@@ -23,7 +23,6 @@ function ChatContacts() {
   // const handleGroupClick = (event) => {
   //   console.log(event);
   // }
-
   useEffect(() => {
     const fetchChattingWithData = async () => {
       const personalChats = userProfile.joinedPersonalChats;
@@ -57,19 +56,23 @@ function ChatContacts() {
   }, [userProfile.joinedChatrooms]);
 
   // console.log(groupChatData[1]['_id']);
-
+  console.log(chattingWithUserData);
   return (
-    <div className='allChats'>
-      {/* <ChattingWith name={'Harsh Pandey'} message={'Miss you...'} />
+    <div className="chatListContainer">
+
+      <div className='allChats'>
+        {/* <ChattingWith name={'Harsh Pandey'} message={'Miss you...'} />
       <ChattingWith name={'Pravin More'} message={"I'll catch you very soon..."} />
       <ChattingWith name={'Vishal Gautam'} message={'How you doin???'} /> */}
-      {chattingWithUserData.map((data, index) => (
-        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio}/>
-      ))}
-      {groupChatData.map((data, index) => (
-        <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio} />
-      ))}
+        {chattingWithUserData.map((data, index) => (
+          <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio} type={data.type} />
+        ))}
+        {groupChatData.map((data, index) => (
+          <ChattingWith key={index} id={data._id} name={data.name} avatar={data.avatar} bio={data.bio} type={data.type} />
+        ))}
+      </div>
     </div>
+
   );
 }
 

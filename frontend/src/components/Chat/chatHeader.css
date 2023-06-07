@@ -33,7 +33,7 @@
 }
 
 .chat__header-container_right {
-  width: 10%;
+  width: 20%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -92,6 +92,48 @@
   opacity: 1;
 }
 
+.notificationIconContainer {
+  cursor: pointer;
+  font-size: 32px;
+  padding: 5px;
+  transition: 0.5s ease;
+  display: flex;
+}
+
+.notificationIconContainer.disabled {
+  cursor: auto;
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.notificationIconContainer.disabled:hover {
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.notificationIconContainer span {
+  visibility: hidden;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.notificationIconContainer:hover span {
+  visibility: visible;
+  opacity: 1;
+}
+
 .infoBoxFriend,
 .infoBoxChatRoom {
   position: absolute;
@@ -123,7 +165,7 @@
   position: absolute;
   top: 50px;
   right: 0;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 50px);
   /* width: calc(100vw - 287px); */
   width: 100%;
   display: flex;
@@ -153,7 +195,7 @@
   top: 50px;
   right: 0;
   /* left: 0; */
-  height: calc(100vh - 100px);
+  height: calc(100vh - 50px);
   /* width: calc(100vw - 287px); */
   width: 100%;
   display: flex;

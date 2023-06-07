@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './chatHeader.css';
 import { BsPersonAdd, BsThreeDotsVertical } from 'react-icons/bs';
+import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
 import { useSelector } from 'react-redux';
 
@@ -132,10 +133,16 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
   // const handleChatroomInfoCloseClick = () => {
 
   // };
-
   useEffect(() => {
     function handleClickOutside(event) {
-      if ((friendInfoBoxRef.current && !friendInfoBoxRef.current.contains(event.target)) || (chatroomInfoBoxRef.current && !chatroomInfoBoxRef.current.contains(event.target)) || (friendInfoRef.current && !friendInfoRef.current.contains(event.target)) || (chatroomInfoRef.current && !chatroomInfoRef.current.contains(event.target))) {
+      if (
+        (friendInfoBoxRef.current && !friendInfoBoxRef.current.contains(event.target))
+        ||
+        (chatroomInfoBoxRef.current && !chatroomInfoBoxRef.current.contains(event.target))
+        ||
+        (friendInfoRef.current && !friendInfoRef.current.contains(event.target))
+        ||
+        (chatroomInfoRef.current && !chatroomInfoRef.current.contains(event.target))) {
         setCloseIconState(false);
         setFriendInfoBoxActive(false);
         setChatroomInfoBoxActive(false);
@@ -166,16 +173,35 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
         )}
       </div>
       <div className="chat__header-container_right">
+        {
+          userType === 'Chatroom' && isChatroomMember &&
+          (
+            <div className='notificationIconContainer'>
+              <AiOutlineBell />
+            </div>
+          )
+        }
+        {
+          userType === 'Chatroom' && !isChatroomMember &&
+          (
+            <div className='notificationIconContainer disabled'>
+              <span>Not a member</span>
+              <AiOutlineBell />
+            </div>
+          )
+        }
         <div className={`addIconContainer ${isFriend || isChatroomMember ? 'disabled' : ''}`}>
           {/* <div className='addIconContainer'> */}
           {renderAddButtonContent()}
         </div>
+
         <div className={`infoIconContainer ${isFriend || isChatroomMember ? '' : 'disabled'}`}>
           {/* <div className='infoIconContainer'> */}
           {renderInfoButtonContent()}
         </div>
       </div>
-      {friendInfoBoxActive &&
+      {
+        friendInfoBoxActive &&
         (
           <div className="infoBoxFriend" ref={friendInfoBoxRef}>
             <ul>
@@ -185,7 +211,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
           </div>
         )
       }
-      {chatroomInfoBoxActive &&
+      {
+        chatroomInfoBoxActive &&
         (
           <div className="infoBoxChatRoom" ref={chatroomInfoBoxRef}>
             <ul>
@@ -195,7 +222,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
           </div>
         )
       }
-      {showFriendInfoBox &&
+      {
+        showFriendInfoBox &&
         (
           <div className="friendInfoBox" ref={friendInfoRef}>
             <div className="imgBox">
@@ -206,18 +234,19 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
           </div>
         )
       }
-      {showChatroomInfoBox &&
+      {
+        showChatroomInfoBox &&
         (
           <div className="chatroomInfoBox" ref={chatroomInfoRef}>
             <div className="imgBox">
               <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
             </div>
-            <h2>{userName ? userName : "No Name Set"}</h2>
-            <p>{userBio ? userBio : 'No Bio'}</p>
+            <h2> {userName ? userName : "No Name Set"} </h2>
+            <p> {userBio ? userBio : 'No Bio'} </p>
           </div>
         )
       }
-    </div>
+    </div >
   );
 }
 

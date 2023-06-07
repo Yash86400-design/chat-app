@@ -4,6 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
 }
 
 .chat__header-container_left {
@@ -111,9 +112,67 @@
   margin: 0;
 }
 
-.infoBoxFriend li, 
+.infoBoxFriend li,
 .infoBoxChatRoom li {
   padding: 5px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   cursor: pointer;
+}
+
+.friendInfoBox {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  height: calc(100vh - 100px);
+  /* width: calc(100vw - 287px); */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  background-color: #8EC5FC;
+  background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
+}
+
+.friendInfoBox .imgBox {
+  /* margin: 0 auto; */
+  height: 450px;
+  width: 450px;
+  border-radius: 0;
+}
+
+.friendInfoBox .imgBox img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.chatroomInfoBox {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  /* left: 0; */
+  height: calc(100vh - 100px);
+  /* width: calc(100vw - 287px); */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  background-color: #8EC5FC;
+  background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
+}
+
+.chatroomInfoBox .imgBox {
+  height: 450px;
+  width: 450px;
+  border-radius: 0;
+}
+
+.chatroomInfoBox .imgBox img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 0;
 }

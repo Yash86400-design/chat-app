@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './bodyHeader.css';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { AiOutlineBell } from 'react-icons/ai';
+import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
 import { editInfo, userData } from '../../features/userSlice';
@@ -19,6 +20,7 @@ function BodyHeader() {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [profile, setProfile] = useState('');
+  const [closeIconState, setCloseIconState] = useState(false);
 
   const dispatch = useDispatch();
   const infoBoxRef = useRef(null);
@@ -29,9 +31,18 @@ function BodyHeader() {
 
   const handleInfoButton = (event) => {
     event.stopPropagation();
+    setCloseIconState(!closeIconState);
     setShowInfoBox(!showInfoBox);
     if (showUserInfoBox) {
       setShowUserInfoBox(false);
+    }
+  };
+
+  const closeIconClick = () => {
+    if (closeIconState && (showInfoBox || showUserInfoBox)) {
+      setShowInfoBox(false);
+      setShowUserInfoBox(false);
+      setCloseIconState(false);
     }
   };
 
@@ -41,12 +52,14 @@ function BodyHeader() {
 
   const handleUserInfoButton = (event) => {
     event.stopPropagation();
+    setCloseIconState(true);
     setShowUserInfoBox(!showUserInfoBox);
     setShowInfoBox(false);
   };
 
   const handleEditProfileButton = (event) => {
     event.stopPropagation();
+    setCloseIconState(true);
     setInfoButton(!infoButton);
     setShowUserInfoBox(false);
   };
@@ -93,6 +106,8 @@ function BodyHeader() {
     setBio(event.target.value);
   };
 
+
+  /* Merged all three useEffect in a single useEffect down below... 
   useEffect(() => {
     function handleClickOutside(event) {
       if (infoBoxRef.current && !infoBoxRef.current.contains(event.target)) {
@@ -134,6 +149,29 @@ function BodyHeader() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
+*/
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        (infoBoxRef.current && !infoBoxRef.current.contains(event.target)) ||
+        (userInfoBoxRef.current && !userInfoBoxRef.current.contains(event.target)) ||
+        (infoEditRef.current && !infoEditRef.current.contains(event.target))
+      ) {
+        setCloseIconState(false);
+        setShowInfoBox(false);
+        setShowUserInfoBox(false);
+        setInfoButton(false);
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
 
   // When the edit Info returns success --> Handled inside submit form..
   /*
@@ -165,8 +203,17 @@ function BodyHeader() {
       </div>
       <div className="body__header-container_icons">
         {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
+
+        {/* I'm making a mistake here by not implementing styles on div instead using direct icons target... (Check ChatHeader.jsx for div styling) */}
+
         <AiOutlineBell className='body__header-container_notification' />
-        <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
+
+        {closeIconState
+          ?
+          <RxCross1 className='body__header-container_info' onClick={closeIconClick} />  // Same class cause of styles applied on className
+          :
+          <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
+        }
       </div>
       {showInfoBox &&
         (

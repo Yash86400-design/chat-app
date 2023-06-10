@@ -1,11 +1,27 @@
 import React from 'react';
 import './chatBody.css';
 
-function ChatBody() {
-  return (
-    <div className='chatBody'>
+function ChatBody({ isKnown }) {
 
-    </div>
+  return (
+    <>
+      {
+        isKnown && (
+          <div className='chatBody'>
+
+          </div>
+        )
+      }
+
+      {
+        !isKnown && (
+          <div className='chatBodyUnKnown'>
+            <p>Not Allowed</p>
+          </div>
+        )
+      }
+
+    </>
   );
 }
 

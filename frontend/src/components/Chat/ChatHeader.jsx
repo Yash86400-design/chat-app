@@ -3,9 +3,9 @@ import './chatHeader.css';
 import { BsPersonAdd, BsThreeDotsVertical } from 'react-icons/bs';
 import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 
-function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
+function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatroomMember }) {
 
   const [friendInfoBoxActive, setFriendInfoBoxActive] = useState(false);
   const [chatroomInfoBoxActive, setChatroomInfoBoxActive] = useState(false);
@@ -20,12 +20,12 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType }) {
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
-  const { userProfile } = useSelector((state) => state.userProfile);
-
   // const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
 
-  const isFriend = userProfile.joinedPersonalChats.includes(userId);
-  const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
+  // const { userProfile } = useSelector((state) => state.userProfile);
+
+  // const isFriend = userProfile.joinedPersonalChats.includes(userId);
+  // const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
 
   const renderAddButtonContent = () => {
     if (isFriend) {

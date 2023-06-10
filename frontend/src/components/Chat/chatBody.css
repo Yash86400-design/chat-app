@@ -4,3 +4,25 @@
   width: 100%;
   position: cover;
 }
+
+.chatBodyUnKnown {
+  background-image: linear-gradient(rgba(4, 9, 30, 0.15), rgba(4, 9, 30, 0.1)), url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/whats_app_background_mlfbo2.png);
+  height: calc(100vh - 100px);
+  width: 100%;
+  position: cover;
+}
+
+.chatBodyUnKnown p {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  font-size: 32px;
+  background-color: #ff8177;  /* Fallback Value */
+  background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
+  background-size: 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+}

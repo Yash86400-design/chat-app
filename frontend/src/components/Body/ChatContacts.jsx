@@ -56,7 +56,6 @@ function ChatContacts() {
   }, [userProfile.joinedChatrooms]);
 
   // console.log(groupChatData[1]['_id']);
-  console.log(chattingWithUserData);
   return (
     <div className="chatListContainer">
 

@@ -101,7 +101,61 @@ const groupInfo = async (groupId) => {
   }
 };
 
+const fetchUserMessages = async (userId) => {
+  try {
+    const response = await axios.get(API_URL + `personal-chat/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching messages:', error);
+  }
+};
+
+const fetchGroupMessages = async (groupId) => {
+  try {
+    const response = await axios.get(API_URL + `chatroom/${groupId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return response.data.messages;
+  } catch (error) {
+    console.log('Error fetching messages:', error);
+  }
+};
+
+const messageSendToUser = async (userId, message) => {
+  try {
+    const response = await axios.post(API_URL + `personal-chat/${userId}`, { message: message }, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return response.data.message;
+  } catch (error) {
+    console.error(error);
+    console.log('Error sending message:', error);
+  }
+};
+
+const messageSendToChatroom = async (chatroomId, message) => {
+  try {
+    const response = await axios.post(API_URL + `chatroom/${chatroomId}`, { message: message }, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return response.data.message;
+  } catch (error) {
+    console.error(error);
+    console.log('Error sending message:', error);
+  }
+};
+
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, clearToken, updateToken };
 
 export default userService;

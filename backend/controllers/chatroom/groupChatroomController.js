@@ -112,6 +112,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const { message } = req.body;
     const senderId = req.user.userId;
     const chatroomId = req.params.id;
+    console.log(message);
 
     const { isGroupMember, chatroomNotFound, chatroomInfo } = await (isMember(chatroomId, senderId));
 
@@ -134,12 +135,12 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     });
 
     const savedMessage = await newMessage.save();
-
     // Get the chatroom members
-    const chatroomMembers = chatroomInfo.select('members').populate('members', '-password');
+    // const chatroomMembers = chatroomInfo.select('members').populate('members', '-password');
+    const chatroomMembers = chatroomInfo.members;
 
     // Create a new notification for each member of the chatroom except the sender
-    chatroomMembers.members.forEach(async (member) => {
+    chatroomMembers.forEach(async (member) => {
       if (String(member._id) !== String(senderId)) {
         const notification = new Notification({
           type: 'groupMessage',

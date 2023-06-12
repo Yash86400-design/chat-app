@@ -44,7 +44,7 @@ const profileRoutes = router.use('/api/profile', profileController);
 
 
 
-const groupChat = router.use('/api/profile/chatrooms', groupChatroomController);
+const groupChat = router.use('/api/profile/chatroom', groupChatroomController);
 
 const personalChat = router.use('/api/profile/personal-chat', personalChatroomController);
 

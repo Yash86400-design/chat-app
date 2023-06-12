@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import './chatInput.css';
+import userService from '../../services/userService';
 
-function ChatInput({ userType, isKnown }) {
+function ChatInput({ userType, isKnown, userId }) {
   // const [messageInputField, setMessageInputField] = useState('');
   const [inputPlaceholder, setInputPlaceholder] = useState('');
   const [readOnlyState, setReadOnlyState] = useState(false);
@@ -9,8 +10,17 @@ function ChatInput({ userType, isKnown }) {
   const inputRef = useRef(null);
 
   const handleChatSubmittion = (event) => {
-
-  }
+    let message = inputRef.current.value;
+    if (userType === 'User' && message.length > 0) {
+      userService.messageSendToUser(userId, message);
+      message = null;
+      inputRef.current.value = null;
+    } else if (userType === 'Chatroom' && message.length > 0) {
+      userService.messageSendToChatroom(userId, message);
+      message = null;
+      inputRef.current.value = null;
+    }
+  };
 
   useEffect(() => {
     if (isKnown) {
@@ -43,7 +53,7 @@ function ChatInput({ userType, isKnown }) {
     */
 
   }, [isKnown, userType]);
-  
+
   return (
     <div className='chatInput'>
       {/* <input type="text" value={messageInputField} name="" id="" placeholder='Type a message...' onChange={(event) => { setMessageInputField(event.target.value); }} autoFocus /> */}

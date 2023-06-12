@@ -20,7 +20,6 @@ function Chat() {
   if (isFriend || isChatroomMember) {
     isKnown = true;
   }
-
   /* useState sucks here in first render of page
   // const chatId = useContext(ChatContext);
   // console.log(chatId);
@@ -40,14 +39,13 @@ function Chat() {
   // if (name !== '') {
   // }
   */
-
   return (
     <>
       {
         name && (
           <div>
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} />
-            <ChatBody userId={id} isKnown={isKnown} />
+            <ChatBody userId={id} userType={type} isKnown={isKnown} />
             <ChatInput userId={id} userType={type} isKnown={isKnown} />
           </div>
         )

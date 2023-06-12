@@ -21,6 +21,8 @@ function BodyHeader() {
   const [bio, setBio] = useState('');
   const [profile, setProfile] = useState('');
   const [closeIconState, setCloseIconState] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  console.log(notificationCount);
 
   const dispatch = useDispatch();
   const infoBoxRef = useRef(null);
@@ -189,8 +191,10 @@ function BodyHeader() {
       setName(userProfile.name);
       setBio(userProfile.bio);
       setProfile(userProfile.avatar);
+      setNotificationCount(userProfile.notifications.length)
     }
   }, [userProfile]);
+
 
   if (isLoading) {
     return <Spinner />;
@@ -205,8 +209,12 @@ function BodyHeader() {
         {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
 
         {/* I'm making a mistake here by not implementing styles on div instead using direct icons target... (Check ChatHeader.jsx for div styling) */}
-
-        <AiOutlineBell className='body__header-container_notification' />
+        <div className="notification-icon">
+          <AiOutlineBell className='body__header-container_notification' />
+          {notificationCount > 0 && (
+            <span className='notification-count'>{notificationCount}</span>
+          )}
+        </div>
 
         {closeIconState
           ?

@@ -52,6 +52,30 @@
   background: rgba(85, 85, 85, 0.1);
 }
 
+.notification-icon {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-icon .body__header-container_notification {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: 0px;
+  right: -6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+}
+
 .infoBox {
   position: absolute;
   top: 50px;

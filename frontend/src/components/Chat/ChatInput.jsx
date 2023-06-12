@@ -15,10 +15,12 @@ function ChatInput({ userType, isKnown, userId }) {
       userService.messageSendToUser(userId, message);
       message = null;
       inputRef.current.value = null;
+      inputRef.current.focus();
     } else if (userType === 'Chatroom' && message.length > 0) {
       userService.messageSendToChatroom(userId, message);
       message = null;
       inputRef.current.value = null;
+      inputRef.current.focus();
     }
   };
 

@@ -29,9 +29,10 @@ function ChatBody({ isKnown, userType, userId }) {
 
     fetchMessages();
   }, [isKnown, userType, userId]);
-  message.forEach((msg) => {
-    console.log(msg.sender);
-  });
+  
+  // message.forEach((msg) => {
+  //   console.log(msg.sender);
+  // });
 
   return (
     <>

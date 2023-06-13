@@ -32,6 +32,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ]
     }).sort('createdAt');
 
+    // Establish socket connection with the client
+    const socket = req.app.get('socket');
+
+    // Emit an event to the client
+    socket.emit('connected', 'Connected to the socket server');
+
+    // Listen for events from the client
+    socket.on('chatMessage', (message) => {
+      console.log(`Received message: ${message}`);
+    });
+
     return res.status(200).json(messages);
   } catch (error) {
     console.error(error);
@@ -58,6 +69,13 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
       receiver: receiverId,
       content: message
     });
+
+    // Get the socket instance from the request's io object
+    const io = req.app.get('socket');
+
+    // Emit an event to the connected clients with the new message
+    io.emit('newMessage', newMessage);
+
 
     // Create notification for the receiver
     const notification = Notification({

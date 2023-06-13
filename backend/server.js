@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const connectDB = require('./models/db');
+const http = require('http');
+const socketIO = require('socket.io');
 
 // Import routes
 // const authRoutes = require('./controllers/auth'); //before arranging code
@@ -13,6 +15,14 @@ const { authRoutes, profileRoutes, groupChat, personalChat } = require('./routes
 const { errorHandler } = require("./middlewares/errorHandler");
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }
+});
 
 // Enable CORS middleware
 app.use((req, res, next) => {
@@ -33,7 +43,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Connect to database
-connectDB();
+connectDB(app, io);
+
+// Store the 'io' object in the app settings
+app.set('socket', io);
 
 // Routes
 app.use(authRoutes);
@@ -45,8 +58,11 @@ app.get('/', (req, res) => {
   res.json({ message: "Hi There, Welcome To My Server" });
 });
 
+// app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
 
-app.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
+// Start the server
+server.listen(port, () => console.log(`Server started at http://localhost:${port}`.blue));
+
 
 // Error Handler
 app.use(errorHandler);

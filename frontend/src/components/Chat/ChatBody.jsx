@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './chatBody.css';
 import userService from '../../services/userService';
 import { useSelector } from 'react-redux';
+import socketIOClient from 'socket.io-client';
 
 function ChatBody({ isKnown, userType, userId }) {
   const [message, setMessage] = useState([]);
   const { userProfile } = useSelector((state) => state.userProfile);
+  const socket = socketIOClient('http://localhost:5000');
+  const chatContainerRef = useRef(null);
 
   // if (isKnown) {
   //   if (userType === 'User') {
@@ -28,17 +31,35 @@ function ChatBody({ isKnown, userType, userId }) {
     };
 
     fetchMessages();
-  }, [isKnown, userType, userId]);
-  
-  // message.forEach((msg) => {
-  //   console.log(msg.sender);
-  // });
+
+    const handleNewMessage = (newMessage) => {
+      setMessage((prevMessages) => [...prevMessages, newMessage]);
+    };
+
+    // Listen for newMessage event from the server
+    socket.on('newMessage', handleNewMessage);
+
+    return () => {
+      // Clean up the event listener when the component unmounts
+      socket.off('newMessage', handleNewMessage);
+    };
+  }, [isKnown, userType, userId, socket]);
+
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, [message]);
+
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    chatContainer.scrollTop = 0;
+  }, []);
 
   return (
     <>
       {
         isKnown && (message.length !== 0) && (userType === 'Chatroom') && (
-          <div className='chatBody'>
+          <div className='chatBody' ref={chatContainerRef}>
             {message.map((msg, index) => (
               <div
                 key={index}

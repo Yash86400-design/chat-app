@@ -22,7 +22,6 @@ function BodyHeader() {
   const [profile, setProfile] = useState('');
   const [closeIconState, setCloseIconState] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
-  console.log(notificationCount);
 
   const dispatch = useDispatch();
   const infoBoxRef = useRef(null);

@@ -23,7 +23,8 @@ const signin = async (userData) => {
 
   if (response.data) {
     const token = response.data.token_value;
-    localStorage.setItem('userToken', JSON.stringify(response.data))
+    localStorage.setItem('userToken', JSON.stringify(response.data));
+    // localStorage.setItem('messages', {}); // Just to set empty now so that when user fetched data later I'll store them inside...
     userService.updateToken();
     userProfileValue = await userService.signedUser();
     tokenValue = token;

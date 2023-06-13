@@ -2,13 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import './chatBody.css';
 import userService from '../../services/userService';
 import { useSelector } from 'react-redux';
-import socketIOClient from 'socket.io-client';
+// import socketIOClient from 'socket.io-client';
 
-function ChatBody({ isKnown, userType, userId }) {
+function ChatBody({ isKnown, userType, userId, socket }) {
   const [message, setMessage] = useState([]);
   const { userProfile } = useSelector((state) => state.userProfile);
-  const socket = socketIOClient('http://localhost:5000');
+  // const socket = socketIOClient('http://localhost:5000');
   const chatContainerRef = useRef(null);
+
+  // console.log('Socket connected:', socket.connected);
 
   // if (isKnown) {
   //   if (userType === 'User') {
@@ -25,35 +27,55 @@ function ChatBody({ isKnown, userType, userId }) {
         setMessage(allMessages);
       } else if (isKnown && userType === 'Chatroom') {
         const allMessages = await userService.fetchGroupMessages(userId);
-        console.log(allMessages);
         setMessage(allMessages);
       }
     };
 
     fetchMessages();
+  }, [isKnown, userType, userId]);
 
+  useEffect(() => {
     const handleNewMessage = (newMessage) => {
+      console.log(newMessage);
       setMessage((prevMessages) => [...prevMessages, newMessage]);
     };
 
     // Listen for newMessage event from the server
     socket.on('newMessage', handleNewMessage);
+    // socket.on('newMessage', handleNewMessage);
 
     return () => {
       // Clean up the event listener when the component unmounts
       socket.off('newMessage', handleNewMessage);
     };
-  }, [isKnown, userType, userId, socket]);
+  }, [socket]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }, [message]);
-
-  useEffect(() => {
-    const chatContainer = chatContainerRef.current;
-    chatContainer.scrollTop = 0;
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
   }, []);
+
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      chatContainer.scrollTop = 0;
+    }
+  }, []);
+
+  useEffect(() => {
+    // Retrieve the 'messages' object from localStorage
+    const storedMessages = localStorage.getItem('messages');
+
+    // Parse the JSON string into a JS object
+    const parsedMessages = storedMessages ? JSON.parse(storedMessages)[userId] : null;
+
+    // Set the messages state with the retrieved value
+    setMessage(parsedMessages)
+  }, [userId]);
+
+  console.log(message);
 
   return (
     <>

@@ -108,6 +108,23 @@ const fetchUserMessages = async (userId) => {
         Authorization: `Bearer ${userToken}`
       }
     });
+    // const allMessages = response.data;
+    console.log(response.data);
+
+    // Retrieve existing 'message' object from localstorage
+    const existingMessageString = localStorage.getItem('messages');
+    console.log(existingMessageString);
+    const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
+
+    // Update the object with the new key-value pair(s)
+    existingMessageObj[userId] = [response.data];
+    console.log(existingMessageObj);
+
+    // Convert the updated object back into a JSON string
+    const updatedMessageString = JSON.stringify(existingMessageObj);
+
+    // Store the updated JSON string in localStorage
+    localStorage.setItem('messages', updatedMessageString);
     return response.data;
   } catch (error) {
     console.log('Error fetching messages:', error);

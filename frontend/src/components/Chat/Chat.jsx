@@ -5,12 +5,20 @@ import ChatInput from './ChatInput';
 import ChatIdContext from '../../context/ChatIdContext';
 import './chat.css';
 import { useSelector } from 'react-redux';
-
+import createSocketInstance from '../../socket/socket';
+// import socketIOClient from 'socket.io-client';
 
 function Chat() {
   const { chatUserInfo } = useContext(ChatIdContext);
   const { name, id, avatar, bio, type } = chatUserInfo;
+  const { userToken } = useSelector((state) => state.auth);
   const { userProfile } = useSelector((state) => state.userProfile);
+
+  // const socket = socketIOClient('http://localhost:5000', {
+  //   query: { token: userToken }
+  // });
+
+  const socket = createSocketInstance(userToken);
 
   // const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
 
@@ -20,6 +28,7 @@ function Chat() {
   if (isFriend || isChatroomMember) {
     isKnown = true;
   }
+
   /* useState sucks here in first render of page
   // const chatId = useContext(ChatContext);
   // console.log(chatId);
@@ -45,8 +54,8 @@ function Chat() {
         name && (
           <div>
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} />
-            <ChatBody userId={id} userType={type} isKnown={isKnown} />
-            <ChatInput userId={id} userType={type} isKnown={isKnown} />
+            <ChatBody userId={id} userType={type} isKnown={isKnown} socket={socket} />
+            <ChatInput userId={id} userType={type} isKnown={isKnown} socket={socket} />
           </div>
         )
       }

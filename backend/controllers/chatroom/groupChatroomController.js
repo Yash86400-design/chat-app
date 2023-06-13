@@ -135,6 +135,12 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     });
 
     const savedMessage = await newMessage.save();
+
+    // Emit the newMessage event to the socket server
+    const io = req.app.get('socket');
+    io.to(chatroomId).emit('newMessage', savedMessage);
+
+
     // Get the chatroom members
     // const chatroomMembers = chatroomInfo.select('members').populate('members', '-password');
     const chatroomMembers = chatroomInfo.members;

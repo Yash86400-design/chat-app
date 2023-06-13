@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './chatInput.css';
 import userService from '../../services/userService';
 
-function ChatInput({ userType, isKnown, userId }) {
+function ChatInput({ userType, isKnown, userId, socket }) {
   // const [messageInputField, setMessageInputField] = useState('');
   const [inputPlaceholder, setInputPlaceholder] = useState('');
   const [readOnlyState, setReadOnlyState] = useState(false);
@@ -13,6 +13,7 @@ function ChatInput({ userType, isKnown, userId }) {
     let message = inputRef.current.value;
     if (userType === 'User' && message.length > 0) {
       userService.messageSendToUser(userId, message);
+      // socket.emit('chatMessage', message);
       message = null;
       inputRef.current.value = null;
       inputRef.current.focus();

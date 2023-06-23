@@ -72,9 +72,9 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     // Get the socket instance from the request's io object
     const io = req.app.get('socket');
-
     // Emit an event to the connected clients with the new message
-    io.to(senderId).emit('newMessage', newMessage);
+    console.log('Emitting newPersonalMessage event');
+    io.to(senderId).emit('newPersonalMessage', newMessage);
 
 
     // Create notification for the receiver

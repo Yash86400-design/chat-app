@@ -112,9 +112,9 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const { message } = req.body;
     const senderId = req.user.userId;
     const chatroomId = req.params.id;
-    console.log(message);
+    // console.log(message);
 
-    const { isGroupMember, chatroomNotFound, chatroomInfo } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomNotFound, chatroomInfo, senderInfo } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
       return res.status(404).json({ message: 'User is not a member of group' });
@@ -137,8 +137,14 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const savedMessage = await newMessage.save();
 
     // Emit the newMessage event to the socket server
+    // const user = await User.findById(userId);
     const io = req.app.get('socket');
-    io.to(chatroomId).emit('newMessage', savedMessage);
+    console.log('Emitting newChatroomMessage event');
+    io.to(chatroomId).emit('newChatroomMessage', {
+      chatroom: chatroomId,
+      sender: { _id: senderId, name: senderInfo.name, email: senderInfo.email },
+      content: newMessage
+    });
 
 
     // Get the chatroom members

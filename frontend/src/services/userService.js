@@ -109,16 +109,16 @@ const fetchUserMessages = async (userId) => {
       }
     });
     // const allMessages = response.data;
-    console.log(response.data);
+    // console.log(response.data);
 
     // Retrieve existing 'message' object from localstorage
     const existingMessageString = localStorage.getItem('messages');
-    console.log(existingMessageString);
+    // console.log(existingMessageString);
     const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
 
     // Update the object with the new key-value pair(s)
-    existingMessageObj[userId] = [response.data];
-    console.log(existingMessageObj);
+    existingMessageObj[userId] = response.data;
+    // console.log(existingMessageObj);
 
     // Convert the updated object back into a JSON string
     const updatedMessageString = JSON.stringify(existingMessageObj);
@@ -138,6 +138,18 @@ const fetchGroupMessages = async (groupId) => {
         Authorization: `Bearer ${userToken}`
       }
     });
+
+    // Retrieve existing 'message' object from localstorage
+    const existingMessageString = localStorage.getItem('messages');
+    const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
+
+    // Update the object with the new key-value pair(s)
+    existingMessageObj[groupId] = response.data.messages;
+
+    // Convert the updated object back into a JSON string
+    const updatedMessageString = JSON.stringify(existingMessageObj);
+    localStorage.setItem('messages', updatedMessageString);
+
     return response.data.messages;
   } catch (error) {
     console.log('Error fetching messages:', error);
@@ -151,6 +163,7 @@ const messageSendToUser = async (userId, message) => {
         Authorization: `Bearer ${userToken}`
       }
     });
+    
     return response.data.message;
   } catch (error) {
     console.error(error);
@@ -165,6 +178,7 @@ const messageSendToChatroom = async (chatroomId, message) => {
         Authorization: `Bearer ${userToken}`
       }
     });
+    console.log(response.status);
     return response.data.message;
   } catch (error) {
     console.error(error);

@@ -55,7 +55,7 @@ function Chat() {
           <div>
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} />
             <ChatBody userId={id} userType={type} isKnown={isKnown} socket={socket} />
-            <ChatInput userId={id} userType={type} isKnown={isKnown} socket={socket} />
+            <ChatInput userId={id} userType={type} isKnown={isKnown} />
           </div>
         )
       }

@@ -10,8 +10,17 @@ const initialState = {
   userProfile: userProfile ? userProfile : null,
   isError: false,
   isSuccess: false,
+  editProfileSuccess: false,
   isLoading: false,
-  message: ''
+  sendingMessageLoading: false,
+  fetchingMessageLoading: false,
+  message: '',
+  editProfileSuccessMessage: '',
+  statusCode: null,
+  fetchUserResponse: null,
+  fetchChatroomResponse: null,
+  returnedUserMessage: null,
+  returnedChatroomMessage: null
 };
 
 // Fetching the user
@@ -56,7 +65,62 @@ export const editInfo = createAsyncThunk(
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-      console.log(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// (User) Setting the loading state, fetching error
+export const fetchUserMessages = createAsyncThunk(
+  "/fetching..",
+  async (userId, thunkAPI) => {
+    try {
+      return await userService.fetchUserMessages(userId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// (Chatroom) Setting the loading state, fetching error
+export const fetchChatroomMessages = createAsyncThunk(
+  "/fetching...",
+  async (chatroomId, thunkAPI) => {
+    try {
+      return await userService.fetchGroupMessages(chatroomId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// (User) Setting the loading state, sending error and statuscode
+export const sendMessageToUserResponse = createAsyncThunk(
+  "/sending...",
+  async (userData, thunkAPI) => {
+    try {
+      return await userService.messageSendToUser(userData.userId, userData.message);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// (Chatroom) Setting the loading state, sending error and statuscode
+export const sendMessageToChatroomResponse = createAsyncThunk(
+  "/sending..",
+  async (userData, thunkAPI) => {
+    try {
+      return await userService.messageSendToChatroom(userData.chatroomId, userData.message);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -115,12 +179,63 @@ export const userSlice = createSlice({
       })
       .addCase(editInfo.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.isSuccess = true;
+        state.editProfileSuccess = true;
+        state.editProfileSuccessMessage = action.payload;
       })
       .addCase(editInfo.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+      })
+      .addCase(fetchUserMessages.pending, (state) => {
+        state.fetchingMessageLoading = true;
+      })
+      .addCase(fetchUserMessages.fulfilled, (state, action) => {
+        state.fetchingMessageLoading = false;
+        state.fetchUserResponse = action.payload;
+      })
+      .addCase(fetchUserMessages.rejected, (state) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = 'Unable to fetch messages, Please try after sometime...';
+      })
+      .addCase(fetchChatroomMessages.pending, (state) => {
+        state.fetchingMessageLoading = true;
+      })
+      .addCase(fetchChatroomMessages.fulfilled, (state, action) => {
+        state.fetchingMessageLoading = false;
+        state.fetchChatroomResponse = action.payload;
+      })
+      .addCase(fetchChatroomMessages.rejected, (state) => {
+        state.fetchingMessageLoading = false;
+        state.isError = true;
+        state.message = 'Unable to fetch messages, Please try after sometime...';
+      })
+      .addCase(sendMessageToUserResponse.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(sendMessageToUserResponse.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.statusCode = 200;
+        state.returnedUserMessage = action.payload;
+      })
+      .addCase(sendMessageToUserResponse.rejected, (state) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
+      })
+      .addCase(sendMessageToChatroomResponse.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(sendMessageToChatroomResponse.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.statusCode = 200;
+        state.returnedChatroomMessage = action.payload;
+      })
+      .addCase(sendMessageToChatroomResponse.rejected, (state) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
       });
   }
 }

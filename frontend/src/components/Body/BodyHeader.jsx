@@ -12,7 +12,7 @@ import { toast } from 'react-toastify';
 
 function BodyHeader() {
   // const { userProfile } = useSelector((state) => state.auth);
-  const { isLoading, userProfile } = useSelector((state) => state.userProfile);
+  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showUserInfoBox, setShowUserInfoBox] = useState(false);
@@ -87,7 +87,7 @@ function BodyHeader() {
         setInfoButton(false);
         dispatch(userData());
       });
-
+    setCloseIconState(false);
     // Clear the form data --> Let's not do it, Cause through this I can show the user what's his current bio..
     // setProfile('')
     // setName('')
@@ -190,10 +190,15 @@ function BodyHeader() {
       setName(userProfile.name);
       setBio(userProfile.bio);
       setProfile(userProfile.avatar);
-      setNotificationCount(userProfile.notifications.length)
+      setNotificationCount(userProfile.notifications.length);
     }
   }, [userProfile]);
 
+  useEffect(() => {
+    if (editProfileSuccess) {
+      return toast.success(editProfileSuccessMessage.message);
+    }
+  }, [editProfileSuccess, editProfileSuccessMessage]);
 
   if (isLoading) {
     return <Spinner />;

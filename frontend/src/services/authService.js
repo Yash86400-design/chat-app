@@ -24,7 +24,8 @@ const signin = async (userData) => {
   if (response.data) {
     const token = response.data.token_value;
     localStorage.setItem('userToken', JSON.stringify(response.data));
-    // localStorage.setItem('messages', {}); // Just to set empty now so that when user fetched data later I'll store them inside...
+    // localStorage.setItem('messages', {}); // Wrong way to set empty braces...
+    localStorage.setItem('messages', JSON.stringify({})); // Just to set empty now so that when user fetched data later I'll store them inside...
     userService.updateToken();
     userProfileValue = await userService.signedUser();
     tokenValue = token;
@@ -40,6 +41,7 @@ const signin = async (userData) => {
 const logout = async () => {
   localStorage.removeItem('userToken');
   localStorage.removeItem('userProfile');
+  localStorage.removeItem('messages');
   userService.clearToken();
 };
 

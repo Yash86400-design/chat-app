@@ -25,35 +25,40 @@ function ChatContacts() {
   // }
   useEffect(() => {
     const fetchChattingWithData = async () => {
-      const personalChats = userProfile.joinedPersonalChats;
+      if (userProfile.joinedPersonalChats !== null) {
+        const personalChats = userProfile.joinedPersonalChats;
 
-      const promises = personalChats.map(element =>
-        userService.userInfo(element)
-      );
+        const promises = personalChats.map(element =>
+          userService.userInfo(element)
+        );
 
-      const data = await Promise.all(promises);
+        const data = await Promise.all(promises);
 
-      setChattingWithUserData(data);
+        setChattingWithUserData(data);
+      }
+      if (userProfile.joinedChatrooms !== null) {
+        const groupChats = userProfile.joinedChatrooms;
+
+        const promises = groupChats.map(element =>
+          userService.groupInfo(element)
+        );
+
+        const data = await Promise.all(promises);
+
+        setGroupChatData(data);
+      };
     };
 
     fetchChattingWithData();
-  }, [userProfile.joinedPersonalChats]);
+  }, [userProfile]);
 
-  useEffect(() => {
-    const fetchChattingWithData = async () => {
-      const groupChats = userProfile.joinedChatrooms;
+  // useEffect(() => {
+  //   const fetchChattingWithData = async () => {
 
-      const promises = groupChats.map(element =>
-        userService.groupInfo(element)
-      );
+  //   };
 
-      const data = await Promise.all(promises);
-
-      setGroupChatData(data);
-    };
-
-    fetchChattingWithData();
-  }, [userProfile.joinedChatrooms]);
+  //   fetchChattingWithData();
+  // }, [userProfile.joinedChatrooms]);
 
   // console.log(groupChatData[1]['_id']);
   return (

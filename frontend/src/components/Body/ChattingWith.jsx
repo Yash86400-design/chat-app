@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import './chattingWith.css';
 import ChatIdContext from '../../context/ChatIdContext';
 
@@ -10,7 +10,6 @@ function ChattingWith({ id, name, avatar, bio, type }) {
   const { setChatUserInfo } = useContext(ChatIdContext);
   // const { setChatId } = useContext(ChatContext);
   // const [chatId, setChatId] = useState('');
-
   const handleClick = (event) => {
     // const id = event.target.dataset.id;
     // const name = event.target.dataset.name;
@@ -18,6 +17,21 @@ function ChattingWith({ id, name, avatar, bio, type }) {
     // const bio = event.target.dataset.bio;
     setChatUserInfo({ id, name, avatar, bio, type });
   };
+
+  // Cleanup Context Value Once The Component Unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up the chatUserInfo when the component unmounts
+      setChatUserInfo({
+        id: '',
+        name: '',
+        avatar: '',
+        bio: '',
+        type: ''
+      });
+    };
+  }, [setChatUserInfo]);  // Empty dependency array ensures the clean-up function is only called on unmount
+
   return (
     <div className='chatInfo' onClick={handleClick}>
       {/* <div className='chatInfo' onClick={handleClick} data-id={id} data-name={name} data-avatar={avatar} data-bio={bio}> */}

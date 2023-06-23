@@ -47,9 +47,15 @@ function ChatContacts() {
 
         setGroupChatData(data);
       };
+
     };
 
     fetchChattingWithData();
+
+    return () => {
+      setChattingWithUserData([]);
+      setGroupChatData([]);
+    };
   }, [userProfile]);
 
   // useEffect(() => {

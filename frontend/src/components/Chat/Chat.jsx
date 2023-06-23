@@ -29,6 +29,8 @@ function Chat() {
     isKnown = true;
   }
 
+  // console.log(name, id);
+
   /* useState sucks here in first render of page
   // const chatId = useContext(ChatContext);
   // console.log(chatId);

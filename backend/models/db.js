@@ -41,6 +41,7 @@ const connectDB = async (app, io) => {
           // New message inserted
           const newMessage = next.fullDocument;
           // Emit an event to the client with the new message
+          console.log(io);
           io.emit('newMessage', newMessage);
           break;
         case 'update':

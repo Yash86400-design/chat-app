@@ -28,7 +28,7 @@ function Chat() {
   if (isFriend || isChatroomMember) {
     isKnown = true;
   }
-
+  console.log(socket);
   // console.log(name, id);
 
   /* useState sucks here in first render of page
@@ -57,7 +57,7 @@ function Chat() {
           <div>
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} />
             <ChatBody userId={id} userType={type} isKnown={isKnown} socket={socket} />
-            <ChatInput userId={id} userType={type} isKnown={isKnown} />
+            <ChatInput userId={id} userType={type} isKnown={isKnown} socket={socket} />
           </div>
         )
       }

@@ -48,6 +48,11 @@ connectDB(app, io);
 // Store the 'io' object in the app settings
 app.set('socket', io);
 
+io.on('connection', (socket) => {
+  console.log('A user has connected');
+  console.log(socket);
+})
+
 // Routes
 app.use(authRoutes);
 app.use(profileRoutes);

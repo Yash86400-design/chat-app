@@ -90,6 +90,12 @@ function ChatBody({ isKnown, userType, userId, socket }) {
     socket.on('newChatroomMessage', handleNewChatroomMessage);
     // socket.on('', handleNewMessage);
 
+
+    socket.on('newMessage', (message) => {
+      console.log(`New Message: ${message.content}`);
+    });
+
+
     return () => {
       // Clean up the event listener when the component unmounts
       // socket.off('newMessage', handleNewMessage);
@@ -132,6 +138,8 @@ function ChatBody({ isKnown, userType, userId, socket }) {
     };
   }, []);
 
+  // console.log(socket);
+
   // if (fetchingMessageLoading) {
   //   return <Spinner />;
   // }
@@ -145,7 +153,6 @@ function ChatBody({ isKnown, userType, userId, socket }) {
   // if (fetchingMessageLoading) {
   //   return <Spinner />;
   // }
-
   return (
     <>
       {

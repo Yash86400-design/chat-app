@@ -6,7 +6,7 @@ import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 // import userService from '../../services/userService';
 
-function ChatInput({ userType, isKnown, userId }) {
+function ChatInput({ userType, isKnown, userId, socket }) {
   // const [messageInputField, setMessageInputField] = useState('');
   const [inputPlaceholder, setInputPlaceholder] = useState('');
   const [readOnlyState, setReadOnlyState] = useState(false);
@@ -72,6 +72,8 @@ function ChatInput({ userType, isKnown, userId }) {
     }
 
   }, [sendingMessageLoading, isError, message]);
+
+
 
   return (
     <div className='chatInput'>

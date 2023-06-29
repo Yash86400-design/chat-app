@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const adapterImport = require('@socket.io/mongo-emitter')
+const adapterImport = require('@socket.io/mongo-emitter');
 
 // mongoose.connect(process.env.MONGODB_URI, {
 //   useNewUrlParser: true,
@@ -15,6 +15,7 @@ const connectDB = async (app, io) => {
     });
     console.log('Database connected'.cyan);
 
+  /* I don't know if adapters are relevant or not
     // // Create the MongoDB adapter for Socket.IO
     // const adapter = adapterImport({
     //   host: process.env.MONGODB_HOST,
@@ -28,38 +29,42 @@ const connectDB = async (app, io) => {
     // io.adapter(adapter);
 
     // console.log('Socekt.IO MongoDB adapter initialized'.bgMagenta);
+  */
 
+  /* Change Stream is not useful in my case. 
     // Open a Change Stream on the "message" collection
-    const Message = require('../models/message/Message');
-    const changeStream = Message.watch();
 
-    // Set up a listener when change events are emitted
-    changeStream.on('change', (next) => {
-      // Process any change event
-      switch (next.operationType) {
-        case 'insert':
-          // New message inserted
-          const newMessage = next.fullDocument;
-          // Emit an event to the client with the new message
-          console.log(io);
-          io.emit('newMessage', newMessage);
-          break;
-        case 'update':
-          // Message updated 
-          const updatedMessage = next.updateDescription.updatedFields.content;
-          // Emit an event to the client with the updated message
-          io.emit('updatedMessage', updatedMessage);
-          break;
-        case 'delete':
-          // Message deleted
-          const deletedMessage = next.documentKey._id;
-          // Emit an event to the client with the deleted message ID
-          io.emit('deletedMessage', deletedMessage);
-          break;
-        default:
-          break;
-      }
-    });
+    // const Message = require('../models/message/Message');
+    // const changeStream = Message.watch();
+
+    // // Set up a listener when change events are emitted
+    // changeStream.on('change', (next) => {
+    //   // Process any change event
+    //   switch (next.operationType) {
+    //     case 'insert':
+    //       // New message inserted
+    //       const newMessage = next.fullDocument;
+    //       // Emit an event to the client with the new message
+    //       // console.log(io);
+    //       io.emit('newMessage', newMessage);
+    //       break;
+    //     case 'update':
+    //       // Message updated 
+    //       const updatedMessage = next.updateDescription.updatedFields.content;
+    //       // Emit an event to the client with the updated message
+    //       io.emit('updatedMessage', updatedMessage);
+    //       break;
+    //     case 'delete':
+    //       // Message deleted
+    //       const deletedMessage = next.documentKey._id;
+    //       // Emit an event to the client with the deleted message ID
+    //       io.emit('deletedMessage', deletedMessage);
+    //       break;
+    //     default:
+    //       break;
+    //   }
+    // });
+    */
 
   } catch (err) {
     console.error('Database connection error'.red, err);

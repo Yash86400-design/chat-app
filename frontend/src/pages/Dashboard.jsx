@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Spinner from '../components/Spinner/Spinner';
 import './dashboard.css';
 import { userData } from '../features/userSlice';
+import createSocketInstance from '../socket/socket';
 
 function Dashboard() {
 
@@ -13,6 +14,7 @@ function Dashboard() {
   const dispatch = useDispatch();
 
   const { userToken, isLoading } = useSelector((state) => state.auth);
+  const socket = createSocketInstance(userToken);
 
   // useEffect(() => {
   //   if (userToken) {
@@ -32,11 +34,23 @@ function Dashboard() {
     return <Spinner />;
   }
 
+  if (userToken) {
+    socket.on('welcome', (message) => {
+      console.log(`Server message: ${message}`);
+    });
+  }
+
   return (
-    <div className="Dashboard">
-      <BodyContainer />
-      <Chat />
-    </div>
+    <>
+      {
+        userToken && (
+          <div className="Dashboard">
+            <BodyContainer />
+            <Chat socket={socket} />
+          </div>
+        )
+      }
+    </>
   );
 }
 

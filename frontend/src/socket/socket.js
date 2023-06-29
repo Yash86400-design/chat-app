@@ -11,7 +11,6 @@ const createSocketInstance = (token) => {
   const socket = socketIOClient('http://localhost:5000', {
     query: { token }
   });
-
   return socket;
 };
 

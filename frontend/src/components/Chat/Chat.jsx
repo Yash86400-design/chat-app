@@ -5,30 +5,28 @@ import ChatInput from './ChatInput';
 import ChatIdContext from '../../context/ChatIdContext';
 import './chat.css';
 import { useSelector } from 'react-redux';
-import createSocketInstance from '../../socket/socket';
+// import createSocketInstance from '../../socket/socket';
 // import socketIOClient from 'socket.io-client';
 
-function Chat() {
+function Chat({ socket }) {
   const { chatUserInfo } = useContext(ChatIdContext);
   const { name, id, avatar, bio, type } = chatUserInfo;
-  const { userToken } = useSelector((state) => state.auth);
+  // const { userToken } = useSelector((state) => state.auth);
   const { userProfile } = useSelector((state) => state.userProfile);
 
   // const socket = socketIOClient('http://localhost:5000', {
   //   query: { token: userToken }
   // });
 
-  const socket = createSocketInstance(userToken);
+  // const socket = createSocketInstance(userToken);
 
   // const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
-
-  const isFriend = userProfile.joinedPersonalChats.includes(id);
-  const isChatroomMember = userProfile.joinedChatrooms.includes(id);
+  const isFriend = userProfile?.joinedPersonalChats.includes(id);
+  const isChatroomMember = userProfile?.joinedChatrooms.includes(id);
   let isKnown = false;
   if (isFriend || isChatroomMember) {
     isKnown = true;
   }
-  console.log(socket);
   // console.log(name, id);
 
   /* useState sucks here in first render of page
@@ -53,7 +51,8 @@ function Chat() {
   return (
     <>
       {
-        name && (
+        /* Userprofile check is needed cause sometimes other things loads faster so we need to show the data only when userProfile is available...*/
+        name && userProfile && (
           <div>
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} />
             <ChatBody userId={id} userType={type} isKnown={isKnown} socket={socket} />
@@ -63,7 +62,7 @@ function Chat() {
       }
 
       {
-        !name && (
+        !name && userProfile && (
           <div className="emptyPage">
             <p>No Chat Selected</p>
           </div>

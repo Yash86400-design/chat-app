@@ -8,7 +8,6 @@ function ChatContacts() {
   const { userProfile } = useSelector((state) => state.userProfile);
   const [chattingWithUserData, setChattingWithUserData] = useState([]);
   const [groupChatData, setGroupChatData] = useState([]);
-
   // personalChats.forEach(element => {
   //   (userService.userInfo(element))
   //     .then((data) => {

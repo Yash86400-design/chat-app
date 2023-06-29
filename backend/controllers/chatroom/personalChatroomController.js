@@ -72,6 +72,14 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     // Get the socket instance from the request's io object
     const io = req.app.get('socket');
+    io.on('connection', (socket) => {
+
+      socket.on('personalMessage', (data) => {
+        console.log('Received data:', data);
+        socket.emit('sendingPersonalMessageReturn', (data.message))
+        io.emit('helloMessage' ,'To all user')
+      });
+    });
     // Emit an event to the connected clients with the new message
     // console.log('Emitting newPersonalMessage event');
     // console.log(io);
@@ -93,7 +101,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     await receiverInfo.save();
 
     await newMessage.save();
-    console.log(`Message saved successfully: ${message}`);
+
     return res.status(200).json({ message: 'Message sent successfully' });
   } catch (error) {
     console.error(error);

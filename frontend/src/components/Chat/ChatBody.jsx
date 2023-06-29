@@ -54,56 +54,55 @@ function ChatBody({ isKnown, userType, userId, socket }) {
     };
   }, [isKnown, userType, userId, dispatch]);
 
-  useEffect(() => {
-    // const handleNewMessage = (newMessage) => {
-    //   // console.log(newMessage);
-    //   setMessage((prevMessages) => {
-    //     const updatedMessages = [...prevMessages, newMessage];
+  // useEffect(() => {
+  //   // const handleNewMessage = (newMessage) => {
+  //   //   // console.log(newMessage);
+  //   //   setMessage((prevMessages) => {
+  //   //     const updatedMessages = [...prevMessages, newMessage];
 
-    //     // Update the localStorage with the new message
-    //     const storedMessages = localStorage.getItem('messages');
-    //     const parsedMessages = storedMessages ? JSON.parse(storedMessages) : {};
+  //   //     // Update the localStorage with the new message
+  //   //     const storedMessages = localStorage.getItem('messages');
+  //   //     const parsedMessages = storedMessages ? JSON.parse(storedMessages) : {};
 
-    //     // Check if the message belongs to a user or chatroom
-    //     const chatId = userType === 'User' ? userId : userId; // Modify this condition if needed
+  //   //     // Check if the message belongs to a user or chatroom
+  //   //     const chatId = userType === 'User' ? userId : userId; // Modify this condition if needed
 
-    //     // Update the messages for the specific user/chatroom
-    //     parsedMessages[chatId] = updatedMessages;
+  //   //     // Update the messages for the specific user/chatroom
+  //   //     parsedMessages[chatId] = updatedMessages;
 
-    //     // Save the updated messages in localStorage
-    //     localStorage.setItem('messages', JSON.stringify(parsedMessages));
+  //   //     // Save the updated messages in localStorage
+  //   //     localStorage.setItem('messages', JSON.stringify(parsedMessages));
 
-    //     return updatedMessages;
-    //   });
-    // };
-    const handleNewPersonalMessage = (newMessage) => {
-      console.log(newMessage);
+  //   //     return updatedMessages;
+  //   //   });
+  //   // };
+  //   const handleNewPersonalMessage = (newMessage) => {
+  //     // console.log(newMessage);
 
-    };
+  //   };
 
-    const handleNewChatroomMessage = (newMessage) => {
-      console.log(newMessage);
-    };
+  //   const handleNewChatroomMessage = (newMessage) => {
+  //     // console.log(newMessage);
+  //   };
 
-    // Listen for newMessage event from the server
-    socket.on('newPersonalMessage', handleNewPersonalMessage);
-    socket.on('newChatroomMessage', handleNewChatroomMessage);
-    // socket.on('', handleNewMessage);
-
-
-    socket.on('newMessage', (message) => {
-      console.log(`New Message: ${message.content}`);
-    });
+  //   // Listen for newMessage event from the server
+  //   socket.on('newPersonalMessage', handleNewPersonalMessage);
+  //   socket.on('newChatroomMessage', handleNewChatroomMessage);
+  //   // socket.on('', handleNewMessage);
 
 
-    return () => {
-      // Clean up the event listener when the component unmounts
-      // socket.off('newMessage', handleNewMessage);
-      socket.off('newPersonalMessage', handleNewPersonalMessage);
-      socket.off('newChatroomMessage', handleNewChatroomMessage);
-    };
-    // }, [socket, userId, userType]);
-  }, [socket]);
+  //   socket.on('newMessage', (message) => {
+  //     // console.log(`New Message: ${message.content}`);
+  //   });
+
+  //   return () => {
+  //     // Clean up the event listener when the component unmounts
+  //     // socket.off('newMessage', handleNewMessage);
+  //     socket.off('newPersonalMessage', handleNewPersonalMessage);
+  //     socket.off('newChatroomMessage', handleNewChatroomMessage);
+  //   };
+  //   // }, [socket, userId, userType]);
+  // }, [socket]);
   // useEffect(() => {
   //   const chatContainer = chatContainerRef.current;
   //   if (chatContainer) {
@@ -153,6 +152,10 @@ function ChatBody({ isKnown, userType, userId, socket }) {
   // if (fetchingMessageLoading) {
   //   return <Spinner />;
   // }
+  socket.on('connection', io => {
+    console.log(io);
+  });
+
   return (
     <>
       {

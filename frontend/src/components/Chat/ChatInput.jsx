@@ -19,6 +19,7 @@ function ChatInput({ userType, isKnown, userId, socket }) {
     let message = inputRef.current.value;
     if (userType === 'User' && message.length > 0) {
       dispatch(sendMessageToUserResponse({ userId: userId, message: message }));
+      socket.emit('personalMessage', { userId, message });
       // userService.messageSendToUser(userId, message);
       // socket.emit('chatMessage', message);
       message = null;
@@ -26,6 +27,7 @@ function ChatInput({ userType, isKnown, userId, socket }) {
       inputRef.current.focus();
     } else if (userType === 'Chatroom' && message.length > 0) {
       dispatch(sendMessageToChatroomResponse({ chatroomId: userId, message: message }));
+      socket.emit('chatroomMessage', { userId, message: message });
       // userService.messageSendToChatroom(userId, message);
       message = null;
       inputRef.current.value = null;

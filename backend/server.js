@@ -50,8 +50,17 @@ app.set('socket', io);
 
 io.on('connection', (socket) => {
   console.log('A user has connected');
-  console.log(socket);
-})
+
+  socket.emit('welcome', 'Welcome to the chatroom!');
+
+  socket.on('personalMessage', (data) => {
+    console.log('Received data:', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
 
 // Routes
 app.use(authRoutes);

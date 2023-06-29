@@ -12,6 +12,9 @@ import { toast } from 'react-toastify';
 
 function BodyHeader() {
   // const { userProfile } = useSelector((state) => state.auth);
+
+  const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
+
   const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
@@ -196,7 +199,7 @@ function BodyHeader() {
 
   useEffect(() => {
     if (editProfileSuccess) {
-      return toast.success(editProfileSuccessMessage.message);
+      toast.success(editProfileSuccessMessage.message);
     }
   }, [editProfileSuccess, editProfileSuccessMessage]);
 
@@ -207,7 +210,9 @@ function BodyHeader() {
   return (
     <div className='body__header-container'>
       <div className="body__header-container_profile">
-        <img src={userProfile ? userProfile.avatar : ''} alt="Profile" />
+        {userProfile && (
+          <img src={userProfile.avatar ? userProfile.avatar : noProfileAvatar} alt="" />
+        )}
       </div>
       <div className="body__header-container_icons">
         {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}

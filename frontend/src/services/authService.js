@@ -20,7 +20,6 @@ const register = async (userData) => {
 const signin = async (userData) => {
   const response = await axios.post(API_URL + 'login', userData);
   let tokenValue, userProfileValue;
-
   if (response.data) {
     const token = response.data.token_value;
     localStorage.setItem('userToken', JSON.stringify(response.data));
@@ -33,7 +32,8 @@ const signin = async (userData) => {
 
   return {
     token: tokenValue,
-    userProfile: userProfileValue
+    userProfile: userProfileValue,
+    message: response.data.message
   };
 };
 

@@ -19,7 +19,8 @@ function ChatInput({ userType, isKnown, userId, socket }) {
     let message = inputRef.current.value;
     if (userType === 'User' && message.length > 0) {
       dispatch(sendMessageToUserResponse({ userId: userId, message: message }));
-      socket.emit('personalMessage', { userId, message });
+      // socket.emit('personalMessage', { userId, message });
+      socket.emit('userMessage', { userId, message });
       // userService.messageSendToUser(userId, message);
       // socket.emit('chatMessage', message);
       message = null;

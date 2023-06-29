@@ -7,13 +7,14 @@ import Spinner from '../components/Spinner/Spinner';
 import './dashboard.css';
 import { userData } from '../features/userSlice';
 import createSocketInstance from '../socket/socket';
+import { toast } from 'react-toastify';
 
 function Dashboard() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { userToken, isLoading } = useSelector((state) => state.auth);
+  const { userToken, isLoading, loginMessage } = useSelector((state) => state.auth);
   const socket = createSocketInstance(userToken);
 
   // useEffect(() => {
@@ -28,16 +29,17 @@ function Dashboard() {
     } else {
       dispatch(userData());
     }
+
   }, [userToken, navigate, dispatch]);
+
+  // useEffect(() => {
+  //   if (loginMessage && userToken) {
+  //     toast.success('Logged In Successfully');
+  //   }
+  // }, [loginMessage, userToken]);
 
   if (isLoading) {
     return <Spinner />;
-  }
-
-  if (userToken) {
-    socket.on('welcome', (message) => {
-      console.log(`Server message: ${message}`);
-    });
   }
 
   return (

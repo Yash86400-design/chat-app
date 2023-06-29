@@ -43,13 +43,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Connect to database
-connectDB(app, io);
+// connectDB(app, io);
+connectDB();
 
 // Store the 'io' object in the app settings
 app.set('socket', io);
+const connectedClients = [];
+
 
 io.on('connection', (socket) => {
   console.log('A user has connected');
+  connectedClients.push(socket);
 
   socket.emit('welcome', 'Welcome to the chatroom!');
 
@@ -57,10 +61,17 @@ io.on('connection', (socket) => {
     console.log('Received data:', data);
   });
 
+  socket.on('userMessage', (msg) => {
+    socket.emit('receiveMessage', msg);
+  });
+
   socket.on('disconnect', () => {
     console.log('A user disconnected');
   });
 });
+
+const socketIoObject = io;
+module.exports.ioObject = socketIoObject;
 
 // Routes
 app.use(authRoutes);

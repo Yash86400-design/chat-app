@@ -6,6 +6,7 @@ const Message = require('../../models/message/Message');
 const User = require('../../models/user/User');
 const { isUserInJoinedPersonalChatrooms } = require('./isUserFriend');
 const Notification = require('../../models/notification/Notification');
+const socket = require('../../server');
 
 
 const upload = multer();
@@ -72,21 +73,31 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     // Get the socket instance from the request's io object
     const io = req.app.get('socket');
-    io.on('connection', (socket) => {
-
-      socket.on('personalMessage', (data) => {
-        console.log('Received data:', data);
-        socket.emit('sendingPersonalMessageReturn', (data.message))
-        io.emit('helloMessage' ,'To all user')
-      });
-    });
+    // socket.ioObject.sockets.on('userMessage', (msg) => {
+    //   console.log(msg);
+    // });
+    // io.on('connection', socket => {
+    //   console.log(socket);
+    //   socket.on('userMessage', (msg) => {
+    //   });
+    // });
+    // io.on('userMessage', (msg) => {
+    //   console.log(msg);
+    // });
+    // io.on('connection', (socket) => {
+    //   console.log(socket);
+    //   socket.on('personalMessage', (data) => {
+    //     console.log('Received data:', data);
+    //     socket.emit('sendingPersonalMessageReturn', (data.message))
+    //     io.emit('helloMessage' ,'To all user')
+    //   });
+    // });
     // Emit an event to the connected clients with the new message
-    // console.log('Emitting newPersonalMessage event');
-    // console.log(io);
-    io.to(senderId).emit('newPersonalMessage', newMessage);
+    // io.to(senderId).emit('newPersonalMessage', newMessage);
 
 
     // Create notification for the receiver
+
     const notification = Notification({
       type: 'personalMessage',
       title: `${message.slice(10)}...`,

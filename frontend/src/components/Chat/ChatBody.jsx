@@ -152,8 +152,8 @@ function ChatBody({ isKnown, userType, userId, socket }) {
   // if (fetchingMessageLoading) {
   //   return <Spinner />;
   // }
-  socket.on('connection', io => {
-    console.log(io);
+  socket.on('receiveMessage', (msg) => {
+    console.log(msg);
   });
 
   return (

@@ -11,8 +11,21 @@ const searchServices = require('../../services/searchServices');
 const Joi = require('joi');
 const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
 const Notification = require('../../models/notification/Notification');
+const fs = require('fs');
+
+
 const upload = multer({ dest: 'uploads/' });
 // const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+const deleteFile = (filePath) => {
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(`Error deleting file: ${err}`);
+    } else {
+      console.log('File deleted successfully');
+    }
+  });
+};
 
 
 // Configure Cloudinary with your account credentials
@@ -122,6 +135,9 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
         folder: 'Chat App', overwrite: true, public_id: `avatar_${createdBy}`
       });
       avatarUrl = result.secure_url;
+
+      // Delete the temporary image file stored in the local directory
+      deleteFile(avatarPath);
     }
 
     const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl });
@@ -163,6 +179,7 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     const { name, bio } = req.body;
     const avatarPath = req.file ? req.file.path : '';
     const userId = req.user.userId;
+    console.log(avatarPath);
 
     let updateData = {};
     if (name) {
@@ -178,6 +195,9 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
       const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: `avatar_${userId}` });
       const avatarUrl = result.url;
       updateData.avatar = avatarUrl;
+
+      // Delete the temporary image file stored in the local directory
+      deleteFile(avatarPath);
     }
 
     if (!name && !bio && !avatarPath) {

@@ -7,7 +7,8 @@ const adapterImport = require('@socket.io/mongo-emitter');
 // }).then(() => console.log('Database connected'.cyan))
 //   .catch(err => console.error('Database connection error'.red, err));
 
-const connectDB = async (app, io) => {
+const connectDB = async () => {
+// const connectDB = async (app, io) => { // for io object
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,

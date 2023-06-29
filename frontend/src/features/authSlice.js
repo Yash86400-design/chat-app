@@ -39,7 +39,8 @@ const initialState = {
   isError: false,
   isSuccess: false,
   isLoading: false,
-  message: ''
+  message: null,
+  loginMessage: null,
 };
 
 // Register user
@@ -119,6 +120,7 @@ export const authSlice = createSlice({
         state.isSuccess = true;
         state.userToken = action.payload.token;
         state.userProfile = action.payload.userProfile;
+        state.loginMessage = action.payload.message;
       })
       .addCase(signin.rejected, (state, action) => {
         state.isLoading = false;

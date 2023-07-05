@@ -10,6 +10,8 @@ const Message = require("../../models/message/Message");
 const { isMember } = require("./IsUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const Notification = require("../../models/notification/Notification");
+const { v4: uuidv4 } = require('uuid');
+
 
 /* Removed during reshuffling
 POST /api/chatrooms: Creating a chatroom
@@ -228,6 +230,8 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
+    const updateData = {};
+
     const { name, description } = req.body;
     const avatarPath = req.file ? req.file.path : null;
 
@@ -260,12 +264,25 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       });
       const avatarUrl = result.secure_url;
       chatroomInfo.avatar = avatarUrl;
+      updateData.avatar = avatarUrl;
     }
 
     // Update the chatroom name and description
-    chatroomInfo.name = name;
-    chatroomInfo.description = description;
-    await chatroomInfo.save();
+    if (name.length > 0) {
+      updateData.name = name;
+    }
+    if (description.length > 0) {
+      updateData.description = description;
+    }
+
+    await Chatroom.updateOne({ _id: chatroomId }, updateData);
+    await ListOfChats.updateOne({ roomId: chatroomId }, updateData);
+    // await User.updateMany({ 'joinedChats.id': chatroomId }, { $set: { 'joinedChats.$': updateData } }); // Updating all the joinedChats where the current Chatroom is present..
+
+    await User.updateMany(
+      { 'joinedChats.id': chatroomId }, // Filter criteria to match the user with the specified userId in the joinedChats array
+      { $set: { 'joinedChats.$.name': updateData.name, 'joinedChats.$.type': updateData.type, 'joinedChats.$.avatar': updateData.avatar, 'joinedChats.$.bio': updateData.description } } // Update operation to set specific fields of the matched joinedChats array element
+    );
 
     return res.status(200).json({ chatroomInfo });
   } catch (error) {
@@ -433,7 +450,10 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
       link: `/api/profile/chatrooms/${chatroomId}`,
     });
 
-    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId }, $addToSet: { notifications: notification } });
+    const uniqueId = uuidv4();
+
+    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId, joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: uniqueId } }, $addToSet: { notifications: notification } });
+
     await chatroomInfo.save();
     await notification.save();
 

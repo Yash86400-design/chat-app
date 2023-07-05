@@ -102,6 +102,7 @@ const groupInfo = async (groupId) => {
 };
 
 const fetchUserMessages = async (userId) => {
+  console.log(userId);
   try {
     const response = await axios.get(API_URL + `personal-chat/${userId}`, {
       headers: {

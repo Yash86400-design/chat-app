@@ -78,10 +78,13 @@ function BodyHeader() {
       return toast.error("Name field can't be empty");
     }
 
-    formData.append('avatar', profile);
     formData.append('name', name);
-    formData.append('bio', bio);
-
+    if (profile) {
+      formData.append('avatar', profile);
+    }
+    if (bio) {
+      formData.append('bio', bio);
+    }
     dispatch(editInfo(formData))
       .then(() => {
         setProfile('');
@@ -246,10 +249,10 @@ function BodyHeader() {
         (
           <div className="userInfoBox" ref={userInfoBoxRef}>
             <div className="imgBox">
-              <img src={userProfile ? userProfile.avatar : ''} alt="" />
+              <img src={userProfile.avatar ? userProfile.avatar : ''} alt="" />
             </div>
-            <h2>{userProfile ? userProfile.name : ''}</h2>
-            <p>{userProfile ? userProfile.bio : 'Add a bio'}</p>
+            <h2>{userProfile.name ? userProfile.name : ''}</h2>
+            <p>{userProfile.bio ? userProfile.bio : 'Add a bio'}</p>
             <button onClick={handleEditProfileButton}>Edit</button>
           </div>
         )

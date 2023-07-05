@@ -51,27 +51,27 @@ app.set('socket', io);
 const connectedClients = [];
 
 
-io.on('connection', (socket) => {
-  console.log('A user has connected');
-  connectedClients.push(socket);
+// io.on('connection', (socket) => {
+//   console.log('A user has connected');
+//   connectedClients.push(socket);
 
-  socket.emit('welcome', 'Welcome to the chatroom!');
+//   socket.emit('welcome', 'Welcome to the chatroom!');
 
-  socket.on('personalMessage', (data) => {
-    console.log('Received data:', data);
-  });
+//   socket.on('personalMessage', (data) => {
+//     console.log('Received data:', data);
+//   });
 
-  socket.on('userMessage', (msg) => {
-    socket.emit('receiveMessage', msg);
-  });
+//   socket.on('userMessage', (msg) => {
+//     socket.emit('receiveMessage', msg);
+//   });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
-  });
-});
+//   socket.on('disconnect', () => {
+//     console.log('A user disconnected');
+//   });
+// });
 
-const socketIoObject = io;
-module.exports.ioObject = socketIoObject;
+// const socketIoObject = io;
+// module.exports.ioObject = socketIoObject;
 
 // Routes
 app.use(authRoutes);

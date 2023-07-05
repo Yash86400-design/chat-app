@@ -15,10 +15,12 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   avatar: {
-    type: String // you can store the URL of the avatar image
+    type: String, // you can store the URL of the avatar image
+    default: null
   },
   bio: {
-    type: String
+    type: String,
+    default: null
   },
   date: {
     type: Date,
@@ -49,6 +51,41 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser'
   }],
+  joinedChats: [{
+    name: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ['User', 'Chatroom'],
+      required: true
+    },
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: function () {
+        if (this.type === 'User') {
+          return 'AuthUser';
+        } else if (this.type === 'Chatroom') {
+          return 'Chatroom';
+        }
+      }
+    },
+    avatar: {
+      type: String,
+      default: null
+    },
+    bio: {
+      type: String,
+      default: null
+    },
+    socketRoomId: {
+      type: String,
+      required: true
+    }
+  }
+  ],
   adminOf: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'

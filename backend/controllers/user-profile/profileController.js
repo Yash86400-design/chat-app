@@ -12,6 +12,7 @@ const Joi = require('joi');
 const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
 const Notification = require('../../models/notification/Notification');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 
 const upload = multer({ dest: 'uploads/' });
@@ -141,9 +142,12 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     }
 
     const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl });
-    const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom' });
+    const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
+
+    const uniqueId = uuidv4();
 
     // Update the user joinedChatrooms
+    user.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });
     user.joinedChatrooms.push(chatroom._id);
     user.adminOf.push(chatroom._id);
 
@@ -177,18 +181,14 @@ router.get('/view-profile', authenticateToken, async (req, res) => {
 router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     const { name, bio } = req.body;
-    const avatarPath = req.file ? req.file.path : '';
+    const avatarPath = req.file ? req.file.path : null;
     const userId = req.user.userId;
-    console.log(avatarPath);
-
     let updateData = {};
     if (name) {
       updateData.name = name;
     }
-    if (bio !== undefined) {
+    if (bio) {
       updateData.bio = bio;
-    } else {
-      updateData.bio = null;
     }
     if (avatarPath) {
       // updateData.avatar = avatar;
@@ -203,9 +203,13 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     if (!name && !bio && !avatarPath) {
       return res.status(400).json({ success: false, message: 'No profile updates were provided' });
     }
-
     // Update user profile in the database
     await User.updateOne({ _id: userId }, updateData);
+    await listOfChats.updateOne({ roomId: userId }, updateData);
+    await User.updateMany(
+      { 'joinedChats.id': userId }, // Filter criteria to match the user with the specified userId in the joinedChats array
+      { $set: { 'joinedChats.$.name': updateData.name, 'joinedChats.$.type': updateData.type, 'joinedChats.$.avatar': updateData.avatar, 'joinedChats.$.bio': updateData.bio } } // Update operation to set specific fields of the matched joinedChats array element
+    );
 
     // Return success response
     return res.json({ success: true, message: 'User profile updated successfully' });
@@ -245,9 +249,21 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
 
     const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
+    // console.log(`SenderInfo: ${currentUser}. Requester Info: ${requester}`);
+
     if (isUserFriend) {
       return res.status(404).json({ message: 'User is already a friend' });
     }
+
+    const uniqueId = uuidv4();
+    // const io = req.app.get('socket');
+    // console.log(io, uniqueId);
+    // io.emit('joinRoom', )
+    // io.on('connection', (socket) => {
+    //   socket.join(uniqueId);
+    //   console.log('Hi', uniqueId);
+    // });
+    currentUser.joinedChats.push({ name: requester.name, 'id': requester._id, avatar: requester.avatar, bio: requester.bio, type: 'User', socketRoomId: uniqueId });
 
     // Update the current user's list and pending requests
     currentUser.joinedPersonalChats.push(requester._id);
@@ -256,6 +272,7 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
 
     // Update the requester's friend list
     requester.joinedPersonalChats.push(currentUser._id);
+    requester.joinedChats.push({ name: currentUser.name, 'id': currentUser._id, avatar: currentUser.avatar, bio: currentUser.bio, type: 'User', socketRoomId: uniqueId });
     await requester.save();
 
     // Send Notification to the requester

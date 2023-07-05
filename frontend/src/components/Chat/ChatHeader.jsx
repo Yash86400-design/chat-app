@@ -5,8 +5,7 @@ import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
 // import { useSelector } from 'react-redux';
 
-function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatroomMember }) {
-
+function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
   const [friendInfoBoxActive, setFriendInfoBoxActive] = useState(false);
   const [chatroomInfoBoxActive, setChatroomInfoBoxActive] = useState(false);
   const [showFriendInfoBox, setShowFriendInfoBox] = useState(false);
@@ -28,7 +27,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
   // const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
 
   const renderAddButtonContent = () => {
-    if (isFriend) {
+    if (isKnown && userType === 'User') {
       return (
         <>
           <span className="tooltip">Already a friend</span>
@@ -36,7 +35,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
           <BsPersonAdd />
         </>
       );
-    } else if (isChatroomMember) {
+    } else if (isKnown && userType === 'Chatroom') {
       return (
         <>
           <span className="tooltip">Already a member</span>
@@ -58,7 +57,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
   };
 
   const renderInfoButtonContent = () => {
-    if (isFriend) {
+    if (isKnown && userType === 'User') {
       return (
         <>
           {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleFriendInfoClick} /> */}
@@ -66,7 +65,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
           {closeIconState ? <RxCross1 onClick={closeIconClick} /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} />}
         </>
       );
-    } else if (isChatroomMember) {
+    } else if (isKnown && userType === 'Chatroom') {
       return (
         <>
           {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleChatroomInfoClick} /> */}
@@ -174,7 +173,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
       </div>
       <div className="chat__header-container_right">
         {
-          userType === 'Chatroom' && isChatroomMember &&
+          userType === 'Chatroom' && isKnown &&
           (
             <div className='notificationIconContainer'>
               <AiOutlineBell />
@@ -182,7 +181,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
           )
         }
         {
-          userType === 'Chatroom' && !isChatroomMember &&
+          userType === 'Chatroom' && !isKnown &&
           (
             <div className='notificationIconContainer disabled'>
               <span>Not a member</span>
@@ -190,12 +189,12 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isFriend, isChatr
             </div>
           )
         }
-        <div className={`addIconContainer ${isFriend || isChatroomMember ? 'disabled' : ''}`}>
+        <div className={`addIconContainer ${isKnown ? 'disabled' : ''}`}>
           {/* <div className='addIconContainer'> */}
           {renderAddButtonContent()}
         </div>
 
-        <div className={`infoIconContainer ${isFriend || isChatroomMember ? '' : 'disabled'}`}>
+        <div className={`infoIconContainer ${isKnown ? '' : 'disabled'}`}>
           {/* <div className='infoIconContainer'> */}
           {renderInfoButtonContent()}
         </div>

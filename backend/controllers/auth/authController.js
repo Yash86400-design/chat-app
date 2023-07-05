@@ -35,10 +35,10 @@ router.post('/register', [
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, avatar: null, bio: null });
 
     // Create a new user for listOfSearch too
-    const newListUser = new listOfChats({ name: name, roomId: user._id, type: 'User' });
+    const newListUser = new listOfChats({ name: name, roomId: user._id, type: 'User', avatar: null, bio: null });
 
     await user.save();
     await newListUser.save();

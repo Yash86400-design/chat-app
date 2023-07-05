@@ -6,7 +6,7 @@ const Message = require('../../models/message/Message');
 const User = require('../../models/user/User');
 const { isUserInJoinedPersonalChatrooms } = require('./isUserFriend');
 const Notification = require('../../models/notification/Notification');
-const socket = require('../../server');
+// const socket = require('../../server');
 
 
 const upload = multer();
@@ -169,7 +169,6 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     await notification.save();
 
     receiverInfo.notifications.push(notification);
-
     receiverInfo.pendingRequests.push(senderInfo);
     await receiverInfo.save();
 

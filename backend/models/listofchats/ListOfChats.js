@@ -14,6 +14,12 @@ const listSchema = new mongoose.Schema({
     type: String,
     enum: ['User', 'Chatroom'],
     required: true
+  },
+  avatar: {
+    type: String,
+  },
+  bio: {
+    type: String
   }
 });
 

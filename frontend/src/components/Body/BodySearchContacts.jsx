@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import './bodySearchContacts.css';
 import userService from '../../services/userService';
 import ChatIdContext from '../../context/ChatIdContext';
+import { useSelector } from 'react-redux';
 // import { AiOutlineSearch } from "react-icons/ai";
 
 function BodySearchContacts() {
@@ -10,6 +11,7 @@ function BodySearchContacts() {
   const [searchBarActive, setSearchBarActive] = useState(false);
   const searchBarRef = useRef(null);
   const { setChatUserInfo } = useContext(ChatIdContext);
+  const { userProfile } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
@@ -34,7 +36,17 @@ function BodySearchContacts() {
     const id = event.target.dataset.id;
     const bio = event.target.dataset.bio;
     const type = event.target.dataset.type;
-    setChatUserInfo({ id, name, avatar, bio, type });
+    let socketId = null;
+
+    if (userProfile) {
+      userProfile.joinedChats.map((user) => {
+        if (user.id === id) {
+          socketId = user.socketRoomId;
+        }
+        return null;
+      });
+    }
+    setChatUserInfo({ id, name, avatar, bio, type, socketId });
   };
 
   const inputClick = (event) => {
@@ -56,6 +68,8 @@ function BodySearchContacts() {
       document.removeEventListener('click', handleClickOutsite);
     };
   }, []);
+
+  // console.log(clickedUser);
 
   return (
     <div className='bodySearchContacts' ref={searchBarRef}>
@@ -93,6 +107,6 @@ function BodySearchContacts() {
       )}
     </div>
   );
-}
+};
 
 export default BodySearchContacts;

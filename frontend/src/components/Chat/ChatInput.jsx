@@ -35,15 +35,14 @@ function ChatInput({ userType, isKnown, userId, socket }) {
       inputRef.current.focus();
     }
   };
-
   useEffect(() => {
-    if (isKnown) {
+    if (isKnown === true) {
       inputRef.current.focus();
       inputRef.current.value = '';
       setReadOnlyState(false);
       setButtonDisabled(false);
       setInputPlaceholder('Type a message...');
-    } else {
+    } else if (isKnown === false) {
       setReadOnlyState(true);
       setButtonDisabled(true);
       setInputPlaceholder(

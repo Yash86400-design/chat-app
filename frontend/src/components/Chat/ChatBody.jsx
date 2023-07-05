@@ -22,25 +22,24 @@ function ChatBody({ isKnown, userType, userId, socket }) {
 
   //   }
   // }
-
   useEffect(() => {
     const fetchMessages = async () => {
-      if (isKnown && userType === 'User') {
+      if (isKnown === true && userType === 'User') {
         const storedMessages = localStorage.getItem('messages');
         const parsedMessages = storedMessages ? JSON.parse(storedMessages) : null;
         if (parsedMessages && parsedMessages[userId]) {
           setMessage(parsedMessages[userId]);
-        } else {
+        } else if (!parsedMessages) {
           const allMessages = await dispatch(fetchUserMessages(userId));
           setMessage(allMessages.payload);
         }
-      } else if (isKnown && userType === 'Chatroom') {
+      } else if (isKnown === true && userType === 'Chatroom') {
         const storedMessages = localStorage.getItem('messages');
         const parsedMessages = storedMessages ? JSON.parse(storedMessages) : null;
 
         if (parsedMessages && parsedMessages[userId]) {
           setMessage(parsedMessages[userId]);
-        } else {
+        } else if (!parsedMessages) {
           const allMessages = await dispatch(fetchChatroomMessages(userId));
           setMessage(allMessages.payload);
         }
@@ -152,65 +151,68 @@ function ChatBody({ isKnown, userType, userId, socket }) {
   // if (fetchingMessageLoading) {
   //   return <Spinner />;
   // }
-  socket.on('receiveMessage', (msg) => {
-    console.log(msg);
-  });
+  // socket.on('receiveMessage', (msg) => {
+  //   console.log(msg);
+  // });
 
   return (
     <>
       {
-        fetchingMessageLoading ? (
-          <ChatFetchingSpinner />
-        ) :
+        isKnown ? (
           (
-            <div className='chatBodySection'>
-              {
-                isKnown && message.length !== 0 && userType === 'Chatroom' && (
-                  <div className='chatBody' ref={chatContainerRef}>
-                    {Array.isArray(message) && message.map((msg, index) => (
-                      <div
-                        key={index}
-                        className={`message ${msg.sender === userProfile._id ? 'left' : 'right'}`}
-                      >
-                        <p>{msg.content}</p>
+            fetchingMessageLoading ? (
+              <ChatFetchingSpinner />
+            ) :
+              (
+                <div className='chatBodySection'>
+                  {
+                    isKnown && message.length !== 0 && userType === 'Chatroom' && (
+                      <div className='chatBody' ref={chatContainerRef}>
+                        {Array.isArray(message) && message.map((msg, index) => (
+                          <div
+                            key={index}
+                            className={`message ${msg.sender === userProfile._id ? 'left' : 'right'}`}
+                          >
+                            <p>{msg.content}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )
-              }
+                    )
+                  }
 
-              {
-                isKnown && message.length !== 0 && userType === 'User' && (
-                  <div className='chatBody' ref={chatContainerRef}>
-                    {Array.isArray(message) && message.map((msg, index) => (
-                      <div
-                        key={index}
-                        className={`message ${msg.sender === userProfile._id ? 'left' : 'right'}`}
-                      >
-                        <p>{msg.content}</p>
+                  {
+                    isKnown && message.length !== 0 && userType === 'User' && (
+                      <div className='chatBody' ref={chatContainerRef}>
+                        {Array.isArray(message) && message.map((msg, index) => (
+                          <div
+                            key={index}
+                            className={`message ${msg.sender === userProfile._id ? 'left' : 'right'}`}
+                          >
+                            <p>{msg.content}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )
-              }
+                    )
+                  }
 
-              {
-                isKnown && (message.length === 0) && (
-                  <div className='chatBodyNoMessage'>
-                    <p>No Conversation Found, Start a new conversation...</p>
-                  </div>
-                )
-              }
+                  {
+                    isKnown === true && (message.length === 0) && (
+                      <div className='chatBodyNoMessage'>
+                        <p>No Conversation Found, Start a new conversation...</p>
+                      </div>
+                    )
+                  }
 
-              {
-                !isKnown && (
-                  <div className='chatBodyUnKnown'>
-                    <p>Not Allowed</p>
-                  </div>
-                )
-              }
+                </div>
+              )
+          )
+        ) : (
+          isKnown === false && (
+            <div className='chatBodyUnKnown'>
+              <p>Not Allowed</p>
             </div>
           )
+        )
       }
     </>
   );

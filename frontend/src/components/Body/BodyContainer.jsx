@@ -1,13 +1,13 @@
 import React from 'react';
-import './bodyContainer.css'
+import './bodyContainer.css';
 import BodyHeader from './BodyHeader';
 import BodyContacts from './BodyContacts';
 
-function BodyContainer() {
+function BodyContainer({ socket }) {
   return (
     <div className='bodyContent'>
       <BodyHeader />
-      <BodyContacts />
+      <BodyContacts socket={socket} />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 // import socketIOClient from 'socket.io-client';
 
 // function Chat({ socket }) {
-function Chat() {
+function Chat({ socket }) {
   const { chatUserInfo } = useContext(ChatIdContext);
   const { name, id, avatar, bio, type, socketId } = chatUserInfo;
   // const { userToken } = useSelector((state) => state.auth);
@@ -45,7 +45,7 @@ function Chat() {
     setIsKnown(isKnown);
   }, [userProfile, id]);
 
-  // console.log(name, id);
+  console.log(socket);
 
   /* useState sucks here in first render of page
   // const chatId = useContext(ChatContext);
@@ -73,9 +73,9 @@ function Chat() {
         name && userProfile && (
           <div>
             {/* <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} /> */}
-            <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} socket={socketId} isKnown={isKnown} />
-            <ChatBody userId={id} userType={type} isKnown={isKnown} socket={socketId} />
-            <ChatInput userId={id} userType={type} isKnown={isKnown} socket={socketId} />
+            <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} socketId={socketId} isKnown={isKnown} socketInstance={socket} />
+            <ChatBody userId={id} userType={type} isKnown={isKnown} socketId={socketId} socketInstance={socket} />
+            <ChatInput userId={id} userType={type} isKnown={isKnown} socketId={socketId} socketInstance={socket} />
           </div>
         )
       }

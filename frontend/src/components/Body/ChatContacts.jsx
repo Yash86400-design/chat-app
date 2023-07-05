@@ -4,7 +4,7 @@ import ChattingWith from './ChattingWith';
 import { useSelector } from 'react-redux';
 // import userService from '../../services/userService';
 
-function ChatContacts() {
+function ChatContacts({ socket }) {
   const { userProfile } = useSelector((state) => state.userProfile);
   // const [chattingWithUserData, setChattingWithUserData] = useState([]);
   // const [groupChatData, setGroupChatData] = useState([]);
@@ -63,7 +63,7 @@ function ChatContacts() {
 
   useEffect(() => {
     const fetchChattingWithData = async () => {
-      if (userProfile.joinedChats !== null) {
+      if (userProfile?.joinedChats !== null) {
         const personalChats = userProfile.joinedChats;
 
         // const promises = personalChats.map(element =>
@@ -109,7 +109,7 @@ function ChatContacts() {
         ))} */}
 
         {secondPerson.map((data, index) => (
-          <ChattingWith key={index} id={data?.id} name={data?.name} avatar={data?.avatar} bio={data?.bio} type={data?.type} socketId={data?.socketRoomId} />
+          <ChattingWith key={index} id={data?.id} name={data?.name} avatar={data?.avatar} bio={data?.bio} type={data?.type} socketId={data?.socketRoomId} socket={socket} />
         ))}
       </div>
     </div>

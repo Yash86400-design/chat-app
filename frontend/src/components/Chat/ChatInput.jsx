@@ -6,7 +6,7 @@ import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 // import userService from '../../services/userService';
 
-function ChatInput({ userType, isKnown, userId, socket }) {
+function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
   // const [messageInputField, setMessageInputField] = useState('');
   const [inputPlaceholder, setInputPlaceholder] = useState('');
   const [readOnlyState, setReadOnlyState] = useState(false);
@@ -19,16 +19,18 @@ function ChatInput({ userType, isKnown, userId, socket }) {
     let message = inputRef.current.value;
     if (userType === 'User' && message.length > 0) {
       dispatch(sendMessageToUserResponse({ userId: userId, message: message }));
-      // socket.emit('personalMessage', { userId, message });
-      socket.emit('userMessage', { userId, message });
+      // socketInstance.emit('personalMessage', { userId, message });
+      socketInstance.emit('sendMessage', { socketId, message });
+      socketInstance.emit('userMessage', { userId, message });
       // userService.messageSendToUser(userId, message);
-      // socket.emit('chatMessage', message);
+      // socketInstance.emit('chatMessage', message);
       message = null;
       inputRef.current.value = null;
       inputRef.current.focus();
     } else if (userType === 'Chatroom' && message.length > 0) {
       dispatch(sendMessageToChatroomResponse({ chatroomId: userId, message: message }));
-      socket.emit('chatroomMessage', { userId, message: message });
+      socketInstance.emit('sendMessage', { socketId, message });
+      socketInstance.emit('chatroomMessage', { userId, message: message });
       // userService.messageSendToChatroom(userId, message);
       message = null;
       inputRef.current.value = null;

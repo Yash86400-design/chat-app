@@ -10,9 +10,8 @@ import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 
 
-function BodyHeader() {
+function BodyHeader({ socket: socketInstance }) {
   // const { userProfile } = useSelector((state) => state.auth);
-
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
   const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage } = useSelector((state) => state.userProfile);
@@ -51,6 +50,7 @@ function BodyHeader() {
   };
 
   const handleLogoutButton = (event) => {
+    socketInstance.emit('deleteSocketOnLogout');
     dispatch(logout());
   };
 

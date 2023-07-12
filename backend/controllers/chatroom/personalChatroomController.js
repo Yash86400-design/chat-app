@@ -72,7 +72,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     });
 
     // Get the socket instance from the request's io object
-    const io = req.app.get('socket');
+    // const io = req.app.get('socket');
     // socket.ioObject.sockets.on('userMessage', (msg) => {
     //   console.log(msg);
     // });
@@ -97,6 +97,13 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
 
     // Create notification for the receiver
+
+    // io.on('connection', (socket) => {
+    //   console.log('Hi');
+    //   socket.on('sendMessage', ({ socketId, message, name }) => {
+    //     io.to(socketId).emit('receiveMessage', newMessage);
+    //   });
+    // });
 
     const notification = Notification({
       type: 'personalMessage',

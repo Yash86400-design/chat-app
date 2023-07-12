@@ -45,8 +45,6 @@ function Chat({ socket }) {
     setIsKnown(isKnown);
   }, [userProfile, id]);
 
-  console.log(socket);
-
   /* useState sucks here in first render of page
   // const chatId = useContext(ChatContext);
   // console.log(chatId);

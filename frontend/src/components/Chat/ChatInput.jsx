@@ -13,30 +13,31 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const inputRef = useRef(null);
   const dispatch = useDispatch();
-  const { sendingMessageLoading, isError, message } = useSelector((state) => state.userProfile);
+  const { sendingMessageLoading, isError, message, userProfile } = useSelector((state) => state.userProfile);
 
   const handleChatSubmittion = (event) => {
     let message = inputRef.current.value;
     if (userType === 'User' && message.length > 0) {
       dispatch(sendMessageToUserResponse({ userId: userId, message: message }));
       // socketInstance.emit('personalMessage', { userId, message });
-      socketInstance.emit('sendMessage', { socketId, message });
-      socketInstance.emit('userMessage', { userId, message });
+      // socketInstance.emit('userMessage', { userId, message });
+      socketInstance.emit('sendMessage', { socketId, message, name: userProfile.name, senderId: userProfile._id });
       // userService.messageSendToUser(userId, message);
       // socketInstance.emit('chatMessage', message);
       message = null;
       inputRef.current.value = null;
       inputRef.current.focus();
     } else if (userType === 'Chatroom' && message.length > 0) {
-      dispatch(sendMessageToChatroomResponse({ chatroomId: userId, message: message }));
-      socketInstance.emit('sendMessage', { socketId, message });
-      socketInstance.emit('chatroomMessage', { userId, message: message });
       // userService.messageSendToChatroom(userId, message);
+      dispatch(sendMessageToChatroomResponse({ chatroomId: userId, message: message }));
+      // socketInstance.emit('chatroomMessage', { userId, message: message });
+      socketInstance.emit('sendMessage', { socketId, message, name: userProfile.name, senderId: userProfile._id });
       message = null;
       inputRef.current.value = null;
       inputRef.current.focus();
     }
   };
+
   useEffect(() => {
     if (isKnown === true) {
       inputRef.current.focus();

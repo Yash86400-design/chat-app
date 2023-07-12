@@ -6,7 +6,7 @@ import BodyContacts from './BodyContacts';
 function BodyContainer({ socket }) {
   return (
     <div className='bodyContent'>
-      <BodyHeader />
+      <BodyHeader socket={socket} />
       <BodyContacts socket={socket} />
     </div>
   );

@@ -12,13 +12,26 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      // Fetch messages based on user type and ID
-      if (isKnown && userType === 'User') {
-        const allMessages = await dispatch(fetchUserMessages(userId));
+      const storedMessages = localStorage.getItem('messages');
+      let parsedMessages = {};
+      if (storedMessages) {
+        parsedMessages = JSON.parse(storedMessages);
+      }
+
+      if (parsedMessages[userId]) {
+        setMessage(parsedMessages[userId]);
+      } else {
+        let allMessages = [];
+        if (isKnown && userType === 'User') {
+          allMessages = await dispatch(fetchUserMessages(userId));
+        } else if (isKnown && userType === 'Chatroom') {
+          allMessages = await dispatch(fetchChatroomMessages(userId));
+        }
         setMessage(allMessages.payload);
-      } else if (isKnown && userType === 'Chatroom') {
-        const allMessages = await dispatch(fetchChatroomMessages(userId));
-        setMessage(allMessages.payload);
+
+        // Store the messages in local storage
+        parsedMessages[userId] = allMessages.payload;
+        localStorage.setItem('messages', JSON.stringify(parsedMessages));
       }
     };
 
@@ -27,13 +40,33 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
 
   useEffect(() => {
     const handleReceiveMessage = (newMessage) => {
-      // console.log(newMessage.senderId, userProfile._id);
-      if (userType === 'Chatroom') {
+      setMessage((prevMessages) => [
+        ...prevMessages,
+        {
+          createdAt: newMessage.createdAt,
+          content: newMessage.message,
+          sender: newMessage.senderId,
+          name: newMessage.name,
+        },
+      ]);
 
-        setMessage((prevMessages) => [...prevMessages, { createdAt: newMessage.createdAt, content: newMessage.message, sender: { _id: newMessage.senderId, name: newMessage.name } }]);
-      } else if (userType === 'User') {
-        setMessage((prevMessages) => [...prevMessages, { content: newMessage.message, sender: newMessage.senderId, createdAt: newMessage.createdAt }]);
-      }
+      // Update the messages in local storage
+      const storedMessages = localStorage.getItem('messages');
+      const parsedMessages = storedMessages ? JSON.parse(storedMessages) : {};
+      const updatedMessages = {
+        ...parsedMessages,
+        [userId]: [
+          ...(parsedMessages[userId] || []), // Get previous messages for the user if exists
+          {
+            createdAt: newMessage.createdAt,
+            content: newMessage.message,
+            sender: newMessage.senderId,
+            name: newMessage.name,
+
+          },
+        ],
+      };
+      localStorage.setItem('messages', JSON.stringify(updatedMessages));
     };
 
     // Listen for 'receiveMessage' event from the server and handle the new message
@@ -43,7 +76,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
       // Clean up the event listener when the component unmounts
       socketInstance.off('receiveMessage', handleReceiveMessage);
     };
-  }, [socketInstance, userType]);
+  }, [socketInstance, userId]);
 
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -51,17 +84,17 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [message]);
-
   // Render the chat body based on the state
+
   return (
     <>
       {isKnown ? (
         fetchingMessageLoading ? (
           <ChatFetchingSpinner />
         ) : (
-          <div className='chatBodySection'>
-            {isKnown && message !== null && (
-              <div className='chatBody' ref={chatContainerRef}>
+          <div className="chatBodySection">
+            {isKnown && message?.length > 0 && (
+              <div className="chatBody" ref={chatContainerRef}>
                 {Array.isArray(message) &&
                   message.map((msg, index) => (
                     <div
@@ -74,14 +107,14 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
               </div>
             )}
             {isKnown === true && message?.length === 0 && (
-              <div className='chatBodyNoMessage'>
+              <div className="chatBodyNoMessage">
                 <p>No Conversation Found, Start a new conversation...</p>
               </div>
             )}
           </div>
         )
       ) : (
-        <div className='chatBodyUnKnown'>
+        <div className="chatBodyUnKnown">
           <p>Not Allowed</p>
         </div>
       )}

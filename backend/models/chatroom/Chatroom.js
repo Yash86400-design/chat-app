@@ -40,7 +40,11 @@ const chatRoomSchema = new mongoose.Schema({
   joinRequests: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',
-  }]
+  }],
+  socketId: {
+    type: String,
+    required: true
+  }
 });
 
 const Chatroom = mongoose.model('Chatroom', chatRoomSchema);

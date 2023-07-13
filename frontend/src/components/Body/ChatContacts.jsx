@@ -64,7 +64,7 @@ function ChatContacts({ socket }) {
   useEffect(() => {
     const fetchChattingWithData = async () => {
       if (userProfile?.joinedChats !== null) {
-        const personalChats = userProfile.joinedChats;
+        const personalChats = userProfile?.joinedChats;
 
         // const promises = personalChats.map(element =>
         //   userService.userInfo(element)

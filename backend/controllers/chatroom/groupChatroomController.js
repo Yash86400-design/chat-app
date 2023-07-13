@@ -144,7 +144,10 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     console.log('Emitting newChatroomMessage event');
     io.to(chatroomId).emit('newChatroomMessage', {
       chatroom: chatroomId,
-      sender: { _id: senderId, name: senderInfo.name, email: senderInfo.email },
+      // sender: { _id: senderId, name: senderInfo.name, email: senderInfo.email },
+      sender: senderId,
+      name: senderInfo.name,
+      email: senderInfo.email,
       content: newMessage
     });
 
@@ -412,7 +415,10 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     const senderId = req.user.userId;
     const requestedUserId = req.params.userId;
 
-    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound, socketId } = await (isMember(chatroomId, senderId));
+
+    const isAdmin = chatroomInfo.admins.some((user) => user.toString() === senderId);
+    // console.log(isAdmin);
 
     if (!isGroupMember) {
       return res.status(404).json({ message: 'User is not a member of group' });
@@ -422,7 +428,7 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    if (!senderInfo.isAdmin) {
+    if (!isAdmin) {
       return res.status(403).json({ message: 'Only admins can accept join requests' });
     }
 
@@ -450,14 +456,14 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
       link: `/api/profile/chatrooms/${chatroomId}`,
     });
 
-    const uniqueId = uuidv4();
+    // const uniqueId = uuidv4();
 
-    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId, joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: uniqueId } }, $addToSet: { notifications: notification } });
+    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId, joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: socketId } }, $addToSet: { notifications: notification } });
 
     await chatroomInfo.save();
     await notification.save();
 
-    return res.status(200).json({ message: 'User has been added to the chatroom' });
+    return res.status(200).json({ message: `${requester.name} has been added to the chatroom` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -472,6 +478,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     const requestedUserId = req.params.userId;
 
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const isAdmin = chatroomInfo.admins.some((user) => user.toString() === senderId);
 
     if (!isGroupMember) {
       return res.status(404).json({ message: 'User is not a member of group' });
@@ -481,7 +488,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    if (!senderInfo.isAdmin) {
+    if (!isAdmin) {
       return res.status(403).json({ message: 'Only admins can accept join requests' });
     }
 

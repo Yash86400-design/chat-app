@@ -212,28 +212,28 @@ export const userSlice = createSlice({
         state.message = 'Unable to fetch messages, Please try after sometime...';
       })
       .addCase(sendMessageToUserResponse.pending, (state) => {
-        state.isLoading = true;
+        // state.isLoading = true;  // No need cause using socket, Only error message will help
       })
       .addCase(sendMessageToUserResponse.fulfilled, (state, action) => {
-        state.isLoading = false;
+        // state.isLoading = false;
         state.statusCode = 200;
         state.returnedUserMessage = action.payload;
       })
       .addCase(sendMessageToUserResponse.rejected, (state) => {
-        state.isLoading = false;
+        // state.isLoading = false;
         state.isError = true;
         state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
       })
       .addCase(sendMessageToChatroomResponse.pending, (state) => {
-        state.isLoading = true;
+        // state.isLoading = true;
       })
       .addCase(sendMessageToChatroomResponse.fulfilled, (state, action) => {
-        state.isLoading = false;
+        // state.isLoading = false;
         state.statusCode = 200;
         state.returnedChatroomMessage = action.payload;
       })
       .addCase(sendMessageToChatroomResponse.rejected, (state) => {
-        state.isLoading = false;
+        // state.isLoading = false;
         state.isError = true;
         state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
       });

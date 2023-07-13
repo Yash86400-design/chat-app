@@ -141,10 +141,11 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
       deleteFile(avatarPath);
     }
 
-    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl });
+    const uniqueId = uuidv4();
+
+    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
     const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
 
-    const uniqueId = uuidv4();
 
     // Update the user joinedChatrooms
     user.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });

@@ -189,9 +189,9 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', ({ socketId, message, name, senderId }) => {
     // console.log(io.sockets.adapter.rooms);
     // console.log(socketId, message);
-    console.log(senderId);
     const createdAt = (new Date()).toISOString();  // Mimicing the database date type
     io.to(socketId).emit('receiveMessage', { message, name, createdAt, senderId });
+    console.log(message, name, createdAt, senderId);
   });
 
   socket.on('deleteSocketOnLogout', () => {

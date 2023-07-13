@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './chatInput.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { sendMessageToChatroomResponse, sendMessageToUserResponse } from '../../features/userSlice';
-import Spinner from '../Spinner/Spinner';
+// import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 // import userService from '../../services/userService';
 
@@ -13,7 +13,8 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const inputRef = useRef(null);
   const dispatch = useDispatch();
-  const { sendingMessageLoading, isError, message, userProfile } = useSelector((state) => state.userProfile);
+  // const { sendingMessageLoading, isError, message, userProfile } = useSelector((state) => state.userProfile);  // Not providing loading state anymore cause getting message instantly from socket, but if get any error then I'll show...
+  const { isError, message, userProfile } = useSelector((state) => state.userProfile);
 
   const handleChatSubmittion = (event) => {
     let message = inputRef.current.value;
@@ -76,7 +77,8 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
       toast.error(message);
     }
 
-  }, [sendingMessageLoading, isError, message]);
+    // }, [sendingMessageLoading, isError, message]);
+  }, [isError, message]);
 
 
 
@@ -84,7 +86,7 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
     <div className='chatInput'>
       {/* <input type="text" value={messageInputField} name="" id="" placeholder='Type a message...' onChange={(event) => { setMessageInputField(event.target.value); }} autoFocus /> */}
       <input type="text" name="" id="" placeholder={inputPlaceholder} ref={inputRef} readOnly={readOnlyState} />
-      {sendingMessageLoading && <Spinner />}
+      {/* {sendingMessageLoading && <Spinner />} Using socket that's why not needed this now*/}
       <button disabled={buttonDisabled} onClick={handleChatSubmittion}>Send</button>
     </div>
   );

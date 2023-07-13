@@ -41,7 +41,7 @@ function Chat({ socket }) {
     //   }
     //   return null;
     // });
-    const isKnown = userProfile.joinedChats.some((user) => user.id === id);
+    const isKnown = userProfile?.joinedChats.some((user) => user.id === id);
     setIsKnown(isKnown);
   }, [userProfile, id]);
 

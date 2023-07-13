@@ -20,7 +20,7 @@ async function isMember(chatroomId, userId) {
     return false;
   }
 
-  return { isGroupMember: chatroom.members.includes(userId), chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound };
+  return { isGroupMember: chatroom.members.includes(userId), chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound, socketId: chatroom.socketId };
 }
 
 module.exports = {

@@ -112,20 +112,21 @@ const fetchUserMessages = async (userId) => {
     // const allMessages = response.data;
     // console.log(response.data);
 
-    // Retrieve existing 'message' object from localstorage
-    const existingMessageString = localStorage.getItem('messages');
-    // console.log(existingMessageString);
-    const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
+    // // Retrieve existing 'message' object from localstorage
+    // const existingMessageString = localStorage.getItem('messages');
+    // // console.log(existingMessageString);
+    // const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
 
-    // Update the object with the new key-value pair(s)
-    existingMessageObj[userId] = response.data;
-    // console.log(existingMessageObj);
+    // // Update the object with the new key-value pair(s)
+    // existingMessageObj[userId] = response.data;
+    // // console.log(existingMessageObj);
 
-    // Convert the updated object back into a JSON string
-    const updatedMessageString = JSON.stringify(existingMessageObj);
+    // // Convert the updated object back into a JSON string
+    // const updatedMessageString = JSON.stringify(existingMessageObj);
 
-    // Store the updated JSON string in localStorage
-    localStorage.setItem('messages', updatedMessageString);
+    // // Store the updated JSON string in localStorage
+    // localStorage.setItem('messages', updatedMessageString);
+
     return response.data;
   } catch (error) {
     console.log('Error fetching messages:', error);
@@ -141,17 +142,16 @@ const fetchGroupMessages = async (groupId) => {
     });
 
     // Retrieve existing 'message' object from localstorage
-    const existingMessageString = localStorage.getItem('messages');
-    const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
+    // const existingMessageString = localStorage.getItem('messages');
+    // const existingMessageObj = existingMessageString ? JSON.parse(existingMessageString) : {};
 
-    // Update the object with the new key-value pair(s)
-    existingMessageObj[groupId] = response.data.messages;
+    // // Update the object with the new key-value pair(s)
+    // existingMessageObj[groupId] = response.data.messages;
 
-    // Convert the updated object back into a JSON string
-    const updatedMessageString = JSON.stringify(existingMessageObj);
-    localStorage.setItem('messages', updatedMessageString);
-
-    return response.data.messages;
+    // // Convert the updated object back into a JSON string
+    // const updatedMessageString = JSON.stringify(existingMessageObj);
+    // localStorage.setItem('messages', updatedMessageString);
+    return response.data;
   } catch (error) {
     console.log('Error fetching messages:', error);
   }
@@ -179,7 +179,6 @@ const messageSendToChatroom = async (chatroomId, message) => {
         Authorization: `Bearer ${userToken}`
       }
     });
-    console.log(response.status);
     return response.data.message;
   } catch (error) {
     console.error(error);

@@ -207,7 +207,6 @@ function BodyHeader({ socket: socketInstance }) {
   }, [editProfileSuccess, editProfileSuccessMessage]);
 
   if (isLoading) {
-    console.log('Hi');
     return <Spinner />;
   }
   return (

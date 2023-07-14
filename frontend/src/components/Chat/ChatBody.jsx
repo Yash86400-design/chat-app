@@ -101,6 +101,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
                       key={index}
                       className={`message ${msg.sender === userProfile._id ? 'right' : 'left'}`}
                     >
+                      {userType === 'Chatroom' && (<h6>{msg.name}</h6>)}
                       <p>{msg.content}</p>
                     </div>
                   ))}

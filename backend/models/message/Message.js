@@ -26,6 +26,12 @@ const messageSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  name: {
+    type: String,
+  },
+  email: {
+    type: String,
   }
 }, { timestamps: true });
 

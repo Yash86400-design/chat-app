@@ -92,14 +92,16 @@ router.get('/:id', authenticateToken, async (req, res) => {
     });
 
     // Find the chatroom by ID and populate the member field
+    // const messages = await Message.find({ chatroom: chatroomId })
+    //   .populate('sender', '_id name email');
     const messages = await Message.find({ chatroom: chatroomId })
-      .populate('sender', '_id name email');
 
     if (!messages) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
-
-    return res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
+    // console.log(messages);
+    // return res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
+    return res.status(200).json(messages);
 
   } catch (error) {
     console.error(error);
@@ -133,7 +135,9 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const newMessage = new Message({
       chatroom: chatroomId,
       sender: senderId,
-      content: message
+      content: message,
+      name: senderInfo.name,
+      email: senderInfo.email
     });
 
     const savedMessage = await newMessage.save();
@@ -333,29 +337,6 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
   }
 });
 
-// View the pending request of the chatroom
-router.get('/:id/requests', authenticateToken, async (req, res) => {
-  try {
-
-    const chatroomId = req.params.id;
-    const userId = req.user.userId;
-
-    const { isGroupMember, chatroomInfo } = await isMember(chatroomId, userId);
-
-    // Check if the user is a member of the chatroom
-    if (!isGroupMember) {
-      return res.status(403).json({ message: 'User is not a member of the chatroom' });
-    }
-
-    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
-
-    return res.status(200).json(chatroomInfo.joinRequests);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
 // Request to join the chatroom : This should be inside userController
 router.post('/:id/request', authenticateToken, async (req, res) => {
   try {
@@ -405,6 +386,29 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// View the pending request of the chatroom
+router.get('/:id/requests', authenticateToken, async (req, res) => {
+  try {
+
+    const chatroomId = req.params.id;
+    const userId = req.user.userId;
+
+    const { isGroupMember, chatroomInfo } = await isMember(chatroomId, userId);
+
+    // Check if the user is a member of the chatroom
+    if (!isGroupMember) {
+      return res.status(403).json({ message: 'User is not a member of the chatroom' });
+    }
+
+    await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
+
+    return res.status(200).json(chatroomInfo.joinRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 

@@ -108,7 +108,7 @@ function ChatContacts({ socket }) {
           <ChattingWith key={index} id={data?._id} name={data?.name} avatar={data?.avatar} bio={data?.bio} type={data?.type} />
         ))} */}
 
-        {secondPerson.map((data, index) => (
+        {secondPerson?.map((data, index) => (
           <ChattingWith key={index} id={data?.id} name={data?.name} avatar={data?.avatar} bio={data?.bio} type={data?.type} socketId={data?.socketRoomId} socket={socket} firstPerson={userProfile?.name} />
         ))}
       </div>

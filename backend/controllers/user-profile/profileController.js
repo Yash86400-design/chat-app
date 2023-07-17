@@ -142,14 +142,32 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     }
 
     const uniqueId = uuidv4();
-
-    const chatroom = new Chatroom({ name, description, createdBy, members: [createdBy], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
+    /*
+        // Get current date
+        const currentDate = new Date();
+    
+        // Options for formatting the date and time
+        const options = {
+          timeZone: 'Asia/Kolkata', // Indian time zone
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        };
+    
+        // Format the date and time as Indian date string
+        const indianDate = currentDate.toLocaleString('en-IN', options);
+        // console.log(indianDate);
+    */
+    const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: createdBy, joinedAt: new Date() }], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
     const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
 
 
     // Update the user joinedChatrooms
     user.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });
-    user.joinedChatrooms.push(chatroom._id);
+    // user.joinedChatrooms.push(chatroom._id);
     user.adminOf.push(chatroom._id);
 
     await user.save();

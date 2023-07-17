@@ -15,12 +15,15 @@ async function isMember(chatroomId, userId) {
   if (!chatroom) {
     chatroomNotFound = true;
   }
+
   const user = await User.findById(userId);
   if (!user) {
     return false;
   }
 
-  return { isGroupMember: chatroom.members.includes(userId), chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound, socketId: chatroom.socketId };
+  const isCurrentUserMember = chatroom.members.some((user) => user.id.toString() === userId)
+
+  return { isGroupMember: isCurrentUserMember, chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound, socketId: chatroom.socketId };
 }
 
 module.exports = {

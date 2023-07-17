@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema({
     ref: 'AuthUser'
   }]
   ,
+  /*  Cause now my joinedChats is working absolutely fine
   joinedChatrooms: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chatroom'
@@ -51,6 +52,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser'
   }],
+  */
   joinedChats: [{
     name: {
       type: String,

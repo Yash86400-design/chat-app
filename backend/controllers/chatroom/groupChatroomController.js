@@ -66,48 +66,69 @@ cloudinary.config({
 
 // Fetch all the messages of the group
 router.get('/:id', authenticateToken, async (req, res) => {
-
   try {
     const chatroomId = req.params.id;
     const senderId = req.user.userId;
-    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
+    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await isMember(chatroomId, senderId);
 
     if (!isGroupMember) {
-      return res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of the group' });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    await Chatroom.populate(chatroomInfo, {
-      path: 'members',
-      select: '_id name email'
-    }, {
-      path: 'joinRequests',
-      select: '_id name email'
-    }, {
-      path: 'admins',
-      select: '_id name email'
-    });
+    const messages = await Message.find({ chatroom: chatroomId });
+    // .populate('sender', '_id name email');
 
-    // Find the chatroom by ID and populate the member field
-    // const messages = await Message.find({ chatroom: chatroomId })
-    //   .populate('sender', '_id name email');
-    const messages = await Message.find({ chatroom: chatroomId })
+    console.log(typeof (messages));
 
     if (!messages) {
-      return res.status(404).json({ message: 'Chatroom not found' });
+      return res.status(404).json({ message: 'No messages found' });
     }
-    // console.log(messages);
-    // return res.status(200).json({ messages: messages, otherInfos: chatroomInfo });
-    return res.status(200).json(messages);
 
+    // Convert the Indian date string to a Date object
+    // const indianDate = new Date().toLocaleString('en-IN', {
+    //   timeZone: 'Asia/Kolkata',
+    //   year: 'numeric',
+    //   month: '2-digit',
+    //   day: '2-digit',
+    //   hour: '2-digit',
+    //   minute: '2-digit',
+    //   second: '2-digit'
+    // });
+
+    // Filter messages based on the joinedAt date of the member
+    // const filteredMessages = messages.filter(message => {
+    //   const member = chatroomInfo.members.find(member => member.id.toString().equals(message.sender));
+
+    //   if (member && member.joinedAt) {
+    //     const memberJoinedAt = new Date(member.joinedAt);
+    //     const createdAt = new Date(message.createdAt);
+    //     return memberJoinedAt <= createdAt && memberJoinedAt <= new Date(indianDate);
+    //   }
+
+    //   return false;
+    // });
+
+    const userJoinedDate = chatroomInfo.members.find((member) => member.id.toString() === senderId).joinedAt;
+    const userComparisonTime = new Date(userJoinedDate).toISOString();
+
+    const groupMessages = messages.filter((message) => message.chatroom.toString() === chatroomId);
+    // console.log(groupMessages);
+
+    // const filteredMessages = groupMessages.filter((message) => new Date(message.createdAt).toDateString() <= userComparisonTime);  //! DateString was not worth it when I'm checking in terms of seconds difference...
+    const filteredMessages = groupMessages.filter((message) => new Date(message.createdAt).toISOString() >= userComparisonTime);
+    // console.log(filteredMessages);
+
+    return res.status(200).json(filteredMessages);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 // Send message in the group
 router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
@@ -131,13 +152,31 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     if (senderId === chatroomId) {
       res.status(404).json({ message: 'Action not allowed' });
     }
+    /*
+    const currentDate = new Date();
 
+    // Options for formatting the date and time
+    const options = {
+      timeZone: 'Asia/Kolkata', // Indian time zone
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    };
+
+    // Format the date and time as Indian date string
+    const indianDate = currentDate.toLocaleString('en-IN', options);
+    */
+    const currentTime = new Date();
     const newMessage = new Message({
       chatroom: chatroomId,
       sender: senderId,
       content: message,
       name: senderInfo.name,
-      email: senderInfo.email
+      email: senderInfo.email,
+      createdAt: currentTime
     });
 
     const savedMessage = await newMessage.save();
@@ -152,7 +191,8 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
       sender: senderId,
       name: senderInfo.name,
       email: senderInfo.email,
-      content: newMessage
+      content: newMessage,
+      createdAt: currentTime
     });
 
 
@@ -162,7 +202,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
 
     // Create a new notification for each member of the chatroom except the sender
     chatroomMembers.forEach(async (member) => {
-      if (String(member._id) !== String(senderId)) {
+      if (member.id.toString() !== senderId.toString()) {
         const notification = new Notification({
           type: 'groupMessage',
           title: `New message in group chatroom from ${member.name}`,
@@ -369,7 +409,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
 
     // Create a notification for each member of the chatroom
     for (const member of chatroomInfo.members) {
-      if (member._id.toString() !== senderId.toString()) {
+      if (member.id.toString() !== senderId.toString()) {
         const notification = new Notification({
           recipient: member._id,
           title: notificationMessage,
@@ -444,10 +484,28 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     if (joinRequestIndex === -1) {
       return res.status(404).json({ message: 'Join request not found' });
     }
+    /*
+    // Get current date
+    const currentDate = new Date();
+
+    // Options for formatting the date and time
+    const options = {
+      timeZone: 'Asia/Kolkata', // Indian time zone
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    };
+
+    // Format the date and time as Indian date string
+    const indianDate = currentDate.toLocaleString('en-IN', options);
+    */
 
     // Remove the user from the join requests array and add them to the members array
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
-    chatroomInfo.members.push(requestedUserId);
+    chatroomInfo.members.push({ id: requestedUserId, joinedAt: new Date() });
 
     // Send notification to the requester
     const requester = await User.findById(requestedUserId);
@@ -693,7 +751,7 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
 
     // If the user is the only admin of the chatroom, randomly assign admin role to another member
     if (chatroomInfo.admins.length === 1) {
-      const members = chatroomInfo.members.filter(member => member._id.toString() !== senderId.toString());
+      const members = chatroomInfo.members.filter(member => member.id.toString() !== senderId.toString());
       if (members.length > 0) {
         const newAdminIndex = Math.floor(Math.random() * members.length);
         const newAdmin = chatroomInfo.members[newAdminIndex];

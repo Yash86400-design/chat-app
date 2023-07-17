@@ -101,8 +101,17 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
                       key={index}
                       className={`message ${msg.sender === userProfile._id ? 'right' : 'left'}`}
                     >
-                      {userType === 'Chatroom' && (<h6>{msg.name}</h6>)}
+                      {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
                       <p>{msg.content}</p>
+                      <p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata', // Indian time zone
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                      })}</p>
                     </div>
                   ))}
               </div>
@@ -124,3 +133,4 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
 }
 
 export default ChatBody;
+

@@ -25,18 +25,24 @@ const chatRoomSchema = new mongoose.Schema({
     required: true,
   },
   members: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'AuthUser',
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AuthUser',
+    },
+    joinedAt: {
+      type: Date,
+      required: true
+    }
   }],
   admins: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',
     required: true,
   }],
-  messages: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
-  }],
+  // messages: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Message',
+  // }],
   joinRequests: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',

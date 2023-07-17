@@ -180,18 +180,18 @@ io.on('connection', (socket) => {
       console.log('Room not found');
     }
     */
-    console.log(socketId);
+    // console.log(socketId);
     socket.join(socketId);
-    console.log(Array.from(io.sockets.adapter.rooms.get(socketId)));
+    // console.log(Array.from(io.sockets.adapter.rooms.get(socketId)));
     // console.log(io.sockets.adapter.rooms);
   });
 
   socket.on('sendMessage', ({ socketId, message, name, senderId }) => {
     // console.log(io.sockets.adapter.rooms);
     // console.log(socketId, message);
-    const createdAt = (new Date()).toISOString();  // Mimicing the database date type
+    const createdAt = new Date();  // Mimicing the database date type
     io.to(socketId).emit('receiveMessage', { message, name, createdAt, senderId });
-    console.log(message, name, createdAt, senderId);
+    // console.log(message, name, createdAt, senderId);
   });
 
   socket.on('deleteSocketOnLogout', () => {
@@ -220,7 +220,7 @@ io.on('connection', (socket) => {
         set.delete(socket.id);
       }
     }
-    console.log(allRoomsAndClients);
+    // console.log(allRoomsAndClients);
   });
 });
 

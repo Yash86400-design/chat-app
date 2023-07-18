@@ -10,6 +10,8 @@ class SearchService {
     // const allUserNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const allUserIds = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } });
 
+    console.log(allUserIds);
+
     const lowercaseQuery = partialQuery.toLowerCase();
 
     const suggestedTerms2 = await Promise.all(
@@ -19,19 +21,19 @@ class SearchService {
         if (user.type === 'User') {
           const authUser = await AuthUser.findById(user.roomId).select('name avatar bio');
           additionalInfo.push({
-            name: authUser.name,
-            id: authUser.id,
-            avatar: authUser.avatar,
-            bio: authUser.bio,
+            name: authUser?.name,
+            id: authUser?.id,
+            avatar: authUser?.avatar,
+            bio: authUser?.bio,
             type: 'User'
           });
         } else if (user.type === 'Chatroom') {
           const chatroom = await Chatroom.findById(user.roomId).select('name avatar description');
           additionalInfo.push({
-            name: chatroom.name,
-            id: chatroom.id,
-            avatar: chatroom.avatar,
-            bio: chatroom.description,
+            name: chatroom?.name,
+            id: chatroom?.id,
+            avatar: chatroom?.avatar,
+            bio: chatroom?.description,
             type: 'Chatroom'
           });
         }

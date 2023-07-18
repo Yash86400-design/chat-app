@@ -10,6 +10,7 @@ const Message = require("../../models/message/Message");
 const { isMember } = require("./IsUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const Notification = require("../../models/notification/Notification");
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -55,7 +56,17 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 */
 
-const upload = multer();
+const upload = multer({ dest: 'uploads/' });
+
+const deleteFile = (filePath) => {
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(`Error deleting file: ${err}`);
+    } else {
+      console.log('File deleted successfully');
+    }
+  });
+};
 
 // Configure Cloudinary with your account credentials
 cloudinary.config({
@@ -81,8 +92,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const messages = await Message.find({ chatroom: chatroomId });
     // .populate('sender', '_id name email');
-
-    console.log(typeof (messages));
 
     if (!messages) {
       return res.status(404).json({ message: 'No messages found' });
@@ -282,7 +291,10 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
     const { name, description } = req.body;
     const avatarPath = req.file ? req.file.path : null;
 
+    console.log(avatarPath);
+
     // Validate the request body
+    /* No need of this as of now, Now user can provide any of the value
     const schema = Joi.object({
       name: Joi.string().min(3).max(30).trim().required(),
       description: Joi.string().min(10).max(200).trim().required(),
@@ -292,6 +304,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
+    */
 
     // Find the chatroom by ID
     // const chatroom = await Chatroom.findById(chatroomId);
@@ -304,6 +317,10 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
+    if (avatarPath.length <= 0 && !name && !description) {
+      return res.status(200).json({ message: "Profile updated. No changes made. Fill in required fields to update." });
+    }
+
     // Update the avatar of group if exist
     if (avatarPath) {
       const result = await cloudinary.uploader.upload(avatarPath, {
@@ -312,13 +329,16 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       const avatarUrl = result.secure_url;
       chatroomInfo.avatar = avatarUrl;
       updateData.avatar = avatarUrl;
+
+      // Delete the temporary image file stored in the local directory
+      deleteFile(avatarPath);
     }
 
     // Update the chatroom name and description
-    if (name.length > 0) {
+    if (name !== undefined && name.length > 0) {
       updateData.name = name;
     }
-    if (description.length > 0) {
+    if (description !== undefined && description.length > 0) {
       updateData.description = description;
     }
 
@@ -331,7 +351,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       { $set: { 'joinedChats.$.name': updateData.name, 'joinedChats.$.type': updateData.type, 'joinedChats.$.avatar': updateData.avatar, 'joinedChats.$.bio': updateData.description } } // Update operation to set specific fields of the matched joinedChats array element
     );
 
-    return res.status(200).json({ chatroomInfo });
+    return res.status(200).json({ chatroomInfo, message: `${chatroomInfo.name} Info Updated Successfully.` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });

@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 function Chat({ socket }) {
   const { chatUserInfo } = useContext(ChatIdContext);
   const { name, id, avatar, bio, type, socketId } = chatUserInfo;
+  console.log(avatar);
   // const { userToken } = useSelector((state) => state.auth);
   const { userProfile } = useSelector((state) => state.userProfile);
   const [isKnown, setIsKnown] = useState(false);

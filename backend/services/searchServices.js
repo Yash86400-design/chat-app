@@ -10,8 +10,6 @@ class SearchService {
     // const allUserNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const allUserIds = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } });
 
-    console.log(allUserIds);
-
     const lowercaseQuery = partialQuery.toLowerCase();
 
     const suggestedTerms2 = await Promise.all(

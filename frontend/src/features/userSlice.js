@@ -14,13 +14,16 @@ const initialState = {
   isLoading: false,
   sendingMessageLoading: false,
   fetchingMessageLoading: false,
+  createChatroomLoading: false,
   message: '',
   editProfileSuccessMessage: '',
+  createChatroomMessage: '',
   statusCode: null,
   fetchUserResponse: null,
   fetchChatroomResponse: null,
   returnedUserMessage: null,
-  returnedChatroomMessage: null
+  returnedChatroomMessage: null,
+  returnedCreateChatroomResponse: null,
 };
 
 // Fetching the user
@@ -118,6 +121,20 @@ export const sendMessageToChatroomResponse = createAsyncThunk(
   async (userData, thunkAPI) => {
     try {
       return await userService.messageSendToChatroom(userData.chatroomId, userData.message);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Creating Chatroom
+export const createChatroom = createAsyncThunk(
+  "/creating-chatroom",
+  async (formData, thunkAPI) => {
+    try {
+      return await userService.createChatroomResponse(formData);
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -236,6 +253,17 @@ export const userSlice = createSlice({
         // state.isLoading = false;
         state.isError = true;
         state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
+      })
+      .addCase(createChatroom.pending, (state) => {
+        state.createChatroomLoading = true;
+      })
+      .addCase(createChatroom.fulfilled, (state, action) => {
+        state.createChatroomLoading = false;
+        state.returnedCreateChatroomResponse = action.payload;
+      })
+      .addCase(createChatroom.rejected, (state, action) => {
+        state.createChatroomLoading = false;
+        state.returnedChatroomMessage = action.payload;
       });
   }
 }

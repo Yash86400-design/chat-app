@@ -90,7 +90,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
     <>
       {isKnown ? (
         fetchingMessageLoading ? (
-          <ChatFetchingSpinner />
+          <ChatFetchingSpinner text='Fetching...' />
         ) : (
           <div className="chatBodySection">
             {isKnown && message?.length > 0 && (

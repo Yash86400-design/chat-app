@@ -74,17 +74,22 @@ function BodyHeader({ socket: socketInstance }) {
     // dispatch(editInfo({ profile: profile, name: name, bio }));
 
     const formData = new FormData();
+    /*  I already handled the case of getting any value or not. 
     if (!name) {
       return toast.error("Name field can't be empty");
     }
-
-    formData.append('name', name);
     if (profile) {
       formData.append('avatar', profile);
     }
     if (bio) {
       formData.append('bio', bio);
     }
+    */
+    
+    formData.append('name', name);
+    formData.append('avatar', profile);
+    formData.append('bio', bio);
+
     dispatch(editInfo(formData))
       .then(() => {
         setProfile('');

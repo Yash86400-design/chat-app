@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import './chatContacts.css';
 import ChattingWith from './ChattingWith';
 import { useSelector } from 'react-redux';
+import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
 // import userService from '../../services/userService';
 
 function ChatContacts({ socket }) {
-  const { userProfile } = useSelector((state) => state.userProfile);
+  const { userProfile, createChatroomLoading } = useSelector((state) => state.userProfile);
   // const [chattingWithUserData, setChattingWithUserData] = useState([]);
   // const [groupChatData, setGroupChatData] = useState([]);
   const [secondPerson, setSecondPerson] = useState([]);
@@ -82,6 +83,10 @@ function ChatContacts({ socket }) {
       setSecondPerson([]);
     };
   }, [userProfile]);
+
+  if (createChatroomLoading) {
+    return <ChatFetchingSpinner text='Creating...' />;
+  }
 
   // useEffect(() => {
   //   const fetchChattingWithData = async () => {

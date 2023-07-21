@@ -1,0 +1,65 @@
+.createChatroomContainer {
+  position: relative;
+}
+
+.createChatroomButton {
+  width: 100%;
+  font-size: 32px;
+  text-align: center;
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px 20px;
+  /* border-radius: 5px; */
+  border: none;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+/* .createChatroomButton:hover {
+  background-color: #2980b9;
+} */
+
+
+.createChatroomButton:hover {
+  background-color: #45a049;
+}
+
+.createChatroomForm {
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.createChatroomForm label {
+  font-weight: bold;
+}
+
+.createChatroomForm input[type="file"],
+.createChatroomForm input[type="text"],
+.createChatroomForm textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.createChatroomForm textarea {
+  resize: vertical;
+}
+
+.createChatroomForm button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.createChatroomForm button[type="submit"]:hover {
+  background-color: #45a049;
+}

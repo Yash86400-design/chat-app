@@ -164,7 +164,7 @@ const messageSendToUser = async (userId, message) => {
         Authorization: `Bearer ${userToken}`
       }
     });
-    
+
     return response.data.message;
   } catch (error) {
     console.error(error);
@@ -186,7 +186,23 @@ const messageSendToChatroom = async (chatroomId, message) => {
   }
 };
 
+const createChatroomResponse = async (formData) => {
+  try {
+    const response = await axios.post(API_URL + `new-chatroom`, formData, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    console.log('Error sending message:', error);
+  }
+};
+
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, clearToken, updateToken };
 
 export default userService;

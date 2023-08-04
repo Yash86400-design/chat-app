@@ -194,7 +194,6 @@ const createChatroomResponse = async (formData) => {
       }
     });
 
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -202,7 +201,39 @@ const createChatroomResponse = async (formData) => {
   }
 };
 
+const friendRequestAccept = async (requiredData) => {
+  try {
+
+    // Now receiver will become sender and sender will become receiver. Cause notification is saved based on who sended the notification to whom. So if your someone sent you friend request then they are sender in your notification and you are receiver. And now when you want to accept request so you will use senderId to find that person...
+
+    const response = await axios.get(API_URL + `notifications/requests/${requiredData.notificationId}/${requiredData.senderId}/accept`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return { message: response.message, statusCode: response.status };
+  } catch (error) {
+    console.error(error);
+    // console.log('Error ');
+    return { message: 'Error Adding Friend', statusCode: 500 };
+  }
+};
+
+const friendRequestReject = async (requiredData) => {
+  try {
+    const response = await axios.get(API_URL + `notifications/requests/${requiredData.notificationId}/${requiredData.senderId}/reject`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return { message: response.message, statusCode: response.status };
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error Rejecting Friend Request', statusCode: 500 };
+  }
+};
+
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, friendRequestAccept, friendRequestReject, clearToken, updateToken };
 
 export default userService;

@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
+    enum: ['friendRequest', 'personalMessage', 'groupMessage', 'groupJoinRequest', 'admin_demotion', 'admin_promotion']
   },
   sender: {
     type: mongoose.Schema.Types.ObjectId,

@@ -93,8 +93,42 @@ const userSchema = new mongoose.Schema({
     ref: 'Chatroom'
   }],
   notifications: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Notification'
+    // notificationId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'Notification'
+    // },
+    notificationType: {
+      type: String,
+      required: true,
+      // enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
+      enum: ['friendRequest', 'friendRequestAccepted', 'friendRequestRejected', 'personalMessage', 'groupMessage', 'groupJoinRequestSuccess', 'groupJoinRequestRejected', 'groupAdminPromotion', 'groupAdminDemotion']
+    },
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AuthUser',
+      required: false,
+    },
+    recipient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AuthUser',
+      required: false,
+    },
+    link: {
+      type: String,
+      required: false,
+    },
+    title: {
+      type: String,
+      required: false,
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
   }]
 });
 

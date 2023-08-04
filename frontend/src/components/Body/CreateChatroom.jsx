@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './createChatroom.css';
 import { toast } from 'react-toastify';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { createChatroom, userData } from '../../features/userSlice';
-import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
 
 function CreateChatroom() {
 
-  const { createChatroomLoading, returnedChatroomMessage } = useSelector((state) => state.userProfile);
   const [createButtonActive, setCreateButtonActive] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -67,9 +65,6 @@ function CreateChatroom() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
-
-
-  console.log(createButtonActive);
 
   return (
     <div className='createChatroomContainer'>

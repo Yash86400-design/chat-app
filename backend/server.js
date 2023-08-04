@@ -47,7 +47,7 @@ app.use(bodyParser.json());
 connectDB();
 
 // Store the 'io' object in the app settings
-app.set('socket', io);
+app.set('socket', io); // Not implementing real time notification section for now.
 
 /*
 const connectedClients = [];

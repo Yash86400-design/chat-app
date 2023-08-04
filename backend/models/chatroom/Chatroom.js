@@ -29,6 +29,10 @@ const chatRoomSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'AuthUser',
     },
+    name: {
+      type: String,
+      required: true,
+    },
     joinedAt: {
       type: Date,
       required: true
@@ -50,7 +54,57 @@ const chatRoomSchema = new mongoose.Schema({
   socketId: {
     type: String,
     required: true
-  }
+  },
+  notifications: [{
+    // notificationId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'Notification'
+    // },
+    notificationType: {
+      type: String,
+      required: true,
+      // enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
+      enum: ['groupJoinRequest', 'admin_demotion', 'admin_promotion', 'user_left', 'user_joined']
+    },
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AuthUser',
+      required: false,
+    },
+    senderName: {
+      type: String,
+      required: false
+    },
+    senderAvatar: {
+      type: String,
+      required: false
+    },
+    senderBio: {
+      type: String,
+      required: false
+    },
+    // recipient: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'AuthUser',
+    //   required: true,
+    // },
+    // link: {
+    //   type: String,
+    //   required: false,
+    // },
+    title: {
+      type: String,
+      required: false,
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 });
 
 const Chatroom = mongoose.model('Chatroom', chatRoomSchema);

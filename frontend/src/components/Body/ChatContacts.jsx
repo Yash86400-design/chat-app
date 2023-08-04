@@ -3,10 +3,11 @@ import './chatContacts.css';
 import ChattingWith from './ChattingWith';
 import { useSelector } from 'react-redux';
 import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
+import { toast } from 'react-toastify';
 // import userService from '../../services/userService';
 
 function ChatContacts({ socket }) {
-  const { userProfile, createChatroomLoading } = useSelector((state) => state.userProfile);
+  const { userProfile, createChatroomLoading, createChatroomMessage } = useSelector((state) => state.userProfile);
   // const [chattingWithUserData, setChattingWithUserData] = useState([]);
   // const [groupChatData, setGroupChatData] = useState([]);
   const [secondPerson, setSecondPerson] = useState([]);
@@ -87,6 +88,11 @@ function ChatContacts({ socket }) {
   if (createChatroomLoading) {
     return <ChatFetchingSpinner text='Creating...' />;
   }
+
+  if (createChatroomMessage) {
+    toast.error(createChatroomMessage);
+  }
+
 
   // useEffect(() => {
   //   const fetchChattingWithData = async () => {

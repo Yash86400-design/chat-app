@@ -21,7 +21,7 @@ async function isMember(chatroomId, userId) {
     return false;
   }
 
-  const isCurrentUserMember = chatroom.members.some((user) => user.id.toString() === userId)
+  const isCurrentUserMember = chatroom.members.some((user) => user.id.toString() === userId.toString())
 
   return { isGroupMember: isCurrentUserMember, chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound, socketId: chatroom.socketId };
 }

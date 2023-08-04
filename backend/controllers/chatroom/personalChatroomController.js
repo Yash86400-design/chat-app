@@ -59,7 +59,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     const senderId = req.user.userId;
     const receiverId = req.params.id;
 
-    const { isUserFriend, receiverInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
+    const { isUserFriend, receiverInfo, senderInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
     if (!isUserFriend) {
       return res.status(404).json({ message: 'Both users are not friend, So action not allowed' });
@@ -105,17 +105,28 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     //   });
     // });
 
-    const notification = Notification({
+    /* const notification = Notification({
       type: 'personalMessage',
       title: `${message.slice(10)}...`,
       sender: senderId,
       recipient: receiverId,
       link: `/api/profile/personal-chat/${senderId}`
     });
+    */
 
-    await notification.save();
+    const notification = {
+      notificationType: 'personalMessage',
+      // title: `${message.slice(0, 10)}...`,
+      title: `New message from ${senderInfo?.name}`,
+      sender: senderId,
+      recipient: receiverId,
+      link: `/api/profile/personal-chat/${senderId}`
+    };
 
-    receiverInfo.notifications.push(notification);
+    // await notification.save();
+
+    // receiverInfo.notifications.push(notification);
+    receiverInfo.notifications.unshift(notification);
     await receiverInfo.save();
 
     await newMessage.save();
@@ -158,25 +169,33 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Action not allowed, Both of the user are friend' });
     }
 
-    const isInPendingRequests = receiverInfo.pendingRequests.some(request => String(request) === String(senderInfo._id));
+    const isInPendingRequests = receiverInfo?.pendingRequests.some(request => String(request) === String(senderInfo._id));
 
     if (isInPendingRequests) {
       return res.status(422).json({ message: 'You have already sent the request to this user!!!' });
     }
 
     // Create notification for the receiver
-    const notification = new Notification({
-      type: 'friendRequest',
-      title: `A new friend request came from ${senderInfo.name}`,
-      sender: senderId,
-      recipient: receiverId,
+    // const notification = new Notification({
+    //   type: 'friendRequest',
+    //   title: `A new friend request came from ${senderInfo.name}`,
+    //   sender: senderId,
+    //   recipient: receiverId,
+    //   link: `/api/profile/personal-chat/${senderId}`
+    // });
+    const notification = {
+      notificationType: 'friendRequest',
+      title: `A new friend request came from ${senderInfo?.name}`,
+      sender: senderInfo?._id,
+      recipient: receiverInfo?._id,
       link: `/api/profile/personal-chat/${senderId}`
-    });
+    };
 
-    await notification.save();
+    // await notification.save();
 
-    receiverInfo.notifications.push(notification);
-    receiverInfo.pendingRequests.push(senderInfo);
+    // receiverInfo?.notifications.push(notification);
+    receiverInfo?.notifications.unshift(notification);
+    receiverInfo?.pendingRequests.push(senderInfo);
     await receiverInfo.save();
 
     return res.status(200).json('Request Sent Successfully');

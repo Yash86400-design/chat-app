@@ -5,7 +5,7 @@ import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
-import { editInfo, userData } from '../../features/userSlice';
+import { acceptRequest, editInfo, rejectRequest, userData } from '../../features/userSlice';
 import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 
@@ -14,7 +14,7 @@ function BodyHeader({ socket: socketInstance }) {
   // const { userProfile } = useSelector((state) => state.auth);
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
-  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage } = useSelector((state) => state.userProfile);
+  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage, createChatroomMessage, friendRequestLoading, returnedFriendRequestResponse, addFriendError } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showUserInfoBox, setShowUserInfoBox] = useState(false);
@@ -24,11 +24,13 @@ function BodyHeader({ socket: socketInstance }) {
   const [profile, setProfile] = useState('');
   const [closeIconState, setCloseIconState] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [isNotificationStateActive, setIsNotificationStateActive] = useState(false);
 
   const dispatch = useDispatch();
   const infoBoxRef = useRef(null);
   const userInfoBoxRef = useRef(null);
   const infoEditRef = useRef(null);
+  const notificationStateRef = useRef(null);
 
   // const { avatar, name, bio } = localStorage.getItem('userProfile');
 
@@ -68,6 +70,11 @@ function BodyHeader({ socket: socketInstance }) {
     setShowUserInfoBox(false);
   };
 
+  const handleNotificationClick = (event) => {
+    event.stopPropagation();
+    setIsNotificationStateActive(!isNotificationStateActive);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     // console.log(profile, name, bio);
@@ -85,7 +92,7 @@ function BodyHeader({ socket: socketInstance }) {
       formData.append('bio', bio);
     }
     */
-    
+
     formData.append('name', name);
     formData.append('avatar', profile);
     formData.append('bio', bio);
@@ -118,6 +125,21 @@ function BodyHeader({ socket: socketInstance }) {
     setBio(event.target.value);
   };
 
+  const handleFriendRequestAcceptAction = (notificationId, senderId, recipientId) => {
+    const requiredData = { notificationId: notificationId, senderId: senderId, receiverId: recipientId };
+    dispatch(acceptRequest(requiredData));
+    // dispatch(userData());
+  };
+
+  const handleFriendRequestRejectAction = (notificationId, senderId, recipientId) => {
+    const requiredData = { notificationId: notificationId, senderId: senderId, receiverId: recipientId };
+    dispatch(rejectRequest(requiredData));
+  };
+  // useEffect(() => {
+  //   if (returnedFriendRequestResponse === 200) {
+  //     window.location.reload();
+  //   }
+  // }, [returnedFriendRequestResponse]);
 
   /* Merged all three useEffect in a single useEffect down below... 
   useEffect(() => {
@@ -168,12 +190,14 @@ function BodyHeader({ socket: socketInstance }) {
       if (
         (infoBoxRef.current && !infoBoxRef.current.contains(event.target)) ||
         (userInfoBoxRef.current && !userInfoBoxRef.current.contains(event.target)) ||
-        (infoEditRef.current && !infoEditRef.current.contains(event.target))
+        (infoEditRef.current && !infoEditRef.current.contains(event.target)) ||
+        (notificationStateRef.current && !notificationStateRef.current.contains(event.target))
       ) {
         setCloseIconState(false);
         setShowInfoBox(false);
         setShowUserInfoBox(false);
         setInfoButton(false);
+        setIsNotificationStateActive(false);
       }
     }
 
@@ -201,7 +225,14 @@ function BodyHeader({ socket: socketInstance }) {
       setName(userProfile.name);
       setBio(userProfile.bio);
       setProfile(userProfile.avatar);
-      setNotificationCount(userProfile.notifications.length);
+      let count = 0;
+      for (let i = 0; i < userProfile.notifications.length; i++) {
+        if (userProfile.notifications[i].read === false) {
+          count += 1;
+        }
+      }
+      // setNotificationCount(userProfile.notifications.length);
+      setNotificationCount(count);
     }
   }, [userProfile]);
 
@@ -211,9 +242,28 @@ function BodyHeader({ socket: socketInstance }) {
     }
   }, [editProfileSuccess, editProfileSuccessMessage]);
 
+  useEffect(() => {
+    if (returnedFriendRequestResponse === 200) {
+      dispatch(userData());
+    }
+  }, [returnedFriendRequestResponse, dispatch]);
+
   if (isLoading) {
     return <Spinner />;
   }
+
+  if (friendRequestLoading) {
+    return <Spinner />;
+  }
+
+  if (addFriendError) {
+    toast.error(addFriendError);
+  }
+
+  if (createChatroomMessage) {
+    toast.success(createChatroomMessage);
+  }
+
   return (
     <div className='body__header-container'>
       <div className="body__header-container_profile">
@@ -225,12 +275,44 @@ function BodyHeader({ socket: socketInstance }) {
         {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
 
         {/* I'm making a mistake here by not implementing styles on div instead using direct icons target... (Check ChatHeader.jsx for div styling) */}
-        <div className="notification-icon">
+        <div className="notification-icon" onClick={handleNotificationClick}>
           <AiOutlineBell className='body__header-container_notification' />
+
           {notificationCount > 0 && (
             <span className='notification-count'>{notificationCount}</span>
           )}
         </div>
+
+        {
+          isNotificationStateActive && userProfile?.notifications.length > 0 && (
+            <div className="notificationList" ref={notificationStateRef}>
+              {/* <p>Hello Guys</p> */}
+              <ul>
+                {userProfile.notifications.map((notification, index) => (
+                  <li key={index} className={notification.notificationType}>
+                    {notification.title}
+                    {notification.notificationType === 'friendRequest' && (
+                      <div className='friendRequestButtonsGroup'>
+                        <button className='acceptButton' onClick={() => handleFriendRequestAcceptAction(notification._id, notification.sender, notification.recipient)}>Accept</button>
+                        <button className='rejectButton' onClick={() => handleFriendRequestRejectAction(notification._id, notification.sender, notification.recipient)}>Reject</button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {
+          isNotificationStateActive && userProfile?.notifications.length === 0 && (
+            <div className="notificationList" ref={notificationStateRef}>
+              <ul>
+                <li className='noNotification'>No Notification Found</li>
+              </ul>
+            </div>
+          )
+        }
 
         {closeIconState
           ?
@@ -291,6 +373,7 @@ function BodyHeader({ socket: socketInstance }) {
           </div>
         )
       }
+
     </div>
   );
 }

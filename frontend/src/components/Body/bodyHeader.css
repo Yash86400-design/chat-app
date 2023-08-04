@@ -61,6 +61,72 @@
   position: relative;
 }
 
+.notificationList {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.notificationList ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notificationList ul li {
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  /* align-items: center; */
+  /* gap: 30px; */
+  /* display: flex; */
+  flex-direction: column;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.notificationList ul li.friendRequestAccepted {
+  color: #28a745;
+}
+
+.notificationList ul li.friendRequestRejected {
+  color: #dc3545;
+}
+
+.notificationList ul li .friendRequestButtonsGroup {
+  /* margin-top: 10px; */
+  margin: 10px 50% 0;
+  display: flex;
+  /* width: 20%; */
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.notificationList ul li .friendRequestButtonsGroup .acceptButton,
+.rejectButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.acceptButton {
+  background-color: #28a745;
+}
+
+.rejectButton {
+  background-color: #dc3545;
+}
+
 .notification-count {
   position: absolute;
   top: 0px;
@@ -122,13 +188,13 @@
 .userInfoBox .imgBox {
   height: 350px;
   width: 350px;
-  border-radius: 50%;
+  /* border-radius: 50%; */
 }
 
 .imgBox img {
   height: 100%;
   width: 100%;
-  border-radius: 50%;
+  /* border-radius: 50%; */
 }
 
 .userInfoBox button {

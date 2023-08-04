@@ -161,7 +161,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
         const indianDate = currentDate.toLocaleString('en-IN', options);
         // console.log(indianDate);
     */
-    const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: createdBy, joinedAt: new Date() }], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
+    const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: createdBy, name: user?.name, joinedAt: new Date() }], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
     const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
 
 
@@ -261,14 +261,17 @@ router.post('/search-result', authenticateToken, upload.single('none'), async (r
   return res.json({ searchResults });  // return the search results as a JSON object 
 });
 
-router.get('/notifications/requests/:userId/accept', authenticateToken, async (req, res) => {
+router.get('/notifications/requests/:notificationId/:userId/accept', authenticateToken, async (req, res) => {
   try {
+    const notificationId = req.params.notificationId;
     const receiverId = req.params.userId;
     const senderId = req.user.userId;
 
+    // console.log(notificationId, receiverId, senderId);
+
     const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
 
-    // console.log(`SenderInfo: ${currentUser}. Requester Info: ${requester}`);
+    // console.log(`SenderInfo: ${currentUser}. Requester Info: ${requester}`, isUserFriend);
 
     if (isUserFriend) {
       return res.status(404).json({ message: 'User is already a friend' });
@@ -282,40 +285,61 @@ router.get('/notifications/requests/:userId/accept', authenticateToken, async (r
     //   socket.join(uniqueId);
     //   console.log('Hi', uniqueId);
     // });
-    currentUser.joinedChats.push({ name: requester.name, 'id': requester._id, avatar: requester.avatar, bio: requester.bio, type: 'User', socketRoomId: uniqueId });
+    currentUser?.joinedChats.push({ name: requester?.name, 'id': requester?._id, avatar: requester?.avatar, bio: requester?.bio, type: 'User', socketRoomId: uniqueId });
+
 
     // Update the current user's list and pending requests
-    currentUser.joinedPersonalChats.push(requester._id);
-    currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
-    await currentUser.save();
+    // currentUser.joinedPersonalChats.push(requester._id);
+    // currentUser?.pendingRequests = currentUser?.pendingRequests.filter(request => String(request) !== String(requester?._id));
+    currentUser.pendingRequests = currentUser?.pendingRequests.filter(request => String(request) !== String(requester?._id));
 
-    // Update the requester's friend list
-    requester.joinedPersonalChats.push(currentUser._id);
-    requester.joinedChats.push({ name: currentUser.name, 'id': currentUser._id, avatar: currentUser.avatar, bio: currentUser.bio, type: 'User', socketRoomId: uniqueId });
-    await requester.save();
-
-    // Send Notification to the requester
-    const notification = new Notification({
-      recipient: requester,
-      sender: currentUser,
-      type: 'friendRequest',
-      title: `Your friend request to ${currentUser.name} has been accepted.`,
-      link: `/api/profile/personal-chat/${senderId}`
+    currentUser?.notifications.map((notification) => {
+      if (notification._id.toString() === notificationId) {
+        notification['notificationType'] = 'friendRequestAccepted';
+        notification['title'] = `${requester?.name} is now your friend`;
+        notification['link'] = `/api/profile/personal-chat/${receiverId}`;
+        notification['read'] = true;
+        // console.log(notification);
+      }
     });
 
-    requester.notifications.push(notification);
-    notification.save();
-    requester.save();
+    // Update the requester's friend list
+    // requester.joinedPersonalChats.push(currentUser._id);
+    requester?.joinedChats.push({ name: currentUser?.name, 'id': currentUser?._id, avatar: currentUser?.avatar, bio: currentUser?.bio, type: 'User', socketRoomId: uniqueId });
+    // await requester.save();
 
-    return res.status(200).json({ message: `Friend request from ${requester.name} accepted successfully.` });
+    // Send Notification to the requester
+    // const notification = new Notification({
+    //   recipient: requester,
+    //   sender: currentUser,
+    //   type: 'friendRequest',
+    //   title: `Your friend request to ${currentUser.name} has been accepted.`,
+    //   link: `/api/profile/personal-chat/${senderId}`
+    // });
+    const notification = {
+      recipient: requester?._id,
+      sender: currentUser,
+      notificationType: 'friendRequestAccepted',
+      title: `Your friend request to ${currentUser?.name} has been accepted.`,
+      link: `/api/profile/personal-chat/${senderId}`
+    };
+
+    // requester?.notifications.push(notification);
+    requester?.notifications.unshift(notification);
+    // notification.save();
+    await requester?.save();
+    await currentUser?.save();
+
+    return res.status(200).json({ message: `Friend request from ${requester?.name} accepted successfully.` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-router.get('/notifications/requests/:userId/reject', authenticateToken, async (req, res) => {
+router.get('/notifications/requests/:notificationId/:userId/reject', authenticateToken, async (req, res) => {
   try {
+    const notificationId = req.params.notificationId;
     const receiverId = req.params.userId;
     const senderId = req.user.userId;
 
@@ -327,19 +351,35 @@ router.get('/notifications/requests/:userId/reject', authenticateToken, async (r
 
     // Update the current user's pending requests
     currentUser.pendingRequests = currentUser.pendingRequests.filter(request => String(request) !== String(requester._id));
-    await currentUser.save();
 
-    // Send Notification to the requester
-    const notification = new Notification({
-      recipient: requester,
-      sender: currentUser,
-      type: 'friendRequest',
-      title: `Your friend request to ${currentUser.name} has been rejected.`,
+    currentUser?.notifications.map((notification) => {
+      if (notification._id.toString() === notificationId) {
+        notification['notificationType'] = 'friendRequestRejected';
+        notification['title'] = `Friend request from ${requester.name} has been rejected.`;
+        notification['read'] = true;
+      }
     });
 
-    requester.notifications.push(notification);
-    notification.save();
-    requester.save();
+    // Send Notification to the requester
+    // const notification = new Notification({
+    //   recipient: requester,
+    //   sender: currentUser,
+    //   type: 'friendRequest',
+    //   title: `Your friend request to ${currentUser.name} has been rejected.`,
+    // });
+
+    const notification = {
+      recipient: requester,
+      sender: currentUser,
+      notificationType: 'friendRequestRejected',
+      title: `Your friend request to ${currentUser.name} has been rejected.`,
+    };
+
+    // requester.notifications.push(notification);
+    requester.notifications.unshift(notification);
+    // notification.save();
+    await requester.save();
+    await currentUser.save();
     return res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
   } catch (error) {
     console.error(error);

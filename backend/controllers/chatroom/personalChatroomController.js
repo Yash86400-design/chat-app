@@ -172,7 +172,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     const isInPendingRequests = receiverInfo?.pendingRequests.some(request => String(request) === String(senderInfo._id));
 
     if (isInPendingRequests) {
-      return res.status(422).json({ message: 'You have already sent the request to this user!!!' });
+      return res.status(200).json({ message: 'You have already sent the request to this user!!!' });
     }
 
     // Create notification for the receiver
@@ -198,7 +198,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     receiverInfo?.pendingRequests.push(senderInfo);
     await receiverInfo.save();
 
-    return res.status(200).json('Request Sent Successfully');
+    return res.status(200).json({ message: 'Request Sent Successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });

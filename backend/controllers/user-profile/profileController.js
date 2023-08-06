@@ -321,7 +321,8 @@ router.get('/notifications/requests/:notificationId/:userId/accept', authenticat
       sender: currentUser,
       notificationType: 'friendRequestAccepted',
       title: `Your friend request to ${currentUser?.name} has been accepted.`,
-      link: `/api/profile/personal-chat/${senderId}`
+      link: `/api/profile/personal-chat/${senderId}`,
+      read: true,
     };
 
     // requester?.notifications.push(notification);
@@ -373,6 +374,7 @@ router.get('/notifications/requests/:notificationId/:userId/reject', authenticat
       sender: currentUser,
       notificationType: 'friendRequestRejected',
       title: `Your friend request to ${currentUser.name} has been rejected.`,
+      read: true
     };
 
     // requester.notifications.push(notification);

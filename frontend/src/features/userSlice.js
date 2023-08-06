@@ -9,14 +9,16 @@ const initialState = {
   // userToken: userToken ? userToken : null,
   userProfile: userProfile ? userProfile : null,
   isError: false,
-  addFriendError: false,
+  addFriendResponseError: null,
+  addRequestError: null,  // for both user and chatroom
   isSuccess: false,
   editProfileSuccess: false,
   isLoading: false,
   sendingMessageLoading: false,
   fetchingMessageLoading: false,
   createChatroomLoading: false,
-  friendRequestLoading: false,
+  friendRequestResponseLoading: false,
+  addRequestLoading: false,  // for both user and chatroom
   message: '',
   editProfileSuccessMessage: '',
   createChatroomMessage: '',
@@ -26,7 +28,8 @@ const initialState = {
   returnedUserMessage: null,
   returnedChatroomMessage: null,
   returnedCreateChatroomResponse: null,
-  returnedFriendRequestResponse: null
+  returnedFriendRequestResponse: null,
+  returnedAddRequestResponse: null // for adding request response
 };
 
 // Fetching the user
@@ -174,6 +177,20 @@ export const rejectRequest = createAsyncThunk(
   }
 );
 
+// For both: Add request for friend and Add request in chatroom
+export const addRequest = createAsyncThunk(
+  "/request",
+  async (requiredData, thunkAPI) => {
+    try {
+      return await userService.joinRequest(requiredData);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Partial Query Suggestions (Friends/Groups)
 // export const partialQuery = createAsyncThunk('/search',
 //   async (searchQuery, thunkAPI) => {
@@ -297,28 +314,39 @@ export const userSlice = createSlice({
         state.createChatroomMessage = action.payload;
       })
       .addCase(acceptRequest.pending, (state) => {
-        state.friendRequestLoading = true;
+        state.friendRequestResponseLoading = true;
       })
       .addCase(acceptRequest.fulfilled, (state, action) => {
-        state.friendRequestLoading = false;
+        state.friendRequestResponseLoading = false;
         state.returnedFriendRequestResponse = action.payload.statusCode;
       })
       .addCase(acceptRequest.rejected, (state, action) => {
-        state.friendRequestLoading = false;
+        state.friendRequestResponseLoading = false;
         state.returnedFriendRequestResponse = action.payload.statusCode;
-        state.addFriendError = action.payload.message;
+        state.addFriendResponseError = action.payload.message;
       })
       .addCase(rejectRequest.pending, (state) => {
-        state.friendRequestLoading = true;
+        state.friendRequestResponseLoading = true;
       })
       .addCase(rejectRequest.fulfilled, (state, action) => {
-        state.friendRequestLoading = false;
+        state.friendRequestResponseLoading = false;
         state.returnedFriendRequestResponse = action.payload.statusCode;
       })
       .addCase(rejectRequest.rejected, (state, action) => {
-        state.friendRequestLoading = false;
+        state.friendRequestResponseLoading = false;
         state.returnedFriendRequestResponse = action.payload.statusCode;
-        state.addFriendError = action.payload.message;
+        state.addFriendResponseError = action.payload.message;
+      })
+      .addCase(addRequest.pending, (state) => {
+        state.addRequestLoading = true;
+      })
+      .addCase(addRequest.fulfilled, (state, action) => {
+        state.addRequestLoading = false;
+        state.returnedAddRequestResponse = action.payload;
+      })
+      .addCase(addRequest.rejected, (state, action) => {
+        state.addRequestLoading = false;
+        state.addRequestError = action.payload;
       });
   }
 }

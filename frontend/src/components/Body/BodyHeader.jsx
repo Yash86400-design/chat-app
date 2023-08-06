@@ -14,7 +14,7 @@ function BodyHeader({ socket: socketInstance }) {
   // const { userProfile } = useSelector((state) => state.auth);
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
-  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage, createChatroomMessage, friendRequestLoading, returnedFriendRequestResponse, addFriendError } = useSelector((state) => state.userProfile);
+  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage, createChatroomMessage, friendRequestResponseLoading, returnedFriendRequestResponse, addFriendResponseError } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showUserInfoBox, setShowUserInfoBox] = useState(false);
@@ -36,6 +36,7 @@ function BodyHeader({ socket: socketInstance }) {
 
   const handleInfoButton = (event) => {
     event.stopPropagation();
+    setIsNotificationStateActive(false);
     setCloseIconState(!closeIconState);
     setShowInfoBox(!showInfoBox);
     if (showUserInfoBox) {
@@ -72,6 +73,8 @@ function BodyHeader({ socket: socketInstance }) {
 
   const handleNotificationClick = (event) => {
     event.stopPropagation();
+    setShowInfoBox(false);
+    setCloseIconState(false);
     setIsNotificationStateActive(!isNotificationStateActive);
   };
 
@@ -134,6 +137,11 @@ function BodyHeader({ socket: socketInstance }) {
   const handleFriendRequestRejectAction = (notificationId, senderId, recipientId) => {
     const requiredData = { notificationId: notificationId, senderId: senderId, receiverId: recipientId };
     dispatch(rejectRequest(requiredData));
+  };
+
+  // Not completing this read/unread feature
+  const handleNotificationReadUnreadClick = (event) => {
+    event.stopPropagation();
   };
   // useEffect(() => {
   //   if (returnedFriendRequestResponse === 200) {
@@ -252,12 +260,12 @@ function BodyHeader({ socket: socketInstance }) {
     return <Spinner />;
   }
 
-  if (friendRequestLoading) {
+  if (friendRequestResponseLoading) {
     return <Spinner />;
   }
 
-  if (addFriendError) {
-    toast.error(addFriendError);
+  if (addFriendResponseError) {
+    toast.error(addFriendResponseError);
   }
 
   if (createChatroomMessage) {
@@ -289,7 +297,7 @@ function BodyHeader({ socket: socketInstance }) {
               {/* <p>Hello Guys</p> */}
               <ul>
                 {userProfile.notifications.map((notification, index) => (
-                  <li key={index} className={notification.notificationType}>
+                  <li key={index} className={`notification ${notification.notificationType} ${notification.read ? 'notificationRead' : 'notificationUnRead'}`} onClick={handleNotificationReadUnreadClick}>
                     {notification.title}
                     {notification.notificationType === 'friendRequest' && (
                       <div className='friendRequestButtonsGroup'>

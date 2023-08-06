@@ -99,6 +99,16 @@
   color: #dc3545;
 }
 
+.notificationList ul li.notificationRead {
+  background-color: #e0e0e0;
+  color: #555555;
+} 
+
+.notificationList ul li.notificationUnRead {
+  background-color: #ffffcc;
+  color: #333333;
+}
+
 .notificationList ul li .friendRequestButtonsGroup {
   /* margin-top: 10px; */
   margin: 10px 50% 0;

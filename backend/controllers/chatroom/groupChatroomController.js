@@ -425,7 +425,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
 
     // Check if the user has already requested to join
     if (chatroomInfo.joinRequests.some(request => request.toString() === senderId.toString())) {
-      return res.status(400).json({ message: 'User has already requested to join the chatroom' });
+      return res.status(200).json({ message: 'User has already requested to join the chatroom' });
     }
 
     chatroomInfo.joinRequests.push(senderInfo);
@@ -575,7 +575,7 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
     };
 
     const notificationForChatroom = {
-      message: `{requester?.name} has joined our chatroom🥳🥳🥳...`,
+      title: `${requester?.name} has joined our chatroom🥳🥳🥳...`,
       notificationType: 'user_joined'
     };
 

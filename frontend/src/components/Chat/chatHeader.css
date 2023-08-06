@@ -59,7 +59,8 @@
 }
 
 .addIconContainer:hover,
-.infoIconContainer:hover {
+.infoIconContainer:hover,
+.notificationIconContainer:hover {
   border-radius: 40%;
   background: rgba(85, 85, 85, 0.2);
 }
@@ -132,6 +133,34 @@
 .notificationIconContainer:hover span {
   visibility: visible;
   opacity: 1;
+}
+
+.chatroomNotificationList {
+  position: absolute;
+  top: 100%;
+  right: 5%;
+  width: 40%;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+
+}
+
+.chatroomNotificationList ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chatroomNotificationList ul li {
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .infoBoxFriend,

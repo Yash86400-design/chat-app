@@ -3,18 +3,28 @@ import './chatHeader.css';
 import { BsPersonAdd, BsThreeDotsVertical } from 'react-icons/bs';
 import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import Spinner from '../Spinner/Spinner';
+import { addRequest } from '../../features/userSlice';
 // import { useSelector } from 'react-redux';
 
-function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
+function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
+
+  const dispatch = useDispatch();
   const [friendInfoBoxActive, setFriendInfoBoxActive] = useState(false);
   const [chatroomInfoBoxActive, setChatroomInfoBoxActive] = useState(false);
   const [showFriendInfoBox, setShowFriendInfoBox] = useState(false);
   const [showChatroomInfoBox, setShowChatroomInfoBox] = useState(false);
   const [closeIconState, setCloseIconState] = useState(false);
+  const [isNotificationStateActive, setIsNotificationStateActive] = useState(false);
   const friendInfoBoxRef = useRef(null);
   const chatroomInfoBoxRef = useRef(null);
   const friendInfoRef = useRef(null);
   const chatroomInfoRef = useRef(null);
+  const chatroomNotificationStateRef = useRef(null);
+
+  const { addRequestLoading, returnedAddRequestResponse, addRequestError } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -25,6 +35,12 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
 
   // const isFriend = userProfile.joinedPersonalChats.includes(userId);
   // const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
+
+  const handleAddRequest = (event) => {
+    event.stopPropagation();
+    // console.log(userName, userAvatar, userBio, userType, userId);
+    dispatch(addRequest({ type: userType, id: userId }));
+  };
 
   const renderAddButtonContent = () => {
     if (isKnown && userType === 'User') {
@@ -50,7 +66,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
             {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
           </span>
           {/* <BsPersonAdd className="addPersonIcon" /> */}
-          <BsPersonAdd />
+          <BsPersonAdd onClick={handleAddRequest} />
         </>
       );
     }
@@ -94,6 +110,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
 
   const handleChatroomInfoClick = (event) => {
     event.stopPropagation();
+    setIsNotificationStateActive(false);
     setCloseIconState(!closeIconState);
     setChatroomInfoBoxActive(!chatroomInfoBoxActive);
   };
@@ -129,6 +146,13 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
     }
   };
 
+  const handleNotificationClick = (event) => {
+    event.stopPropagation();
+    setChatroomInfoBoxActive(false);
+    setCloseIconState(false);
+    setIsNotificationStateActive(!isNotificationStateActive);
+  };
+
   // const handleChatroomInfoCloseClick = () => {
 
   // };
@@ -141,12 +165,16 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
         ||
         (friendInfoRef.current && !friendInfoRef.current.contains(event.target))
         ||
-        (chatroomInfoRef.current && !chatroomInfoRef.current.contains(event.target))) {
+        (chatroomInfoRef.current && !chatroomInfoRef.current.contains(event.target))
+        ||
+        (chatroomNotificationStateRef.current && !chatroomNotificationStateRef.current.contains(event.target))
+      ) {
         setCloseIconState(false);
         setFriendInfoBoxActive(false);
         setChatroomInfoBoxActive(false);
         setShowFriendInfoBox(false);
         setShowChatroomInfoBox(false);
+        setIsNotificationStateActive(false);
       }
     }
     document.addEventListener('click', handleClickOutside);
@@ -155,6 +183,22 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
+
+  // Add request use-effect
+  useEffect(() => {
+    if (returnedAddRequestResponse) {
+      toast.success(returnedAddRequestResponse);
+    }
+
+    if (addRequestError) {
+      toast.error(addRequestError);
+    }
+
+  }, [addRequestError, returnedAddRequestResponse]);
+
+  if (addRequestLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="chat__header-container">
@@ -176,7 +220,7 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
           userType === 'Chatroom' && isKnown &&
           (
             <div className='notificationIconContainer'>
-              <AiOutlineBell />
+              <AiOutlineBell onClick={handleNotificationClick} />
             </div>
           )
         }
@@ -199,6 +243,16 @@ function ChatHeader({ userName, userAvatar, userBio, userType, isKnown }) {
           {renderInfoButtonContent()}
         </div>
       </div>
+      {
+        isNotificationStateActive && (
+          <div className="chatroomNotificationList" ref={chatroomNotificationStateRef}>
+            <ul>
+              <li>Hey There</li>
+              <li>Hi Guys</li>
+            </ul>
+          </div>
+        )
+      }
       {
         friendInfoBoxActive &&
         (

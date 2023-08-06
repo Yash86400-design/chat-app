@@ -233,7 +233,33 @@ const friendRequestReject = async (requiredData) => {
   }
 };
 
+const joinRequest = async (requiredData) => {
+  // Here I will separate the requests, one for user and one for chatroom....
+  try {
+    if (requiredData.type === 'User') {
+
+      const response = await axios.post(API_URL + `personal-chat/${requiredData.id}/request`, {}, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      });
+      return response.data.message;
+    } else if (requiredData.type === 'Chatroom') {
+      const response = await axios.post(API_URL + `chatroom/${requiredData.id}/request`, {}, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      });
+      return response.data.message;
+    }
+
+  } catch (error) {
+    console.error(error);
+    return 'Error in Adding Request';
+  }
+};
+
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, friendRequestAccept, friendRequestReject, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, friendRequestAccept, friendRequestReject, joinRequest, clearToken, updateToken };
 
 export default userService;

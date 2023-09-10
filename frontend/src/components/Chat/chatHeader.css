@@ -42,56 +42,7 @@
   position: relative;
 }
 
-.addIconContainer,
-.infoIconContainer {
-  cursor: pointer;
-  font-size: 32px;
-  padding: 5px;
-  transition: 0.5s ease;
-  display: flex;
-}
-
-.addIconContainer.disabled,
-.infoIconContainer.disabled {
-  cursor: auto;
-  border-radius: 40%;
-  background: rgba(85, 85, 85, 0.2);
-}
-
-.addIconContainer:hover,
-.infoIconContainer:hover,
-.notificationIconContainer:hover {
-  border-radius: 40%;
-  background: rgba(85, 85, 85, 0.2);
-}
-
-.tooltip {
-  visibility: hidden;
-  background-color: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  font-size: 16px;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px;
-  position: absolute;
-  z-index: 10;
-  top: 100%;
-  left: 0%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.addIconContainer:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.infoIconContainer:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
+/* Old way of showing notification inside chatroom header
 
 .notificationIconContainer {
   cursor: pointer;
@@ -161,6 +112,148 @@
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+*/
+
+.notificationIconContainer {
+  cursor: pointer;
+  font-size: 32px;
+  padding: 5px;
+  transition: 0.5s ease;
+  display: flex;
+  position: relative;
+}
+
+.notificationIconContainer.disabled {
+  cursor: auto;
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.notificationIconContainer.disabled:hover {
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.notificationIconContainer .chatroom-notification-count {
+  position: absolute;
+  top: 0px;
+  right: -6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+}
+
+.chatroomNotificationList {
+  position: absolute;
+  top: 100%;
+  right: 5%;
+  width: 40%;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.chatroomNotificationList ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chatroomNotificationList ul li {
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.joinRequestButtonsGroup {
+  /* margin-top: 10px; */
+  margin: 10px 50% 0;
+  display: flex;
+  /* width: 20%; */
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.chatroomAcceptButton,
+.chatroomRejectButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.chatroomAcceptButton {
+  background-color: #28a745;
+}
+
+.chatroomRejectButton {
+  background-color: #dc3545;
+}
+
+.addIconContainer,
+.infoIconContainer {
+  cursor: pointer;
+  font-size: 32px;
+  padding: 5px;
+  transition: 0.5s ease;
+  display: flex;
+}
+
+.addIconContainer.disabled,
+.infoIconContainer.disabled {
+  cursor: auto;
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.addIconContainer:hover,
+.infoIconContainer:hover,
+.notificationIconContainer:hover {
+  border-radius: 40%;
+  background: rgba(85, 85, 85, 0.2);
+}
+
+.tooltip {
+  visibility: hidden;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 10;
+  top: 100%;
+  left: 0%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.addIconContainer:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.infoIconContainer:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }
 
 .infoBoxFriend,
@@ -236,8 +329,8 @@
 }
 
 .chatroomInfoBox .imgBox {
-  height: 450px;
-  width: 450px;
+  height: 350px;
+  width: 350px;
   border-radius: 0;
 }
 
@@ -246,4 +339,109 @@
   width: 100%;
   object-fit: cover;
   border-radius: 0;
+}
+
+.adminsMembersGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.adminContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.adminFirstParagraph {
+  width: 100px;
+}
+
+.admins {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminInfoContainer {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admins .adminImgContainer {
+  height: 110px;
+  width: 110px;
+  border-radius: 10px;
+}
+
+.admins .adminImgContainer img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.adminNavigation,
+.memberNavigation {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.adminNavigation button,
+.memberNavigation button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.adminNavigation button:disabled,
+.memberNavigation button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.adminNavigation button:hover,
+.memberNavigation button:hover {
+  background-color: #0056b3;
+}
+
+.memberContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.memberFirstParagraph {
+  width: 100px;
+}
+
+.members {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.memberInfoContainer {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.members .memberImgContainer {
+  height: 110px;
+  width: 110px;
+}
+
+.members .memberImgContainer img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }

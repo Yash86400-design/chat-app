@@ -33,15 +33,40 @@ const chatRoomSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+      required: false
+    },
+    avatar: {
+      type: String,
+      required: false
+    },
     joinedAt: {
       type: Date,
       required: true
     }
   }],
   admins: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'AuthUser',
-    required: true,
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AuthUser',
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    bio: {
+      type: String,
+      required: false
+    },
+    avatar: {
+      type: String,
+      required: false
+    },
+    joinedAt: {
+      type: Date,
+      required: true
+    }
   }],
   // messages: [{
   //   type: mongoose.Schema.Types.ObjectId,
@@ -64,7 +89,7 @@ const chatRoomSchema = new mongoose.Schema({
       type: String,
       required: true,
       // enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
-      enum: ['groupJoinRequest', 'admin_demotion', 'admin_promotion', 'user_left', 'user_joined']
+      enum: ['groupJoinRequest', 'groupJoinAccepted', 'groupJoinRejected', 'admin_demotion', 'admin_promotion', 'user_left', 'user_joined']
     },
     sender: {
       type: mongoose.Schema.Types.ObjectId,

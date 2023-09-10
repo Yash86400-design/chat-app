@@ -14,7 +14,7 @@ function BodyHeader({ socket: socketInstance }) {
   // const { userProfile } = useSelector((state) => state.auth);
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
-  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessMessage, createChatroomMessage, friendRequestResponseLoading, returnedFriendRequestResponse, addFriendResponseError } = useSelector((state) => state.userProfile);
+  const { isLoading, userProfile, editProfileSuccess, editProfileSuccessResponse, createChatroomMessage, friendRequestResponseLoading, returnedFriendRequestResponse, addFriendResponseError } = useSelector((state) => state.userProfile);
 
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [showUserInfoBox, setShowUserInfoBox] = useState(false);
@@ -245,10 +245,11 @@ function BodyHeader({ socket: socketInstance }) {
   }, [userProfile]);
 
   useEffect(() => {
-    if (editProfileSuccess) {
-      toast.success(editProfileSuccessMessage.message);
+    if (editProfileSuccess && editProfileSuccessResponse?.editProfileSuccessUserId === userProfile?._id) {
+      // console.log(editProfileSuccessResponse?.editProfileSuccessUserId, userProfile?._id);
+      toast.success(editProfileSuccessResponse.message);
     }
-  }, [editProfileSuccess, editProfileSuccessMessage]);
+  }, [editProfileSuccess, editProfileSuccessResponse, userProfile]);
 
   useEffect(() => {
     if (returnedFriendRequestResponse === 200) {

@@ -61,6 +61,21 @@
   position: relative;
 }
 
+.notification-count {
+  position: absolute;
+  top: 0px;
+  right: -6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+}
+
 .notificationList {
   position: absolute;
   top: 100%;
@@ -109,7 +124,7 @@
   color: #333333;
 }
 
-.notificationList ul li .friendRequestButtonsGroup {
+.friendRequestButtonsGroup {
   /* margin-top: 10px; */
   margin: 10px 50% 0;
   display: flex;
@@ -119,7 +134,7 @@
   gap: 20px;
 }
 
-.notificationList ul li .friendRequestButtonsGroup .acceptButton,
+.acceptButton,
 .rejectButton {
   padding: 8px 16px;
   border: none;
@@ -135,21 +150,6 @@
 
 .rejectButton {
   background-color: #dc3545;
-}
-
-.notification-count {
-  position: absolute;
-  top: 0px;
-  right: -6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 20px;
-  height: 20px;
-  background-color: red;
-  color: white;
-  font-size: 12px;
-  border-radius: 50%;
 }
 
 .infoBox {

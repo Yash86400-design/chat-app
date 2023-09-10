@@ -3,10 +3,12 @@ import './chatContacts.css';
 import ChattingWith from './ChattingWith';
 import { useSelector } from 'react-redux';
 import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
+import userService from '../../services/userService';
 import { toast } from 'react-toastify';
 // import userService from '../../services/userService';
 
 function ChatContacts({ socket }) {
+
   const { userProfile, createChatroomLoading, createChatroomMessage } = useSelector((state) => state.userProfile);
   // const [chattingWithUserData, setChattingWithUserData] = useState([]);
   // const [groupChatData, setGroupChatData] = useState([]);
@@ -65,7 +67,8 @@ function ChatContacts({ socket }) {
 
   useEffect(() => {
     const fetchChattingWithData = async () => {
-      if (userProfile?.joinedChats !== null) {
+      // if (userProfile?.joinedChats !== null) {
+      if (userProfile?.joinedChats.length !== 0) {
         const personalChats = userProfile?.joinedChats;
 
         // const promises = personalChats.map(element =>
@@ -76,6 +79,21 @@ function ChatContacts({ socket }) {
         // const data = personalChats.map((user) => )
 
         setSecondPerson(personalChats);
+
+        for (let chat = 0; chat < userProfile?.joinedChats.length; chat++) {
+          if (userProfile?.joinedChats[chat].type === 'Chatroom') {
+            const chatroomId = userProfile.joinedChats[chat].id;
+            userService.fetchChatroomInfo({ id: chatroomId })
+              .then((chatroomInfo) => {
+                const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo')) || {};
+                storedChatroomInfo[chatroomId] = chatroomInfo;
+                localStorage.setItem('chatroomInfo', JSON.stringify(storedChatroomInfo));
+              })
+              .catch((error) => {
+                console.error('Error fetching chatroom info:', error);
+              });
+          }
+        }
       }
     };
 

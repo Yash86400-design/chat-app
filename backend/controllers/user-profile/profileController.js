@@ -115,7 +115,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
   try {
     const { name, description } = req.body;
     const avatarPath = req.file ? req.file.path : '';
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user.userId).select('name avatar bio _id joinedChats adminOf');
 
     const createdBy = req.user.userId;
 
@@ -161,14 +161,15 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
         const indianDate = currentDate.toLocaleString('en-IN', options);
         // console.log(indianDate);
     */
-    const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: createdBy, name: user?.name, joinedAt: new Date() }], admins: [createdBy], avatar: avatarUrl, socketId: uniqueId });
+    const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: user?._id, name: user?.name, bio: user?.bio, joinedAt: new Date(), avatar: user?.avatar }], admins: [{ id: user?._id, name: user?.name, bio: user?.bio, joinedAt: new Date(), avatar: user?.avatar }], avatar: avatarUrl, socketId: uniqueId });
+
     const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
 
 
     // Update the user joinedChatrooms
-    user.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });
+    user?.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });
     // user.joinedChatrooms.push(chatroom._id);
-    user.adminOf.push(chatroom._id);
+    user?.adminOf.push(chatroom._id);
 
     await user.save();
     await chatroom.save();
@@ -222,6 +223,38 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     if (!name && !bio && !avatarPath) {
       return res.status(400).json({ success: false, message: 'No profile updates were provided' });
     }
+
+    // Updating the name, bio, avatar in chatrooms where user has joined
+    const user = await User.findById(userId).select('joinedChats');
+
+    for (let chat = 0; chat < user?.joinedChats.length; chat++) {
+      if (user.joinedChats[chat].type === 'Chatroom') {
+        // Updating members array
+        await Chatroom.updateMany(
+          { 'members.id': userId },
+          {
+            $set: {
+              'members.$.name': updateData.name,
+              'members.$.bio': updateData.bio,
+              'members.$.avatar': updateData.avatar
+            }
+          }
+        );
+
+        // Updating members array
+        await Chatroom.updateMany(
+          { 'admins.id': userId },
+          {
+            $set: {
+              'admins.$.name': updateData.name,
+              'admins.$.bio': updateData.bio,
+              'admins.$.avatar': updateData.avatar
+            }
+          }
+        );
+      }
+    }
+
     // Update user profile in the database
     await User.updateOne({ _id: userId }, updateData);
     await listOfChats.updateOne({ roomId: userId }, updateData);
@@ -231,7 +264,7 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     );
 
     // Return success response
-    return res.json({ success: true, message: 'User profile updated successfully' });
+    return res.json({ success: true, message: 'User profile updated successfully', editProfileSuccessUserId: userId });
 
   } catch (error) {
     console.error(error.message);

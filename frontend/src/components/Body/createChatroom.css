@@ -37,19 +37,21 @@
 }
 
 .createChatroomForm input[type="file"],
-.createChatroomForm input[type="text"],
-.createChatroomForm textarea {
+.createChatroomForm input[type="text"]
+/* .createChatroomForm textarea  */
+  {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   box-sizing: border-box;
+  outline: none;
 }
 
-.createChatroomForm textarea {
+/* .createChatroomForm textarea {
   resize: vertical;
-}
+} */
 
 .createChatroomForm button[type="submit"] {
   background-color: #4CAF50;

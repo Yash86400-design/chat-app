@@ -6,7 +6,7 @@ import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Spinner from '../Spinner/Spinner';
-import { addRequest } from '../../features/userSlice';
+import { addRequest, groupJoinAccept, groupJoinReject, userData } from '../../features/userSlice';
 // import { useSelector } from 'react-redux';
 
 function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
@@ -18,13 +18,18 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const [showChatroomInfoBox, setShowChatroomInfoBox] = useState(false);
   const [closeIconState, setCloseIconState] = useState(false);
   const [isNotificationStateActive, setIsNotificationStateActive] = useState(false);
+  const [chatroomData, setChatroomData] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [currentAdminIndex, setCurrentAdminIndex] = useState(0);
+  const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
+
   const friendInfoBoxRef = useRef(null);
   const chatroomInfoBoxRef = useRef(null);
   const friendInfoRef = useRef(null);
   const chatroomInfoRef = useRef(null);
   const chatroomNotificationStateRef = useRef(null);
 
-  const { addRequestLoading, returnedAddRequestResponse, addRequestError } = useSelector((state) => state.userProfile);
+  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, returnedChatroomRequestResponse } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -89,17 +94,18 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           {closeIconState ? <RxCross1 onClick={closeIconClick} /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} />}
         </>
       );
-    } else {
-      return (
-        <>
-          <span className='tooltip'>
-            {userType === 'Chatroom' ? 'Only for members' : 'Only for friends'}
-          </span>
-          {/* <BsThreeDotsVertical className='infoIcon disabled' /> */}
-          <BsThreeDotsVertical />
-        </>
-      );
     }
+    // else {
+    //   return (
+    //     <>
+    //       <span className='tooltip'>
+    //         {userType === 'Chatroom' ? 'Only for members' : 'Only for friends'}
+    //       </span>
+    //       {/* <BsThreeDotsVertical className='infoIcon disabled' /> */}
+    //       <BsThreeDotsVertical />
+    //     </>
+    //   );
+    // }
   };
 
   const handleFriendInfoClick = (event) => {
@@ -153,6 +159,41 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     setIsNotificationStateActive(!isNotificationStateActive);
   };
 
+  const handleJoinRequestAcceptAction = (notificationId, senderId, chatroomId) => {
+    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
+    dispatch(groupJoinAccept(requiredData));
+  };
+
+  const handleJoinRequestRejectAction = (notificationId, senderId, chatroomId) => {
+    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
+    console.log(requiredData);
+    dispatch(groupJoinReject(requiredData));
+  };
+
+  const showNextAdminCount = () => {
+    if (currentAdminIndex < chatroomData.admins.length - 1) {
+      setCurrentAdminIndex(currentAdminIndex + 1);
+    }
+  };
+
+  const showPreviousAdminCount = () => {
+    if (currentAdminIndex > 0) {
+      setCurrentAdminIndex(currentAdminIndex - 1);
+    }
+  };
+
+  const showNextMemberCount = () => {
+    if (currentMemberIndex < chatroomData.members.length - 1) {
+      setCurrentMemberIndex(currentMemberIndex + 1);
+    }
+  };
+
+  const showPreviousMemberCount = () => {
+    if (currentMemberIndex > 0) {
+      setCurrentMemberIndex(currentMemberIndex - 1);
+    }
+  };
+
   // const handleChatroomInfoCloseClick = () => {
 
   // };
@@ -196,8 +237,45 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
   }, [addRequestError, returnedAddRequestResponse]);
 
+  // Fetching the Chatroom Info from localstorage
+  useEffect(() => {
+
+    // Retrieve data from localStorage
+    const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo'));
+
+    // Assuming you have a specific chatroomId or key to access the data
+    const chatroomId = userId;
+    const chatroomInfo = storedChatroomInfo[chatroomId];
+
+    if (chatroomInfo) {
+      setChatroomData(chatroomInfo);
+      let count = 0;
+      for (let i = 0; i < chatroomInfo.notifications.length; i++) {
+        if (chatroomInfo.notifications[i].read === false) {
+          count += 1;
+        }
+      }
+      setNotificationCount(count);
+    }
+
+  }, [userId]);  // UserId is chatroom Id
+
+  useEffect(() => {
+    if (returnedChatroomRequestResponse === 200) {
+      dispatch(userData());
+    }
+  }, [returnedChatroomRequestResponse, dispatch]);
+
   if (addRequestLoading) {
     return <Spinner />;
+  }
+
+  if (chatroomResponseLoading) {
+    return <Spinner />;
+  }
+
+  if (addMemberResponseError) {
+    toast.error(addMemberResponseError);
   }
 
   return (
@@ -219,12 +297,15 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         {
           userType === 'Chatroom' && isKnown &&
           (
-            <div className='notificationIconContainer'>
-              <AiOutlineBell onClick={handleNotificationClick} />
+            <div className='notificationIconContainer' onClick={handleNotificationClick}>
+              <AiOutlineBell className='chat__header-container_notification' />
+              {notificationCount > 0 && (
+                <span className='chatroom-notification-count'>{notificationCount}</span>
+              )}
             </div>
           )
         }
-        {
+        {/* {
           userType === 'Chatroom' && !isKnown &&
           (
             <div className='notificationIconContainer disabled'>
@@ -232,23 +313,34 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
               <AiOutlineBell />
             </div>
           )
-        }
-        <div className={`addIconContainer ${isKnown ? 'disabled' : ''}`}>
+        } */}
+        {/* <div className={`addIconContainer ${isKnown ? 'disabled' : ''}`}> */}
+        <div className='addIconContainer'>
           {/* <div className='addIconContainer'> */}
           {renderAddButtonContent()}
         </div>
 
-        <div className={`infoIconContainer ${isKnown ? '' : 'disabled'}`}>
+        {/* <div className={`infoIconContainer ${isKnown ? '' : 'disabled'}`}> */}
+        <div className='infoIconContainer'>
           {/* <div className='infoIconContainer'> */}
           {renderInfoButtonContent()}
         </div>
       </div>
       {
-        isNotificationStateActive && (
+        isNotificationStateActive && chatroomData.notifications.length > 0 && (
           <div className="chatroomNotificationList" ref={chatroomNotificationStateRef}>
             <ul>
-              <li>Hey There</li>
-              <li>Hi Guys</li>
+              {chatroomData.notifications.map((notification, index) => (
+                <li key={index} className={`notification ${notification.notificationType} ${notification.read ? 'notificationRead' : 'notificationUnRead'}`}>
+                  {notification.title}
+                  {notification.notificationType === 'groupJoinRequest' && (
+                    <div className='joinRequestButtonsGroup'>
+                      <button className='chatroomAcceptButton' onClick={() => handleJoinRequestAcceptAction(notification._id, notification.sender, chatroomData._id)}>Accept</button>
+                      <button className='chatroomRejectButton' onClick={() => handleJoinRequestRejectAction(notification._id, notification.sender, chatroomData._id)}>Reject</button>
+                    </div>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         )
@@ -296,6 +388,56 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
             </div>
             <h2> {userName ? userName : "No Name Set"} </h2>
             <p> {userBio ? userBio : 'No Bio'} </p>
+            <div className="adminsMembersGroup">
+
+              {
+                chatroomData?.admins.length > 0 && (
+                  <div className="adminContainer">
+                    <p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p>
+                    <div className="admins">
+                      <div className="adminImgContainer">
+                        <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
+                      </div>
+                      <div className="adminInfoContainer">
+                        <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
+                        <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
+                        <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
+                        <p>Joined At: {chatroomData?.admins[currentAdminIndex]?.joinedAt}</p>
+                      </div>
+                    </div>
+                    <div className="adminNavigation">
+                      <button onClick={showPreviousAdminCount} disabled={currentAdminIndex === 0}>Previous</button>
+                      <button onClick={showNextAdminCount} disabled={currentAdminIndex === chatroomData.admins.length - 1}>Next</button>
+                    </div>
+                  </div>
+                )
+              }
+
+              {
+                chatroomData?.members.length > 0 && (
+                  <div className="memberContainer">
+                    <p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p>
+                    <div className="members">
+                      <div className="memberImgContainer">
+                        <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
+                      </div>
+                      <div className="memberInfoContainer">
+                        <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
+                        <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
+                        <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
+                        <p>Joined At: {chatroomData?.members[currentMemberIndex]?.joinedAt}</p>
+                      </div>
+                    </div>
+                    <div className="memberNavigation">
+                      <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
+                      <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
+                    </div>
+                  </div>
+                )
+              }
+
+
+            </div>
           </div>
         )
       }

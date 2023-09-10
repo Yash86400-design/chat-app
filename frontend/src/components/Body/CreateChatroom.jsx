@@ -91,7 +91,7 @@ function CreateChatroom() {
             />
 
             <label htmlFor="description">Description: </label>
-            <textarea name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></textarea>
+            <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
 
             <button type="submit">Create</button>
           </form>

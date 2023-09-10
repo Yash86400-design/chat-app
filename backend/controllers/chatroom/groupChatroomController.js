@@ -7,7 +7,7 @@ const Joi = require("joi");
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const Message = require("../../models/message/Message");
-const { isMember } = require("./IsUserMember");
+const { isMember } = require("./isUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const Notification = require("../../models/notification/Notification");
 const fs = require('fs');
@@ -262,15 +262,21 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     // await Chatroom.populate(chatroomInfo, { path: 'joinRequests', select: '_id name email' });
 
     // We can merge above two like this..
+
+    /* Why this, when we want every piece of data of this group?
     await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
+    */
 
     // await Chatroom.populate(chatroomInfo, {  //This fucking error killed my 2 hours... 
     //   path: 'avatar',
     //   select: 'avatar'
     // });
-    const responseData = { listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests, avatar: chatroomInfo.avatar };
 
-    return res.status(200).json(responseData);
+    /* Why this, when we want every piece of data of this group?
+    const responseData = { listofMembers: chatroomInfo.members, name: chatroomInfo.name, listofAdmins: chatroomInfo.admins, description: chatroomInfo.description, listofPendingRequests: chatroomInfo.joinRequests, avatar: chatroomInfo.avatar };
+    */
+
+    return res.status(200).json(chatroomInfo);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -425,7 +431,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
 
     // Check if the user has already requested to join
     if (chatroomInfo.joinRequests.some(request => request.toString() === senderId.toString())) {
-      return res.status(200).json({ message: 'User has already requested to join the chatroom' });
+      return res.status(200).json({ message: 'You have already requested to join the chatroom' });
     }
 
     chatroomInfo.joinRequests.push(senderInfo);
@@ -460,7 +466,8 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       notificationType: 'groupJoinRequest'
     };
 
-    chatroomInfo.notifications.push(notification);
+    // chatroomInfo.notifications.push(notification);
+    chatroomInfo?.notifications.unshift(notification);
     await chatroomInfo.save();
 
     return res.status(200).json({ message: 'Join request sent successfully' });
@@ -494,15 +501,16 @@ router.get('/:id/requests', authenticateToken, async (req, res) => {
 });
 
 // PUT request for accepting the request to join chatroom
-router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) => {
+router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, async (req, res) => {
   try {
+    const notificationId = req.params.notificationId;
     const chatroomId = req.params.id;
     const senderId = req.user.userId;
     const requestedUserId = req.params.userId;
 
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound, socketId } = await (isMember(chatroomId, senderId));
 
-    const isAdmin = chatroomInfo.admins.some((user) => user.toString() === senderId);
+    const isAdmin = chatroomInfo.admins.some((user) => user.id.toString() === senderId);
     // console.log(isAdmin);
 
     if (!isGroupMember) {
@@ -548,13 +556,12 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
 
     // Remove the user from the join requests array and add them to the members array
 
-    const requesterName = await User.findById(requestedUserId).select('name');
+    const requestedUserData = await User.findById(requestedUserId);
 
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
-    chatroomInfo.members.push({ id: requestedUserId, name: requesterName.name, joinedAt: new Date() });
+    chatroomInfo.members.push({ id: requestedUserId, name: requestedUserData?.name, bio: requestedUserData?.bio, avatar: requestedUserData?.avatar, joinedAt: new Date() });
 
     // Send notification to the requester
-    const requester = await User.findById(requestedUserId);
     const notificationMessage = `Your request to join ${chatroomInfo.name} has been accepted.`;
 
     /*const notification = new Notification({
@@ -574,22 +581,48 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
       link: `/api/profile/chatrooms/${chatroomId}`,
     };
 
+    /* Replaced the notification with new notification of joining
     const notificationForChatroom = {
       title: `${requester?.name} has joined our chatroom🥳🥳🥳...`,
       notificationType: 'user_joined'
     };
+    // chatroomInfo?.notifications.push(notificationForChatroom);
+    chatroomInfo?.notifications.unshift(notificationForChatroom);
+    */
 
-    chatroomInfo?.notifications.push(notificationForChatroom);
+    chatroomInfo?.notifications.map((notification) => {
+      if (notification._id.toString() === notificationId) {
+        notification['notificationType'] = 'groupJoinAccepted';
+        notification['title'] = `${requestedUserData?.name} has joined our chatroom🥳🥳🥳...`;
+        notification['read'] = true;
+      }
+    });
+
 
     // const uniqueId = uuidv4();
 
     // await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChatrooms: chatroomId, joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: socketId } }, $addToSet: { notifications: notification } });
-    await User.findByIdAndUpdate(requestedUserId, { $push: { joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: socketId } }, $addToSet: { notifications: notificationForUser } });
+
+    /* Position is not a field, that's why going with simple way
+    await User.findByIdAndUpdate(requestedUserId, {
+      $push: { joinedChats: { name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: socketId } }, $addToSet: {
+        notifications: {
+          $each: [notificationForUser],
+          $position: 0  // Push 
+        }
+      }
+    });
+    */
+
+    requestedUserData?.joinedChats.push({ name: chatroomInfo.name, 'id': chatroomId, avatar: chatroomInfo.avatar, bio: chatroomInfo.bio, type: 'Chatroom', socketRoomId: socketId });
+
+    requestedUserData.notifications.unshift(notificationForUser);
 
     await chatroomInfo.save();
+    await requestedUserData.save();
     // await notification.save();
 
-    return res.status(200).json({ message: `${requester.name} has been added to the chatroom` });
+    return res.status(200).json({ message: `${requestedUserData.name} has been added to the chatroom` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -597,8 +630,9 @@ router.put('/:id/requests/:userId/accept', authenticateToken, async (req, res) =
 });
 
 // Put request for rejecting the joining chatroom request
-router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) => {
+router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, async (req, res) => {
   try {
+    const notificationId = req.params.notificationId;
     const chatroomId = req.params.id;
     const senderId = req.user.userId;
     const requestedUserId = req.params.userId;
@@ -607,7 +641,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     const isAdmin = chatroomInfo.admins.some((user) => user.toString() === senderId);
 
     if (!isGroupMember) {
-      return res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(200).json({ message: 'You are not a member of this group' });
     }
 
     if (chatroomNotFound) {
@@ -615,7 +649,7 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
     }
 
     if (!isAdmin) {
-      return res.status(403).json({ message: 'Only admins can accept join requests' });
+      return res.status(200).json({ message: 'Only admins can reject join requests' });
     }
 
     await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
@@ -629,7 +663,15 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
 
     // Remove the user from the join requests array
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
-    await chatroomInfo.save();
+
+    chatroomInfo?.notifications.map((notification) => {
+      if (notification._id.toString() === notificationId) {
+        notification['notificationType'] = 'groupJoinRejected';
+        notification['title'] = `${requester?.name} join request has been rejected...`;
+        notification['read'] = true;
+      }
+    });
+
 
     // Create a notification for the requester that their request has been rejected
     // const notification = new Notification({
@@ -645,8 +687,24 @@ router.put('/:id/requests/:userId/reject', authenticateToken, async (req, res) =
       notificationType: 'groupJoinRequestRejected',
     };
 
-    await User.findByIdAndUpdate(requestedUserId, { $push: { notifications: notification } });
+    const requestedUserData = await User.findById(requestedUserId).select('notifications')
     // await notification.save();
+
+    requestedUserData.notifications.unshift(notification)
+
+    /*
+    await User.findByIdAndUpdate(requestedUserId, {
+      $addToSet: {
+        notifications: {
+          $each: [notificationForUser],
+          $position: 0  // Push 
+        }
+      }
+    });
+    */
+
+    await chatroomInfo.save()
+    await requestedUserData.save()
 
     return res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {
@@ -675,19 +733,23 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' });
 
     // Check if the user is an admin of the chatroom
-    const isAdmin = chatroomInfo.admins.includes(senderId);
+    // const isAdmin = chatroomInfo.admins.includes(senderId);
+    const isAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === senderId.toString());
     if (!isAdmin) {
       return res.status(401).json({ message: 'Only admins are allowed to promote members' });
     }
 
     // Check if the user to be promoted is already an admin of the chatroom
-    const isAlreadyAdmin = chatroomInfo.admins.includes(userId);
+    const isAlreadyAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === userId.toString());
     if (isAlreadyAdmin) {
       return res.status(400).json({ message: 'User is already an admin of the chatroom' });
     }
 
     // Promote the user to be an admin of the chatroom
-    chatroomInfo.admins.push(userId);
+    // chatroomInfo.admins.push(userId);
+    const userData = await User.findById(userId).select('name avatar bio _id');
+
+    chatroomInfo.members.push({ id: userData?._id, name: userData?.name, bio: userData?.bio, avatar: userData?.avatar, joinedAt: new Date() });
 
 
     /* Or you can do this to save in adminOf
@@ -707,7 +769,6 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     });
     */
 
-    const userName = await User.findById(userId).select('name');
 
     const notificationForUser = {
       // recipient: userId,
@@ -718,11 +779,12 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     };
 
     const notificationForChatroom = {
-      message: `${userName.name} has been promoted as admin...`,
+      message: `${userData.name} has been promoted as admin...`,
       notificationType: 'admin_promotion',
     };
 
-    chatroomInfo.notifications.push(notificationForChatroom);
+    // chatroomInfo.notifications.push(notificationForChatroom);
+    chatroomInfo?.notifications.unshift(notificationForChatroom);
 
     await chatroomInfo.save();
     await User.findByIdAndUpdate(userId, { $push: { adminOf: chatroomId }, $addToSet: { notifications: notificationForUser } });
@@ -796,7 +858,8 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
       title: `${userName.name} has been removed from admin role by ${senderInfo?.name}...`
     };
 
-    chatroomInfo.notifications.push(notificationForChatroom);
+    // chatroomInfo.notifications.push(notificationForChatroom);
+    chatroomInfo?.notifications.unshift(notificationForChatroom);
 
     // await notification.save();
 
@@ -890,7 +953,8 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
         };
 
         // await User.findByIdAndUpdate(newAdmin._id, { $push: { notifications: newAdminNotification } });
-        chatroomInfo.notifications.push(notificationForChatroom);
+        // chatroomInfo.notifications.push(notificationForChatroom);
+        chatroomInfo?.notifications.unshift(notificationForChatroom);
         await User.findByIdAndUpdate(newAdmin._id, { $push: { notifications: notificationForUser } });
         // await newAdminNotification.save();
       }
@@ -927,7 +991,8 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
       };
 
       // senderInfo.notifications.push(senderNotification);
-      senderInfo.notifications.push(notificationForUser);
+      // senderInfo.notifications.push(notificationForUser);
+      senderInfo?.notifications.unshift(notificationForUser);
 
       await senderInfo.save();
       // await senderNotification.save();
@@ -949,7 +1014,8 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
         }
       });
       */
-      chatroomInfo.notifications.push(notificationForChatroom);
+      // chatroomInfo.notifications.push(notificationForChatroom);
+      chatroomInfo?.notifications.unshift(notificationForChatroom);
     }
     await chatroomInfo.save();
 

@@ -9,18 +9,20 @@ const initialState = {
   // userToken: userToken ? userToken : null,
   userProfile: userProfile ? userProfile : null,
   isError: false,
-  addFriendResponseError: null,
   addRequestError: null,  // for both user and chatroom
+  addFriendResponseError: null,
+  addMemberResponseError: null,
   isSuccess: false,
   editProfileSuccess: false,
   isLoading: false,
   sendingMessageLoading: false,
   fetchingMessageLoading: false,
   createChatroomLoading: false,
-  friendRequestResponseLoading: false,
   addRequestLoading: false,  // for both user and chatroom
+  friendRequestResponseLoading: false,
+  chatroomRequestResponseLoading: false,
   message: '',
-  editProfileSuccessMessage: '',
+  editProfileSuccessResponse: null,
   createChatroomMessage: '',
   statusCode: null,
   fetchUserResponse: null,
@@ -28,8 +30,9 @@ const initialState = {
   returnedUserMessage: null,
   returnedChatroomMessage: null,
   returnedCreateChatroomResponse: null,
+  returnedAddRequestResponse: null, // for adding request response
   returnedFriendRequestResponse: null,
-  returnedAddRequestResponse: null // for adding request response
+  returnedChatroomRequestResponse: null,
 };
 
 // Fetching the user
@@ -149,6 +152,20 @@ export const createChatroom = createAsyncThunk(
   }
 );
 
+// For both: Add request for friend and Add request in chatroom
+export const addRequest = createAsyncThunk(
+  "/request",
+  async (requiredData, thunkAPI) => {
+    try {
+      return await userService.joinRequest(requiredData);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Accepting Friend Request
 export const acceptRequest = createAsyncThunk(
   "/accepting-request",
@@ -177,12 +194,26 @@ export const rejectRequest = createAsyncThunk(
   }
 );
 
-// For both: Add request for friend and Add request in chatroom
-export const addRequest = createAsyncThunk(
-  "/request",
+// Accepting Group Join Request
+export const groupJoinAccept = createAsyncThunk(
+  "/acceptingChatroom-request",
   async (requiredData, thunkAPI) => {
     try {
-      return await userService.joinRequest(requiredData);
+      return await userService.groupJoinRequestAccepted(requiredData);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Rejecting Group Join Request
+export const groupJoinReject = createAsyncThunk(
+  "/rejectingChatroom-request",
+  async (requiredData, thunkAPI) => {
+    try {
+      return await userService.groupJoinRequestRejected(requiredData);
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
@@ -245,7 +276,7 @@ export const userSlice = createSlice({
       .addCase(editInfo.fulfilled, (state, action) => {
         state.isLoading = false;
         state.editProfileSuccess = true;
-        state.editProfileSuccessMessage = action.payload;
+        state.editProfileSuccessResponse = action.payload;
       })
       .addCase(editInfo.rejected, (state, action) => {
         state.isLoading = false;
@@ -313,6 +344,17 @@ export const userSlice = createSlice({
         state.createChatroomLoading = false;
         state.createChatroomMessage = action.payload;
       })
+      .addCase(addRequest.pending, (state) => {
+        state.addRequestLoading = true;
+      })
+      .addCase(addRequest.fulfilled, (state, action) => {
+        state.addRequestLoading = false;
+        state.returnedAddRequestResponse = action.payload;
+      })
+      .addCase(addRequest.rejected, (state, action) => {
+        state.addRequestLoading = false;
+        state.addRequestError = action.payload;
+      })
       .addCase(acceptRequest.pending, (state) => {
         state.friendRequestResponseLoading = true;
       })
@@ -337,16 +379,29 @@ export const userSlice = createSlice({
         state.returnedFriendRequestResponse = action.payload.statusCode;
         state.addFriendResponseError = action.payload.message;
       })
-      .addCase(addRequest.pending, (state) => {
-        state.addRequestLoading = true;
+      .addCase(groupJoinAccept.pending, (state) => {
+        state.chatroomRequestResponseLoading = true;
       })
-      .addCase(addRequest.fulfilled, (state, action) => {
-        state.addRequestLoading = false;
-        state.returnedAddRequestResponse = action.payload;
+      .addCase(groupJoinAccept.fulfilled, (state, action) => {
+        state.chatroomRequestResponseLoading = false;
+        state.returnedChatroomRequestResponse = action.payload.statusCode;
       })
-      .addCase(addRequest.rejected, (state, action) => {
-        state.addRequestLoading = false;
-        state.addRequestError = action.payload;
+      .addCase(groupJoinAccept.rejected, (state, action) => {
+        state.chatroomRequestResponseLoading = false;
+        state.returnedChatroomRequestResponse = action.payload.statusCode;
+        state.addMemberResponseError = action.payload.message;
+      })
+      .addCase(groupJoinReject.pending, (state) => {
+        state.chatroomRequestResponseLoading = true;
+      })
+      .addCase(groupJoinReject.fulfilled, (state, action) => {
+        state.chatroomRequestResponseLoading = false;
+        state.returnedChatroomRequestResponse = action.payload.statusCode;
+      })
+      .addCase(groupJoinReject.rejected, (state, action) => {
+        state.chatroomRequestResponseLoading = false;
+        state.returnedChatroomRequestResponse = action.payload.statusCode;
+        state.addMemberResponseError = action.payload.message;
       });
   }
 }

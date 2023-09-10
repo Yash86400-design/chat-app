@@ -52,6 +52,7 @@ const editInfo = async (userData) => {
       'Content-Type': 'multipart/form-data'
     }
   });
+  console.log(response.data);
   return response.data;
 };
 
@@ -201,6 +202,32 @@ const createChatroomResponse = async (formData) => {
   }
 };
 
+const joinRequest = async (requiredData) => {
+  // Here I will separate the requests, one for user and one for chatroom....
+  try {
+    if (requiredData.type === 'User') {
+
+      const response = await axios.post(API_URL + `personal-chat/${requiredData.id}/request`, {}, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      });
+      return response.data.message;
+    } else if (requiredData.type === 'Chatroom') {
+      const response = await axios.post(API_URL + `chatroom/${requiredData.id}/request`, {}, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
+      });
+      return response.data.message;
+    }
+
+  } catch (error) {
+    console.error(error);
+    return 'Error in Adding Request';
+  }
+};
+
 const friendRequestAccept = async (requiredData) => {
   try {
 
@@ -233,33 +260,49 @@ const friendRequestReject = async (requiredData) => {
   }
 };
 
-const joinRequest = async (requiredData) => {
-  // Here I will separate the requests, one for user and one for chatroom....
+const groupJoinRequestAccepted = async (requiredData) => {
   try {
-    if (requiredData.type === 'User') {
-
-      const response = await axios.post(API_URL + `personal-chat/${requiredData.id}/request`, {}, {
-        headers: {
-          Authorization: `Bearer ${userToken}`
-        }
-      });
-      return response.data.message;
-    } else if (requiredData.type === 'Chatroom') {
-      const response = await axios.post(API_URL + `chatroom/${requiredData.id}/request`, {}, {
-        headers: {
-          Authorization: `Bearer ${userToken}`
-        }
-      });
-      return response.data.message;
-    }
-
+    const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/accept`,{}, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return { message: response.message, statusCode: response.status };
   } catch (error) {
     console.error(error);
-    return 'Error in Adding Request';
+    return { message: 'Error in Joining Member', statusCode: 500 };
+  }
+};
+
+const groupJoinRequestRejected = async (requiredData) => {
+  try {
+    const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/reject`, {}, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return { message: response.message, statusCode: response.status };
+  } catch (error) {
+    console.error(error);
+    return { message: 'Error in Rejecting Member Request', statusCode: 500 };
+  }
+};
+
+const fetchChatroomInfo = async (requiredData) => {
+  try {
+    const response = await axios.get(API_URL + `chatroom/${requiredData.id}/info`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };
 
 // const userService = { signedUser, userInfo, editInfo };
-const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, friendRequestAccept, friendRequestReject, joinRequest, clearToken, updateToken };
+const userService = { signedUser, editInfo, fetchSuggestedTerms, userInfo, groupInfo, fetchUserMessages, fetchGroupMessages, messageSendToUser, messageSendToChatroom, createChatroomResponse, friendRequestAccept, friendRequestReject, joinRequest, groupJoinRequestAccepted, groupJoinRequestRejected, fetchChatroomInfo, clearToken, updateToken };
 
 export default userService;

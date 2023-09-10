@@ -48,23 +48,24 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   };
 
   const renderAddButtonContent = () => {
-    if (isKnown && userType === 'User') {
-      return (
-        <>
-          <span className="tooltip">Already a friend</span>
-          {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
-          <BsPersonAdd />
-        </>
-      );
-    } else if (isKnown && userType === 'Chatroom') {
-      return (
-        <>
-          <span className="tooltip">Already a member</span>
-          {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
-          <BsPersonAdd />
-        </>
-      );
-    } else {
+    // if (isKnown && userType === 'User') {
+    //   return (
+    //     <>
+    //       <span className="tooltip">Already a friend</span>
+    //       {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
+    //       <BsPersonAdd />
+    //     </>
+    //   );
+    // } else if (isKnown && userType === 'Chatroom') {
+    //   return (
+    //     <>
+    //       <span className="tooltip">Already a member</span>
+    //       {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
+    //       <BsPersonAdd />
+    //     </>
+    //   );
+    // } else {
+    if (!isKnown) {
       return (
         <>
           <span className="tooltip">
@@ -106,6 +107,78 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     //     </>
     //   );
     // }
+  };
+
+  const showUserFriendInfoPage = () => {
+    return (
+      <div className="friendInfoBox" ref={friendInfoRef}>
+        <div className="imgBox">
+          <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+        </div>
+        <h2>{userName ? userName : "No Name Set"}</h2>
+        <p>{userBio ? userBio : 'No Bio'}</p>
+      </div>
+    );
+  };
+
+  const showChatroomInfoPage = () => {
+    return (
+      <div className="chatroomInfoBox" ref={chatroomInfoRef}>
+        <div className="imgBox">
+          <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+        </div>
+        <h2> {userName ? userName : "No Name Set"} </h2>
+        <p> {userBio ? userBio : 'No Bio'} </p>
+        <div className="adminsMembersGroup">
+
+          {
+            chatroomData?.admins.length > 0 && (
+              <div className="adminContainer">
+                <p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p>
+                <div className="admins">
+                  <div className="adminImgContainer">
+                    <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
+                  </div>
+                  <div className="adminInfoContainer">
+                    <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
+                    <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
+                    <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
+                    <p>Joined At: {chatroomData?.admins[currentAdminIndex]?.joinedAt}</p>
+                  </div>
+                </div>
+                <div className="adminNavigation">
+                  <button onClick={showPreviousAdminCount} disabled={currentAdminIndex === 0}>Previous</button>
+                  <button onClick={showNextAdminCount} disabled={currentAdminIndex === chatroomData.admins.length - 1}>Next</button>
+                </div>
+              </div>
+            )
+          }
+
+          {
+            chatroomData?.members.length > 0 && (
+              <div className="memberContainer">
+                <p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p>
+                <div className="members">
+                  <div className="memberImgContainer">
+                    <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
+                  </div>
+                  <div className="memberInfoContainer">
+                    <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
+                    <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
+                    <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
+                    <p>Joined At: {chatroomData?.members[currentMemberIndex]?.joinedAt}</p>
+                  </div>
+                </div>
+                <div className="memberNavigation">
+                  <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
+                  <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
+                </div>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    );
   };
 
   const handleFriendInfoClick = (event) => {
@@ -168,6 +241,21 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
     console.log(requiredData);
     dispatch(groupJoinReject(requiredData));
+  };
+
+  const handleDirectProfileView = (event) => {
+    if (userType === 'Chatroom') {
+      event.stopPropagation();
+      setCloseIconState(!closeIconState);
+      setShowChatroomInfoBox(!showChatroomInfoBox);
+      setChatroomInfoBoxActive(false);
+      console.log('Hi');
+    } else if (userType === 'User') {
+      event.stopPropagation();
+      setCloseIconState(!closeIconState);
+      setShowFriendInfoBox(!showFriendInfoBox);
+      setFriendInfoBoxActive(false);
+    }
   };
 
   const showNextAdminCount = () => {
@@ -280,7 +368,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
   return (
     <div className="chat__header-container">
-      <div className="chat__header-container_left">
+      <div className="chat__header-container_left" onClick={handleDirectProfileView}>
         <div className="chat__header-container_left-profile">
           {userAvatar && <img src={userAvatar} alt="UserProfile" />}
           {!userAvatar && <img src={noProfileAvatar} alt="User" />}
@@ -370,75 +458,13 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
       {
         showFriendInfoBox &&
         (
-          <div className="friendInfoBox" ref={friendInfoRef}>
-            <div className="imgBox">
-              <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
-            </div>
-            <h2>{userName ? userName : "No Name Set"}</h2>
-            <p>{userBio ? userBio : 'No Bio'}</p>
-          </div>
+          showUserFriendInfoPage()
         )
       }
       {
         showChatroomInfoBox &&
         (
-          <div className="chatroomInfoBox" ref={chatroomInfoRef}>
-            <div className="imgBox">
-              <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
-            </div>
-            <h2> {userName ? userName : "No Name Set"} </h2>
-            <p> {userBio ? userBio : 'No Bio'} </p>
-            <div className="adminsMembersGroup">
-
-              {
-                chatroomData?.admins.length > 0 && (
-                  <div className="adminContainer">
-                    <p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p>
-                    <div className="admins">
-                      <div className="adminImgContainer">
-                        <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
-                      </div>
-                      <div className="adminInfoContainer">
-                        <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
-                        <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
-                        <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
-                        <p>Joined At: {chatroomData?.admins[currentAdminIndex]?.joinedAt}</p>
-                      </div>
-                    </div>
-                    <div className="adminNavigation">
-                      <button onClick={showPreviousAdminCount} disabled={currentAdminIndex === 0}>Previous</button>
-                      <button onClick={showNextAdminCount} disabled={currentAdminIndex === chatroomData.admins.length - 1}>Next</button>
-                    </div>
-                  </div>
-                )
-              }
-
-              {
-                chatroomData?.members.length > 0 && (
-                  <div className="memberContainer">
-                    <p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p>
-                    <div className="members">
-                      <div className="memberImgContainer">
-                        <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
-                      </div>
-                      <div className="memberInfoContainer">
-                        <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
-                        <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
-                        <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
-                        <p>Joined At: {chatroomData?.members[currentMemberIndex]?.joinedAt}</p>
-                      </div>
-                    </div>
-                    <div className="memberNavigation">
-                      <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
-                      <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
-                    </div>
-                  </div>
-                )
-              }
-
-
-            </div>
-          </div>
+          showChatroomInfoPage()
         )
       }
     </div >

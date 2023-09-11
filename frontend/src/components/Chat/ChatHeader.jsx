@@ -29,7 +29,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const chatroomInfoRef = useRef(null);
   const chatroomNotificationStateRef = useRef(null);
 
-  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, returnedChatroomRequestResponse } = useSelector((state) => state.userProfile);
+  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -239,7 +239,6 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
   const handleJoinRequestRejectAction = (notificationId, senderId, chatroomId) => {
     const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
-    console.log(requiredData);
     dispatch(groupJoinReject(requiredData));
   };
 
@@ -323,7 +322,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
       toast.error(addRequestError);
     }
 
-  }, [addRequestError, returnedAddRequestResponse]);
+  }, [addRequestError, returnedAddRequestResponse, userProfile]);
 
   // Fetching the Chatroom Info from localstorage
   useEffect(() => {
@@ -351,6 +350,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   useEffect(() => {
     if (returnedChatroomRequestResponse === 200) {
       dispatch(userData());
+      window.location.reload();
     }
   }, [returnedChatroomRequestResponse, dispatch]);
 
@@ -359,6 +359,10 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   }
 
   if (chatroomResponseLoading) {
+    return <Spinner />;
+  }
+
+  if (chatroomRequestResponseLoading) {
     return <Spinner />;
   }
 

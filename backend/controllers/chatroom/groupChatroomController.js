@@ -470,7 +470,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     chatroomInfo?.notifications.unshift(notification);
     await chatroomInfo.save();
 
-    return res.status(200).json({ message: 'Join request sent successfully' });
+    return res.status(200).json({ message: 'Join request sent successfully', id: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -638,7 +638,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     const requestedUserId = req.params.userId;
 
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
-    const isAdmin = chatroomInfo.admins.some((user) => user.toString() === senderId);
+    const isAdmin = chatroomInfo.admins.some((user) => user.id.toString() === senderId);
 
     if (!isGroupMember) {
       return res.status(200).json({ message: 'You are not a member of this group' });
@@ -652,10 +652,11 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
       return res.status(200).json({ message: 'Only admins can reject join requests' });
     }
 
-    await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
+    // await Chatroom.populate(chatroomInfo, { path: 'members', select: '_id name email' }, { path: 'joinRequests', select: '_id name email' });
 
     // Find the user in the join requests array
     const joinRequestIndex = chatroomInfo.joinRequests.findIndex(request => request._id.toString() === requestedUserId.toString());
+
 
     if (joinRequestIndex === -1) {
       return res.status(404).json({ message: 'Join request not found' });
@@ -664,10 +665,13 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     // Remove the user from the join requests array
     chatroomInfo.joinRequests.splice(joinRequestIndex, 1);
 
+    // Requester Data
+    const requesterData = await User.findById(requestedUserId).select('name')
+
     chatroomInfo?.notifications.map((notification) => {
       if (notification._id.toString() === notificationId) {
         notification['notificationType'] = 'groupJoinRejected';
-        notification['title'] = `${requester?.name} join request has been rejected...`;
+        notification['title'] = `${requesterData?.name} join request has been rejected...`;
         notification['read'] = true;
       }
     });
@@ -687,10 +691,10 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
       notificationType: 'groupJoinRequestRejected',
     };
 
-    const requestedUserData = await User.findById(requestedUserId).select('notifications')
+    const requestedUserData = await User.findById(requestedUserId).select('notifications');
     // await notification.save();
 
-    requestedUserData.notifications.unshift(notification)
+    requestedUserData.notifications.unshift(notification);
 
     /*
     await User.findByIdAndUpdate(requestedUserId, {
@@ -703,8 +707,8 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     });
     */
 
-    await chatroomInfo.save()
-    await requestedUserData.save()
+    await chatroomInfo.save();
+    await requestedUserData.save();
 
     return res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {

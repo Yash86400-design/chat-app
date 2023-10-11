@@ -31,3 +31,14 @@
   background-color: #D2691E;
   color: white;
 }
+
+@media (max-width: 767px) {
+  .chatInput input {
+    font-size: 16px;
+    padding: 5px;
+  }
+
+  .chatInput button {
+    font-size: 16px;
+  }
+}

@@ -329,7 +329,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
 
             {closeIconState
               ?
-              <RxCross1 className='body__header-container_info' onClick={closeIconClick} />  // Same class cause of styles applied on className
+              <RxCross1 className='body__header-container_info crossIcon' onClick={closeIconClick} />  // Same class cause of styles applied on className
               :
               <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
             }
@@ -442,7 +442,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
 
             {closeIconState
               ?
-              <RxCross1 className='body__header-container_info' onClick={closeIconClick} />  // Same class cause of styles applied on className
+              <RxCross1 className='body__header-container_info crossIcon' onClick={closeIconClick} />  // Same class cause of styles applied on className
               :
               <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
             }

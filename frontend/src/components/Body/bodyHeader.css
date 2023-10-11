@@ -36,7 +36,8 @@
 }
 
 .body__header-container_notification,
-.body__header-container_info {
+.body__header-container_info,
+.body__header-container .crossIcon {
   cursor: pointer;
   border-radius: 50%;
   font-size: 42px;
@@ -329,5 +330,24 @@
 
   .body__header-container.bodyHeaderInActive .notification-count {
     display: none;
+  }
+
+  .body__header-container_notification,
+  .body__header-container_info,
+  .body__header-container .crossIcon {
+    font-size: 32px;
+    padding: 5px;
+  }
+
+  .body__header-container .notification-count {
+    top: -5px;
+    right: -10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .body__header-container .userInfoBox .imgBox {
+    height: 250px;
+    width: 250px;
   }
 }

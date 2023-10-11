@@ -23,6 +23,11 @@
 
 .chatInfo h4 {
   margin-bottom: 3px;
+  background: linear-gradient(45deg, #4d90fe, #6f45f2);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  /* font-size: 24px; */
 }
 
 @media (max-width: 767px) {

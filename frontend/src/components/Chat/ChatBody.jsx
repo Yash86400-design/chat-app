@@ -93,6 +93,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
     }
   }, [message]);
   // Render the chat body based on the state
+  console.log(chatUserInfo.id);
 
   return (
     <>
@@ -117,7 +118,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
                       >
                         {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
                         <p>{msg.content}</p>
-                        <p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
+                        <strong><p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
                           timeZone: 'Asia/Kolkata', // Indian time zone
                           year: 'numeric',
                           month: '2-digit',
@@ -125,7 +126,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
                           hour: '2-digit',
                           minute: '2-digit',
                           second: '2-digit'
-                        })}</p>
+                        })}</p></strong>
                       </div>
                     ))}
                 </div>
@@ -133,9 +134,11 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
               {isKnown === true && message?.length === 0 && (
                 <div className="chatBodyNoMessage">
                   <p>No Conversation Found, Start a new conversation...</p>
-                  <div className="backButtonIcon">
-                    <button onClick={() => goBack()}><AiOutlineLeftCircle size={32} /></button>
-                  </div>
+                  {pageWidth < 768 && (
+                    <div className="backButtonIcon">
+                      <button onClick={() => goBack()}><AiOutlineLeftCircle size={32} /></button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

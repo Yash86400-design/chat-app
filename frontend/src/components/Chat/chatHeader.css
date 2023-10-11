@@ -33,13 +33,20 @@
 }
 
 .chat__header-container_right {
-  width: 20%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: 0.5s ease;
+  /* transition: 0.5s ease; */
   margin-right: 20px;
   position: relative;
+}
+
+.chat__header-container_right.userHeader {
+  width: auto;
+}
+
+.chat__header-container_right.chatroomHeader {
+  width: 20%;
 }
 
 /* Old way of showing notification inside chatroom header
@@ -117,8 +124,8 @@
 
 .notificationIconContainer {
   cursor: pointer;
-  font-size: 32px;
-  padding: 5px;
+  /* font-size: 16px; */
+  /* padding: 5px; */
   transition: 0.5s ease;
   display: flex;
   position: relative;
@@ -126,12 +133,12 @@
 
 .notificationIconContainer.disabled {
   cursor: auto;
-  border-radius: 40%;
+  border-radius: 50%;
   background: rgba(85, 85, 85, 0.2);
 }
 
 .notificationIconContainer.disabled:hover {
-  border-radius: 40%;
+  border-radius: 50%;
   background: rgba(85, 85, 85, 0.2);
 }
 
@@ -209,7 +216,7 @@
 .infoIconContainer {
   cursor: pointer;
   font-size: 32px;
-  padding: 5px;
+  /* padding: 5px; */
   transition: 0.5s ease;
   display: flex;
 }
@@ -217,14 +224,14 @@
 .addIconContainer.disabled,
 .infoIconContainer.disabled {
   cursor: auto;
-  border-radius: 40%;
+  border-radius: 50%;
   background: rgba(85, 85, 85, 0.2);
 }
 
 .addIconContainer:hover,
 .infoIconContainer:hover,
 .notificationIconContainer:hover {
-  border-radius: 40%;
+  border-radius: 50%;
   background: rgba(85, 85, 85, 0.2);
 }
 
@@ -345,27 +352,28 @@
 .chatroomInfoBox .imgBox {
   height: 350px;
   width: 350px;
-  border-radius: 0;
+  border-radius: 10%;
 }
 
 .chatroomInfoBox .imgBox img {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  border-radius: 0;
+  border-radius: 10%;
 }
 
 .adminsMembersGroup {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 80%;
 }
 
 .adminContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  /* gap: 20px; */
 }
 
 .adminFirstParagraph {
@@ -458,4 +466,173 @@
   height: 100%;
   width: 100%;
   object-fit: cover;
+}
+
+.chat__header-container_notificationIcon,
+.chat__header-container_addIcon,
+.chat__header-container_infoIcon,
+.chat__header-container .crossIcon {
+  font-size: 42px;
+  padding: 10px;
+}
+
+
+@media (min-width: 768px) and (max-width: 1200px) {
+  .adminsMembersGroup {
+    /* gap: 20px; */
+    gap: 10px;
+    /* width: 80%; */
+    width: 90%;
+  }
+
+  .adminContainer p {
+    font-size: 14px;
+  }
+
+  .adminFirstParagraph {
+    /* width: 100px; */
+    width: 75px;
+    text-align: center;
+  }
+
+  .admins {
+    /* gap: 10px; */
+    gap: 5px;
+  }
+
+  .adminInfoContainer {
+    /* width: 400px; */
+    width: 200px;
+    /* gap: 5px; */
+  }
+
+  .admins .adminImgContainer {
+    height: 55px;
+    width: 55px;
+    /* border-radius: 10%; */
+  }
+
+  .admins .adminImgContainer img {
+    /* border-radius: 10%; */
+  }
+
+  .memberContainer p {
+    font-size: 14px;
+  }
+
+  .memberFirstParagraph {
+    width: 75px;
+    /* text-align: center; */
+  }
+
+  .members {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .memberInfoContainer {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .members .memberImgContainer {
+    height: 55px;
+    width: 55px;
+    /* border-radius: 10%; */
+  }
+
+  .members .memberImgContainer img {
+    /* border-radius: 10%; */
+  }
+}
+
+@media (max-width: 767px) {
+
+  .chat__header-container_left {
+    margin-left: 5px;
+    gap: 10px;
+  }
+
+  .chat__header-container_left-profile {
+    height: 30px;
+    width: 30px;
+  }
+
+  .chat__header-container_left p {
+    margin-left: 5px;
+    font-size: 14px;
+  }
+
+  .chat__header-container_right {
+    /* transition: 0.5s ease; */
+    margin-right: 10px;
+  }
+
+  .chat__header-container_notificationIcon,
+  .chat__header-container_addIcon,
+  .chat__header-container_infoIcon,
+  .crossIcon {
+    font-size: 32px;
+    padding: 5px;
+  }
+
+  .notificationIconContainer .chatroom-notification-count {
+    top: -5px;
+    right: -10px;
+  }
+
+  .chatroomInfoBox .imgBox,
+  .friendInfoBox .imgBox {
+    height: 150px;
+    width: 150px;
+    /* border-radius: 0; */
+  }
+
+  .adminsMembersGroup {
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .adminContainer {
+    flex-direction: column;
+  }
+
+  .memberContainer {
+    flex-direction: column;
+  }
+
+  .adminInfoContainer {
+    width: 300px;
+  }
+
+  .memberInfoContainer {
+    width: 300px;
+  }
+}
+
+
+@media (max-width: 450px) {
+
+  .chatroomInfoBox .imgBox,
+  .friendInfoBox .imgBox {
+    height: 100px;
+    width: 100px;
+    /* border-radius: 0; */
+  }
+
+  .adminsMembersGroup p {
+    font-size: 12px;
+  }
+
+  .adminInfoContainer {
+    width: 250px;
+  }
+
+  .memberInfoContainer {
+    width: 250px;
+  }
 }

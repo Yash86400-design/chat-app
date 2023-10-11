@@ -65,17 +65,29 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     //     </>
     //   );
     // } else {
-    if (!isKnown) {
-      return (
-        <>
-          <span className="tooltip">
-            {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
-          </span>
-          {/* <BsPersonAdd className="addPersonIcon" /> */}
-          <BsPersonAdd onClick={handleAddRequest} />
-        </>
-      );
-    }
+
+    // Now checking isKnown before this function call so no need of if condition too
+    // if (!isKnown) {
+    //   return (
+    //     <>
+    //       <span className="tooltip">
+    //         {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
+    //       </span>
+    //       {/* <BsPersonAdd className="addPersonIcon" /> */}
+    //       <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
+    //     </>
+    //   );
+    // }
+
+    return (
+      <>
+        <span className="tooltip">
+          {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
+        </span>
+        {/* <BsPersonAdd className="addPersonIcon" /> */}
+        <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
+      </>
+    );
   };
 
   const renderInfoButtonContent = () => {
@@ -84,7 +96,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         <>
           {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleFriendInfoClick} /> */}
           {/* <BsThreeDotsVertical onClick={handleFriendInfoClick} /> */}
-          {closeIconState ? <RxCross1 onClick={closeIconClick} /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} />}
+          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} className='chat__header-container_infoIcon' />}
         </>
       );
     } else if (isKnown && userType === 'Chatroom') {
@@ -92,7 +104,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         <>
           {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleChatroomInfoClick} /> */}
           {/* <BsThreeDotsVertical onClick={handleChatroomInfoClick} /> */}
-          {closeIconState ? <RxCross1 onClick={closeIconClick} /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} />}
+          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} className='chat__header-container_infoIcon' />}
         </>
       );
     }
@@ -124,17 +136,19 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const showChatroomInfoPage = () => {
     return (
       <div className="chatroomInfoBox" ref={chatroomInfoRef}>
-        <div className="imgBox">
-          <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+        <div className="chatroomMainDetailBox">
+          <div className="imgBox">
+            <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+          </div>
+          <h2> {userName ? userName : "No Name Set"} </h2>
+          <p> {userBio.length > 0 ? userBio : 'No Bio'} </p>
         </div>
-        <h2> {userName ? userName : "No Name Set"} </h2>
-        <p> {userBio.length > 0 ? userBio : 'No Bio'} </p>
         <div className="adminsMembersGroup">
 
           {
             chatroomData?.admins.length > 0 && (
               <div className="adminContainer">
-                <p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p>
+                <strong><p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p></strong>
                 <div className="admins">
                   <div className="adminImgContainer">
                     <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
@@ -157,7 +171,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           {
             chatroomData?.members.length > 0 && (
               <div className="memberContainer">
-                <p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p>
+                <strong><p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p></strong>
                 <div className="members">
                   <div className="memberImgContainer">
                     <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
@@ -381,16 +395,16 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <p>
             {userName}
             {/* {userBio && <strong> ({userBio.slice(0, 15) + '...'}) </strong>} */}
-            {userBio && <strong> ({userBio.length < 0 ? 'No Bio' : userBio}) </strong>}
+            {userBio && <strong> ({userBio.length < 0 ? 'No Bio' : `${userBio.slice(0, 5)}...`}) </strong>}
           </p>
         )}
       </div>
-      <div className="chat__header-container_right">
+      <div className={`chat__header-container_right ${userType === 'Chatroom' ? 'chatroomHeader' : 'userHeader'}`}>
         {
           userType === 'Chatroom' && isKnown &&
           (
             <div className='notificationIconContainer' onClick={handleNotificationClick}>
-              <AiOutlineBell className='chat__header-container_notification' />
+              <AiOutlineBell className='chat__header-container_notificationIcon' />
               {notificationCount > 0 && (
                 <span className='chatroom-notification-count'>{notificationCount}</span>
               )}
@@ -407,10 +421,12 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           )
         } */}
         {/* <div className={`addIconContainer ${isKnown ? 'disabled' : ''}`}> */}
-        <div className='addIconContainer'>
-          {/* <div className='addIconContainer'> */}
-          {renderAddButtonContent()}
-        </div>
+        {!isKnown && (
+          <div className='addIconContainer'>
+            {/* <div className='addIconContainer'> */}
+            {renderAddButtonContent()}
+          </div>
+        )}
 
         {/* <div className={`infoIconContainer ${isKnown ? '' : 'disabled'}`}> */}
         <div className='infoIconContainer'>

@@ -113,12 +113,16 @@ router.get('/group/:id', authenticateToken, async (req, res) => {
 // Create a new chatroom
 router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
-    const { name, description } = req.body;
+    let { name, description } = req.body;
+    if (description.length === 0) {
+      description = '';
+    }
     const avatarPath = req.file ? req.file.path : '';
     const user = await User.findById(req.user.userId).select('name avatar bio _id joinedChats adminOf');
 
     const createdBy = req.user.userId;
 
+    // Will improvize this later
     const schema = Joi.object({
       name: Joi.string().min(3).max(30).trim().required(),
       description: Joi.string().min(10).max(200).trim().required()
@@ -127,7 +131,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     const { error } = schema.validate({ name, description });
 
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res.status(400).json({ message: 'Name should be minimum 3 words and max 30 words, Description should be minimum 10 words and maximum 200 words.' });
     }
 
     let avatarUrl = undefined;

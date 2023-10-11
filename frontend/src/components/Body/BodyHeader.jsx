@@ -275,12 +275,10 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
     toast.success(createChatroomMessage);
   }
 
-  console.log(pageWidth);
-
   return (
     <>
       {pageWidth < 768 && (
-        <div className={`body__header-container ${chatUserInfo.id === '' ? 'bodyHeaderInActive' : 'bodyHeaderActive'}`}>
+        <div className={`body__header-container ${chatUserInfo.id === '' ? 'bodyHeaderActive' : 'bodyHeaderInActive'}`}>
           <div className="body__header-container_profile">
             {userProfile && (
               <img src={userProfile.avatar ? userProfile.avatar : noProfileAvatar} alt="" />

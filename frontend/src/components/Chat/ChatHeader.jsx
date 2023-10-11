@@ -128,7 +128,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
         </div>
         <h2> {userName ? userName : "No Name Set"} </h2>
-        <p> {userBio.length !== 'null' ? userBio : 'No Bio'} </p>
+        <p> {userBio.length > 0 ? userBio : 'No Bio'} </p>
         <div className="adminsMembersGroup">
 
           {
@@ -381,7 +381,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <p>
             {userName}
             {/* {userBio && <strong> ({userBio.slice(0, 15) + '...'}) </strong>} */}
-            {userBio && <strong> ({userBio !== null ? 'No Bio' : userBio}) </strong>}
+            {userBio && <strong> ({userBio.length < 0 ? 'No Bio' : userBio}) </strong>}
           </p>
         )}
       </div>

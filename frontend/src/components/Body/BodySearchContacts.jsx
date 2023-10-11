@@ -78,7 +78,7 @@ function BodySearchContacts({ pageWidth }) {
   return (
     <>
       {pageWidth < 768 && (
-        <div className={`bodySearchContacts ${chatUserInfo.id === '' ? 'bodySearchContactsInActive' : 'bodySearchContactsActive'}`} ref={searchBarRef}>
+        <div className={`bodySearchContacts ${chatUserInfo.id === '' ? 'bodySearchContactsActive' : 'bodySearchContactsInActive'}`} ref={searchBarRef}>
           <div className="searchBar">
             <input type="text" value={partialQuery} placeholder='Find Your Friend/Group...' onClick={inputClick} onChange={handleChange} />
           </div>

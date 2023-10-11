@@ -22,17 +22,20 @@ function CreateChatroom({ pageWidth }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    if (!name || !description) {
+      return toast.error("Name or Description field can't be empty");
+    }
+
+    if (name.length < 3 || name.length > 30 || description.length < 10 || description.length > 200) {
+      return toast.error("Name length should be in range 3 to 30, Description length should be in range 10 to 200");
+    }
+
     const formData = new FormData();
 
     formData.append('name', name);
     formData.append('description', description);
     formData.append('avatar', profile);
-
-    if (!name) {
-      return toast.error("Name field can't be empty");
-    }
-
-    setCreateButtonActive(false);
 
     dispatch(createChatroom(formData))
       .then(() => {
@@ -42,6 +45,7 @@ function CreateChatroom({ pageWidth }) {
         dispatch(userData());
       });
 
+    setCreateButtonActive(false);
   };
 
   const handleNameChange = (event) => {
@@ -71,7 +75,7 @@ function CreateChatroom({ pageWidth }) {
   return (
     <>
       {pageWidth < 768 && (
-        <div className={`createChatroomContainer ${chatUserInfo.id === '' ? 'createChatroomContainerInActive' : 'createChatroomContainerActive'}`}>
+        <div className={`createChatroomContainer ${chatUserInfo.id === '' ? 'createChatroomContainerActive' : 'createChatroomContainerInActive'}`}>
           <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
           {createButtonActive && (
             <div className="createChatroomForm" ref={createChatroomRef}>

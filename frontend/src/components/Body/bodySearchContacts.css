@@ -74,10 +74,16 @@
 }
 
 @media (max-width: 767px) {
-  .bodySearchContacts.bodySearchContactsActive input {
+  .bodySearchContacts.bodySearchContactsInActive input {
     padding: 0;
     height: 0;
     width: 0;
     /* display: none; */
   }
+
+  .bodySearchContacts.bodySearchContactsActive input {
+    font-size: 16px;
+    padding: 8px;
+  }
+
 }

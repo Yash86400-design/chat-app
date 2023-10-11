@@ -24,3 +24,18 @@
 .chatInfo h4 {
   margin-bottom: 3px;
 }
+
+@media (max-width: 767px) {
+  .chatInfo {
+    padding: 5px;
+  }
+
+  .chatInfo .friendProfileBox {
+    height: 40px;
+    width: 40px;
+  }
+
+  .chatInfo h4 {
+    font-size: 14px;
+  }
+}

@@ -4,6 +4,7 @@ import BodyHeader from './BodyHeader';
 import BodyContacts from './BodyContacts';
 import CreateChatroom from './CreateChatroom';
 import ChatIdContext from '../../context/ChatIdContext';
+import BodySearchContacts from './BodySearchContacts';
 
 function BodyContainer({ socket, pageWidth }) {
   // const [bodyContainerSelected, setBodyContainerSelected] = useState(false);
@@ -29,6 +30,7 @@ function BodyContainer({ socket, pageWidth }) {
       <div className={`bodyContent ${pageWidth < 768 ? `${chatUserInfo.id === '' ? 'bodyContainerInActive' : 'bodyContainerActive'}` : ''}`}>
         <BodyHeader socket={socket} pageWidth={pageWidth} />
         <CreateChatroom pageWidth={pageWidth} />
+        <BodySearchContacts pageWidth={pageWidth}/>
         <BodyContacts socket={socket} pageWidth={pageWidth} />
       </div>
       {/* )} */}

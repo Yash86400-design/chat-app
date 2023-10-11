@@ -1,13 +1,16 @@
 .chatListContainer {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 205px);  /* For Small Screen*/
+  /* display: flex;
+  flex-direction: column; */
+  height: calc(100vh - 173px);
+  /* For Small Screen*/
   /* height: calc(100vh - 170px);  For Large Screen */
-  overflow-y: auto;
+  /* max-height: 70%; */
+  overflow-y: scroll;
+  /* padding: 10px 0 10px 0; */
 }
 
-.allChats {
-  /* max-height: calc(100% - 90px);  
-  overflow-y: auto; */
-  flex-grow: 1;
+@media (max-width: 767px) {
+  .chatListContainer {
+    height: calc(100vh - 121px);
+  }
 }

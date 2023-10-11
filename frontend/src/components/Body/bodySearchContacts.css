@@ -72,3 +72,12 @@
 .suggestedUsers ul li.noUser:hover {
   background-color: #ffffff;
 }
+
+@media (max-width: 767px) {
+  .bodySearchContacts.bodySearchContactsActive input {
+    padding: 0;
+    height: 0;
+    width: 0;
+    /* display: none; */
+  }
+}

@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './createChatroom.css';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { createChatroom, userData } from '../../features/userSlice';
+import ChatIdContext from '../../context/ChatIdContext';
 
-function CreateChatroom() {
+function CreateChatroom({ pageWidth }) {
 
   const [createButtonActive, setCreateButtonActive] = useState(false);
   const [name, setName] = useState('');
@@ -12,6 +13,7 @@ function CreateChatroom() {
   const [profile, setProfile] = useState('');
   const createChatroomRef = useRef(null);
   const dispatch = useDispatch();
+  const { chatUserInfo } = useContext(ChatIdContext);
 
   const handleCreateChatroomButton = (event) => {
     setCreateButtonActive(!createButtonActive);
@@ -67,37 +69,75 @@ function CreateChatroom() {
   }, []);
 
   return (
-    <div className='createChatroomContainer'>
-      <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
-      {createButtonActive && (
-        <div className="createChatroomForm" ref={createChatroomRef}>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="profile">Chatroom Profile: </label>
-            <input
-              type='file'
-              id='profile'
-              name='profile'
-              accept='image/*'
-              onChange={handleProfileChange}
-            />
+    <>
+      {pageWidth < 768 && (
+        <div className={`createChatroomContainer ${chatUserInfo.id === '' ? 'createChatroomContainerInActive' : 'createChatroomContainerActive'}`}>
+          <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
+          {createButtonActive && (
+            <div className="createChatroomForm" ref={createChatroomRef}>
+              <form onSubmit={handleSubmit}>
+                <label htmlFor="profile">Chatroom Profile: </label>
+                <input
+                  type='file'
+                  id='profile'
+                  name='profile'
+                  accept='image/*'
+                  onChange={handleProfileChange}
+                />
 
-            <label htmlFor="name">Chatroom Name: </label>
-            <input
-              type='text'
-              id='name'
-              name='name'
-              value={name}
-              onChange={handleNameChange}
-            />
+                <label htmlFor="name">Chatroom Name: </label>
+                <input
+                  type='text'
+                  id='name'
+                  name='name'
+                  value={name}
+                  onChange={handleNameChange}
+                />
 
-            <label htmlFor="description">Description: </label>
-            <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
+                <label htmlFor="description">Description: </label>
+                <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
 
-            <button type="submit">Create</button>
-          </form>
+                <button type="submit">Create</button>
+              </form>
+            </div>
+          )}
         </div>
       )}
-    </div>
+      {pageWidth >= 768 && (
+        <div className='createChatroomContainer'>
+          <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
+          {createButtonActive && (
+            <div className="createChatroomForm" ref={createChatroomRef}>
+              <form onSubmit={handleSubmit}>
+                <label htmlFor="profile">Chatroom Profile: </label>
+                <input
+                  type='file'
+                  id='profile'
+                  name='profile'
+                  accept='image/*'
+                  onChange={handleProfileChange}
+                />
+
+                <label htmlFor="name">Chatroom Name: </label>
+                <input
+                  type='text'
+                  id='name'
+                  name='name'
+                  value={name}
+                  onChange={handleNameChange}
+                />
+
+                <label htmlFor="description">Description: </label>
+                <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
+
+                <button type="submit">Create</button>
+              </form>
+            </div>
+          )}
+        </div>
+
+      )}
+    </>
   );
 }
 

@@ -80,3 +80,33 @@
   text-align: center;
   font-weight: 500;
 }
+
+/* Styling for the "Back" button */
+/* Styling for the "Back" button */
+.backButtonIcon {
+  position: fixed;
+  top: 50%;
+  left: 10px; /* Adjust this value to your preference */
+  transform: translateY(-75%);
+  z-index: 9999; /* Ensure it's above other content */
+}
+
+.backButtonIcon button {
+  padding: 0; /* Remove padding to prevent white color from bleeding */
+  background-color: transparent; /* Set background color to transparent */
+  color: #0fc330;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px; /* Set a fixed width for the button */
+  height: 32px; /* Set a fixed height for the button */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backButtonIcon button:hover {
+  background-color: #007bff; /* Apply background color on hover */
+  color: #fff; /* Change text color on hover */
+}
+

@@ -1,14 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './chatBody.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchChatroomMessages, fetchUserMessages } from '../../features/userSlice';
 import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
+import ChatIdContext from '../../context/ChatIdContext';
+import { AiOutlineLeftCircle } from 'react-icons/ai';
 
-function ChatBody({ isKnown, userType, userId, socketInstance }) {
+function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
   const [message, setMessage] = useState([]);
   const { userProfile, fetchingMessageLoading } = useSelector((state) => state.userProfile);
+  const { chatUserInfo } = useContext(ChatIdContext);
+  const { setChatUserInfo } = useContext(ChatIdContext);
   const chatContainerRef = useRef(null);
   const dispatch = useDispatch();
+
+  const goBack = () => {
+    setChatUserInfo({ id: '', name: '', avatar: '', bio: '', type: '', socketId: '' });
+  };
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -88,46 +96,61 @@ function ChatBody({ isKnown, userType, userId, socketInstance }) {
 
   return (
     <>
-      {isKnown ? (
-        fetchingMessageLoading ? (
-          <ChatFetchingSpinner text='Fetching...' />
-        ) : (
-          <div className="chatBodySection">
-            {isKnown && message?.length > 0 && (
-              <div className="chatBody" ref={chatContainerRef}>
-                {Array.isArray(message) &&
-                  message.map((msg, index) => (
-                    <div
-                      key={index}
-                      className={`message ${msg.sender === userProfile._id ? 'right' : 'left'}`}
-                    >
-                      {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
-                      <p>{msg.content}</p>
-                      <p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
-                        timeZone: 'Asia/Kolkata', // Indian time zone
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                      })}</p>
+      {
+        isKnown ? (
+          fetchingMessageLoading ? (
+            <ChatFetchingSpinner text='Fetching...' />
+          ) : (
+            <div className="chatBodySection">
+              {isKnown && message?.length > 0 && (
+                <div className="chatBody" ref={chatContainerRef}>
+                  {pageWidth < 768 && !(chatUserInfo.id === '') && (
+                    <div className="backButtonIcon">
+                      <button onClick={() => goBack()}><AiOutlineLeftCircle size={32} /></button>
                     </div>
-                  ))}
+                  )}
+                  {Array.isArray(message) &&
+                    message.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`message ${msg.sender === userProfile._id ? 'right' : 'left'}`}
+                      >
+                        {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
+                        <p>{msg.content}</p>
+                        <p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
+                          timeZone: 'Asia/Kolkata', // Indian time zone
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}</p>
+                      </div>
+                    ))}
+                </div>
+              )}
+              {isKnown === true && message?.length === 0 && (
+                <div className="chatBodyNoMessage">
+                  <p>No Conversation Found, Start a new conversation...</p>
+                  <div className="backButtonIcon">
+                    <button onClick={() => goBack()}><AiOutlineLeftCircle size={32} /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        ) : (
+          <div className="chatBodyUnKnown">
+            {pageWidth < 768 && !(chatUserInfo.id === '') && (
+              <div className="backButtonIcon">
+                <button onClick={() => goBack()}><AiOutlineLeftCircle size={32} /></button>
               </div>
             )}
-            {isKnown === true && message?.length === 0 && (
-              <div className="chatBodyNoMessage">
-                <p>No Conversation Found, Start a new conversation...</p>
-              </div>
-            )}
+            <p>Not Allowed</p>
           </div>
         )
-      ) : (
-        <div className="chatBodyUnKnown">
-          <p>Not Allowed</p>
-        </div>
-      )}
+      }
     </>
   );
 }

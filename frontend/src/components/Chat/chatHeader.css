@@ -290,6 +290,7 @@
   height: calc(100vh - 50px);
   /* width: calc(100vw - 287px); */
   width: 100%;
+  padding: 50px 0px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -303,13 +304,26 @@
   height: 450px;
   width: 450px;
   border-radius: 0;
+  border-radius: 10%;
 }
 
 .friendInfoBox .imgBox img {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  border-radius: 0;
+  border-radius: 10%;
+}
+
+.friendInfoBox h2 {
+  color: var(--color-text);
+}
+
+.friendInfoBox p {
+  width: 80%;
+  font-size: 18px;
+  text-align: center;
+  font-weight: 300;
+  color: var(--color-subtext);
 }
 
 .chatroomInfoBox {

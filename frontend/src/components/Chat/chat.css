@@ -15,3 +15,14 @@
   -webkit-background-clip: text;
   color: transparent;
 }
+
+@media (max-width:767px) {
+  .emptyPage {
+    display: none;
+    width: 0;
+  }
+
+  .chatRoomPage.selectedRoomPage {
+    width: 100%;
+  }
+}

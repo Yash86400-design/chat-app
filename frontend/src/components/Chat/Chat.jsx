@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 // import socketIOClient from 'socket.io-client';
 
 // function Chat({ socket }) {
-function Chat({ socket }) {
+function Chat({ socket, pageWidth }) {
   const { chatUserInfo } = useContext(ChatIdContext);
   const { name, id, avatar, bio, type, socketId } = chatUserInfo;
   // const { userToken } = useSelector((state) => state.auth);
@@ -69,10 +69,10 @@ function Chat({ socket }) {
       {
         /* Userprofile check is needed cause sometimes other things loads faster so we need to show the data only when userProfile is available...*/
         name && userProfile && (
-          <div>
+          <div className={`chatRoomPage ${chatUserInfo.id === '' ? 'notSelectedAnyRoom' : 'selectedRoom'}`}>
             {/* <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} isFriend={isFriend} isChatroomMember={isChatroomMember} /> */}
             <ChatHeader userId={id} userName={name} userAvatar={avatar} userBio={bio} userType={type} socketId={socketId} isKnown={isKnown} socketInstance={socket} />
-            <ChatBody userId={id} userType={type} isKnown={isKnown} socketId={socketId} socketInstance={socket} />
+            <ChatBody userId={id} userType={type} isKnown={isKnown} socketId={socketId} socketInstance={socket} pageWidth={pageWidth} />
             <ChatInput userId={id} userType={type} isKnown={isKnown} socketId={socketId} socketInstance={socket} />
           </div>
         )

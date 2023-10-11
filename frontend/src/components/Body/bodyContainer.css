@@ -2,3 +2,15 @@
   border-right: 1px solid rgba(0, 0, 0, 0.2);
   /* background: yellowgreen; */
 }
+
+@media (max-width: 767px) {
+  .bodyContent {
+    width: 100%;
+  }
+
+  .bodyContent.bodyContainerActive {
+    /* background: pink; */
+    width: 0%;
+  }
+
+}

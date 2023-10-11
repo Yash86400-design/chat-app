@@ -4,12 +4,13 @@ import userService from '../../services/userService';
 import ChatIdContext from '../../context/ChatIdContext';
 import { useSelector } from 'react-redux';
 
-function BodySearchContacts() {
+function BodySearchContacts({ pageWidth }) {
   const [partialQuery, setPartialQuery] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [searchBarActive, setSearchBarActive] = useState(false);
   const searchBarRef = useRef(null);
   const { setChatUserInfo } = useContext(ChatIdContext);
+  const { chatUserInfo } = useContext(ChatIdContext);
   const { userProfile } = useSelector((state) => state.userProfile);
 
   const debounceTimeoutRef = useRef(null);
@@ -75,33 +76,68 @@ function BodySearchContacts() {
   }, []);
 
   return (
-    <div className='bodySearchContacts' ref={searchBarRef}>
-      <div className="searchBar">
-        <input type="text" value={partialQuery} placeholder='Find Your Friend/Group...' onClick={inputClick} onChange={handleChange} />
-      </div>
-      {suggestedUsers.length > 0 && searchBarActive && (
-        <div className="suggestedUsers">
-          <ul>
-            {suggestedUsers.map((user, index) => (
-              <li key={index} onClick={clickedUser} data-id={user[0].id} data-name={user[0].name} data-avatar={user[0].avatar} data-bio={user[0].bio} data-type={user[0].type}>
-                <span>{user[0].avatar ? (
-                  <img src={user[0].avatar} alt="User" />
-                ) : (
-                  <img src={noProfileAvatar} alt="Fallback" />
-                )}</span> {user[0].name}
-              </li>
-            ))}
-          </ul>
+    <>
+      {pageWidth < 768 && (
+        <div className={`bodySearchContacts ${chatUserInfo.id === '' ? 'bodySearchContactsInActive' : 'bodySearchContactsActive'}`} ref={searchBarRef}>
+          <div className="searchBar">
+            <input type="text" value={partialQuery} placeholder='Find Your Friend/Group...' onClick={inputClick} onChange={handleChange} />
+          </div>
+          {suggestedUsers.length > 0 && searchBarActive && (
+            <div className="suggestedUsers">
+              <ul>
+                {suggestedUsers.map((user, index) => (
+                  <li key={index} onClick={clickedUser} data-id={user[0].id} data-name={user[0].name} data-avatar={user[0].avatar} data-bio={user[0].bio} data-type={user[0].type}>
+                    <span>{user[0].avatar ? (
+                      <img src={user[0].avatar} alt="User" />
+                    ) : (
+                      <img src={noProfileAvatar} alt="Fallback" />
+                    )}</span> {user[0].name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {suggestedUsers.length === 0 && searchBarActive && (
+            <div className="suggestedUsers">
+              <ul>
+                <li className='noUser'>No User Found...</li>
+              </ul>
+            </div>
+          )}
         </div>
       )}
-      {suggestedUsers.length === 0 && searchBarActive && (
-        <div className="suggestedUsers">
-          <ul>
-            <li className='noUser'>No User Found...</li>
-          </ul>
+
+      {pageWidth >= 768 && (
+        <div className='bodySearchContacts' ref={searchBarRef}>
+          <div className="searchBar">
+            <input type="text" value={partialQuery} placeholder='Find Your Friend/Group...' onClick={inputClick} onChange={handleChange} />
+          </div>
+          {suggestedUsers.length > 0 && searchBarActive && (
+            <div className="suggestedUsers">
+              <ul>
+                {suggestedUsers.map((user, index) => (
+                  <li key={index} onClick={clickedUser} data-id={user[0].id} data-name={user[0].name} data-avatar={user[0].avatar} data-bio={user[0].bio} data-type={user[0].type}>
+                    <span>{user[0].avatar ? (
+                      <img src={user[0].avatar} alt="User" />
+                    ) : (
+                      <img src={noProfileAvatar} alt="Fallback" />
+                    )}</span> {user[0].name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {suggestedUsers.length === 0 && searchBarActive && (
+            <div className="suggestedUsers">
+              <ul>
+                <li className='noUser'>No User Found...</li>
+              </ul>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
+
   );
 }
 

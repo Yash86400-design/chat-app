@@ -12,7 +12,7 @@
   /* border-radius: 5px; */
   border: none;
   cursor: pointer;
-  transition: 0.5s;
+  /* transition: 0.5s; */
 }
 
 /* .createChatroomButton:hover {
@@ -38,6 +38,7 @@
 
 .createChatroomForm input[type="file"],
 .createChatroomForm input[type="text"]
+
 /* .createChatroomForm textarea  */
   {
   width: 100%;
@@ -64,4 +65,23 @@
 
 .createChatroomForm button[type="submit"]:hover {
   background-color: #45a049;
+}
+
+
+@media (max-width: 767px) {
+  .createChatroomContainer {
+    position: initial;
+  }
+
+  .createChatroomContainer.createChatroomContainerActive {
+    width: 0;
+    height: 0;
+  }
+
+  .createChatroomContainer.createChatroomContainerActive .createChatroomButton {
+    width: 0;
+    height: 0;
+    padding: 0;
+    transition: none;
+  }
 }

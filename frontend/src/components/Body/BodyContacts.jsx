@@ -3,11 +3,11 @@ import './bodyContacts.css';
 import BodySearchContacts from './BodySearchContacts';
 import ChatContacts from './ChatContacts';
 
-function BodyContacts({ socket }) {
+function BodyContacts({ socket, pageWidth }) {
   return (
     <div className='bodyContacts'>
-      <BodySearchContacts />
-      <ChatContacts socket={socket} />
+      <BodySearchContacts pageWidth={pageWidth}/>
+      <ChatContacts socket={socket} pageWidth={pageWidth} />
     </div>
   );
 }

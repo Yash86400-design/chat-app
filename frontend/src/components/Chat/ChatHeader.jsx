@@ -116,7 +116,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
         </div>
         <h2>{userName ? userName : "No Name Set"}</h2>
-        <p>{userBio ? userBio : 'No Bio'}</p>
+        <p>{userBio !== null ? 'No Bio' : userBio}</p>
       </div>
     );
   };
@@ -128,7 +128,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
         </div>
         <h2> {userName ? userName : "No Name Set"} </h2>
-        <p> {userBio ? userBio : 'No Bio'} </p>
+        <p> {userBio.length !== 'null' ? userBio : 'No Bio'} </p>
         <div className="adminsMembersGroup">
 
           {
@@ -143,7 +143,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
                     <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
                     <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
                     <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
-                    <p>Joined At: {chatroomData?.admins[currentAdminIndex]?.joinedAt}</p>
+                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
                   </div>
                 </div>
                 <div className="adminNavigation">
@@ -166,7 +166,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
                     <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
                     <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
                     <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
-                    <p>Joined At: {chatroomData?.members[currentMemberIndex]?.joinedAt}</p>
+                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
                   </div>
                 </div>
                 <div className="memberNavigation">
@@ -381,7 +381,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <p>
             {userName}
             {/* {userBio && <strong> ({userBio.slice(0, 15) + '...'}) </strong>} */}
-            {userBio && <strong> ({userBio}) </strong>}
+            {userBio && <strong> ({userBio !== null ? 'No Bio' : userBio}) </strong>}
           </p>
         )}
       </div>

@@ -93,7 +93,6 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
     }
   }, [message]);
   // Render the chat body based on the state
-  console.log(chatUserInfo.id);
 
   return (
     <>

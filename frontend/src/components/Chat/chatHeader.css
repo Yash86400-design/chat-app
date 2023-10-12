@@ -629,10 +629,20 @@
   }
 
   .adminInfoContainer {
-    width: 250px;
+    width: 225px;
   }
 
   .memberInfoContainer {
-    width: 250px;
+    width: 225px;
+  }
+
+  .admins .adminImgContainer {
+    height: 50px;
+    width: 50px;
+  }
+
+  .members .memberImgContainer {
+    height: 50px;
+    width: 50px;
   }
 }

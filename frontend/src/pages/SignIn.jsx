@@ -11,14 +11,20 @@ function SignIn() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
+  const { user, registerMessage, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({ email: '', password: '' });
 
   const { email, password } = formData;
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(signin(formData));
+    dispatch(signin(formData))
+      .then(() => {
+        setFormData({ email: '', password: '' });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleInputChange = (event) => {
@@ -35,12 +41,18 @@ function SignIn() {
     }
 
     if (isSuccess || user) {
-      dispatch(userData())
+      dispatch(userData());
       navigate('/');
     }
 
     dispatch(reset());
   }, [message, isError, navigate, dispatch, isSuccess, user]);
+
+  useEffect(() => {
+    if (registerMessage !== null && registerMessage.length > 0) {
+      toast.success(registerMessage);
+    }
+  }, [registerMessage]);
 
   if (isLoading) {
     return <Spinner />;
@@ -49,6 +61,10 @@ function SignIn() {
   return (
     <div className="signin-page-container">
       <div className="signin-container">
+        <div className="welcome-text">
+          <h3>Welcome to ChatApp</h3>
+          <p>Sign in to start chatting with your friends.</p>
+        </div>
         <h2>Sign In</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -63,10 +79,9 @@ function SignIn() {
             <button type="submit">Sign In</button>
           </div>
         </form>
-        <p>Don't have an account? <Link to={"/register"}>Register</Link></p>
+        <p>Don't have an account? <Link to="/register">Register</Link></p>
       </div>
     </div>
-
   );
 }
 

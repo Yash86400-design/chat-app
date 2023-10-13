@@ -10,18 +10,19 @@ const listOfChats = require('../../models/listofchats/ListOfChats.js');
 
 // Register a new user
 router.post('/register', [
-  check('name').notEmpty().withMessage('Name is required'),
+  check('userName').notEmpty().withMessage('Name is required'),
   check('email').notEmpty().withMessage('Email is required'),
   check('password').notEmpty().withMessage('Password is requried').isLength({ min: 6 }).withMessage('Password should be at least 6 characters long')
 ], async (req, res) => {
   try {
+
     // Check if there are any validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { userName, email, password } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -35,15 +36,15 @@ router.post('/register', [
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create a new user
-    const user = new User({ name, email, password: hashedPassword, avatar: '', bio: '' });
+    const user = new User({ name: userName, email, password: hashedPassword, avatar: '', bio: '' });
 
     // Create a new user for listOfSearch too
-    const newListUser = new listOfChats({ name: name, roomId: user._id, type: 'User', avatar: '', bio: '' });
+    const newListUser = new listOfChats({ name: userName, roomId: user._id, type: 'User', avatar: '', bio: '' });
 
     await user.save();
     await newListUser.save();
 
-    return res.json({ message: 'User registered successfully'.green });
+    return res.json({ message: `${userName} registered successfully` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -72,9 +73,11 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user._id, userEmail: email }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
     // Set the token as a cookie
-    res.cookie('token', token, { httpOnly: true, secure: true });
+    // res.cookie('token', token, { httpOnly: true, secure: true });
 
-    return res.json({ message: 'User logged in successfully', token_value: token });
+    const userName = await User.findOne({ email }).select('name');
+
+    return res.json({ message: `${userName.name} logged in successfully`, token_value: token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal Server Error' });

@@ -1,46 +1,48 @@
 import axios from 'axios';
 import userService from './userService';
-// import userService from './userService';
 
 const API_URL = 'http://localhost:5000/auth/';
 
-// Register user
 const register = async (userData) => {
-  const response = await axios.post(API_URL + 'register', userData);
-
-  // if (response.data) {
-  // localStorage.setItem('user', JSON.stringify(response.data));
-  //   return response.data;
-  // }
-
-  return response.data;
-};
-
-// Signin user
-const signin = async (userData) => {
-  const response = await axios.post(API_URL + 'login', userData);
-  let tokenValue, userProfileValue;
-  if (response.data) {
-    const token = response.data.token_value;
-    localStorage.setItem('userToken', JSON.stringify(response.data));
-    // localStorage.setItem('messages', {}); // Wrong way to set empty braces...
-    localStorage.setItem('messages', JSON.stringify({})); // Just to set empty now so that when user fetched data later I'll store them inside...
-    userService.updateToken();
-    userProfileValue = await userService.signedUser();
-    tokenValue = token;
+  try {
+    const response = await axios.post(API_URL + 'register', userData);
+    return response.data;
+  } catch (error) {
+    // Handle errors, e.g., log or notify the user
+    console.error('Error during registration:', error);
+    throw error; // Re-throw the error for handling at a higher level
   }
-
-  return {
-    token: tokenValue,
-    userProfile: userProfileValue,
-    message: response.data.message
-  };
 };
 
-// Logout user
+const signin = async (userData) => {
+  try {
+    const response = await axios.post(API_URL + 'login', userData);
+
+    if (response.data && response.data.token_value) {
+      const token = response.data.token_value;
+      localStorage.setItem('userToken', JSON.stringify(response.data));
+      localStorage.setItem('messages', JSON.stringify({})); // Initialize with an empty object
+      userService.updateToken();
+      const userProfileValue = await userService.signedUser();
+
+      return {
+        token: token,
+        userProfile: userProfileValue,
+        message: response.data.message,
+      };
+    } else {
+      throw new Error('Signin response is empty'); // Handle the case when response data is missing
+    }
+  } catch (error) {
+    console.error('Error during signin:', error);
+    throw error;
+  }
+};
+
 const logout = async () => {
-  localStorage.removeItem('userToken');
   localStorage.removeItem('userProfile');
+  localStorage.removeItem('chatroomInfo');
+  localStorage.removeItem('userToken');
   localStorage.removeItem('messages');
   userService.clearToken();
 };
@@ -48,4 +50,3 @@ const logout = async () => {
 const authService = { register, signin, logout };
 
 export default authService;
-

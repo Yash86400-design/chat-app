@@ -7,38 +7,38 @@ import { register, reset } from '../features/authSlice';
 import Spinner from '../components/Spinner/Spinner';
 
 function Register() {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
 
-  const { user, isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.auth
-  );
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
-
-  const { name, email, password } = formData;
+  const [formData, setFormData] = useState({ userName: '', email: '', password: '' });
+  const { userName, email, password } = formData;
 
   const handleInputChange = (e) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value
     }));
+  };
+
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const formSubmit = (e) => {
     e.preventDefault();
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!isValidEmail) {
+    if (!validateEmail(email)) {
       toast.error('Invalid Email Address');
     } else {
-      const userData = {
-        name, email, password
-      };
-      dispatch(register(userData));
+      const userData = { userName, email, password };
+      dispatch(register(userData))
+        .then(() => {
+          setFormData({ userName: '', email: '', password: '' });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     }
   };
 
@@ -49,7 +49,7 @@ function Register() {
 
     if (isSuccess || user) {
       toast.success(message);
-      navigate("/signin");
+      navigate('/signin');
     }
 
     dispatch(reset());
@@ -61,30 +61,54 @@ function Register() {
 
   return (
     <div className="register-page-container">
-
       <div className="register-container">
-        <h2>Registration</h2>
+        <header className="register-header">
+          <h2>Welcome to Chat App</h2>
+          <p>Create your account to get started</p>
+        </header>
         <form onSubmit={formSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Name:</label>
-            <input type="text" id="name" name="name" value={name} onChange={handleInputChange} required />
+            <label htmlFor="userName">Name:</label>
+            <input
+              type="text"
+              id="userName"
+              name="userName"
+              value={userName}
+              onChange={handleInputChange}
+              required
+            />
           </div>
           <div className="form-group">
             <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" value={email} onChange={handleInputChange} required />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={email}
+              onChange={handleInputChange}
+              required
+            />
           </div>
           <div className="form-group">
             <label htmlFor="password">Password:</label>
-            <input type="password" id="password" name="password" value={password} onChange={handleInputChange} required />
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={handleInputChange}
+              required
+            />
           </div>
           <div className="form-group">
             <button type="submit">Register</button>
           </div>
         </form>
-        <p>Already have an account? <Link to='/signin'>Sign In</Link></p>
+        <p className="already-have-account">
+          Already have an account? <Link to="/signin">Sign In</Link>
+        </p>
       </div>
     </div>
-
   );
 }
 

@@ -5,7 +5,7 @@ import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/authSlice';
-import { acceptRequest, editInfo, rejectRequest, userData } from '../../features/userSlice';
+import { acceptRequest, editInfo, rejectRequest, reset, userData } from '../../features/userSlice';
 import Spinner from '../Spinner/Spinner';
 import { toast } from 'react-toastify';
 import ChatIdContext from '../../context/ChatIdContext';
@@ -57,6 +57,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   const handleLogoutButton = (event) => {
     socketInstance.emit('deleteSocketOnLogout');
     dispatch(logout());
+    dispatch(reset());
   };
 
   const handleUserInfoButton = (event) => {

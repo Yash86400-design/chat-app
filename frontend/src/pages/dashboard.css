@@ -2,17 +2,8 @@
   display: grid;
   grid-template-columns: 30% 70%;
   overflow-x: hidden;
-  /* display: flex; */
   height: 100%;
   width: 100%;
-}
-
-.dashboard .primaryBodyContainer {
-  /* flex: 0.3; */
-}
-
-.dashboard .primaryChatContainer {
-  /* flex: 1; */
 }
 
 @media (max-width: 767px) {
@@ -20,13 +11,4 @@
     width: 100%;
     display: flex;
   }
-
-  /* .dashboard .primaryBodyContainer {
-    flex-grow: 1;
-  } */
-/* 
-  .dashboard .primaryChatContainer {
-    flex: 0;
-  } */
-
 }

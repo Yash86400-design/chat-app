@@ -1,17 +1,55 @@
 .signin-page-container {
-  position: relative;
-  top: 50vh;
-  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(45deg, #3498db, #9b59b6);
 }
 
 .signin-container {
   max-width: 400px;
-  margin: 0 auto;
+  width: 100%;
   padding: 20px;
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.signin-container .welcome-text {
+  text-align: center;
+  animation: fadeIn 3s linear 0.5s forwards;
+  opacity: 0;
+  margin-bottom: 20px;
+}
+
+.signin-container .welcome-text h3 {
+  font-size: 24px;
+  color: #333;
+}
+
+.signin-container .welcome-text p {
+  font-size: 16px;
+  color: #777;
+}
+
+.signin-container p {
+  text-align: center;
+  font-size: 16px;
+  color: #555;
+  margin-top: 20px;
+}
+
+.signin-container p a {
+  text-decoration: none;
+  color: #3498db;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.signin-container p a:hover {
+  color: #1c6dad;
+}
+
 
 .signin-container h2 {
   text-align: center;
@@ -29,9 +67,10 @@
 
 .signin-container .form-group input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 16px;
 }
 
 .signin-container .form-group button {
@@ -48,4 +87,51 @@
 
 .signin-container .form-group button:hover {
   background-color: #45a049;
+}
+
+p {
+  text-align: center;
+  margin-top: 20px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* For screen sizes less than 400px */
+@media (max-width: 400px) {
+  .signin-container {
+    max-width: 90%;
+    padding: 10px;
+  }
+
+  .signin-container h2 {
+    font-size: 20px;
+  }
+
+  .signin-container .welcome-text h3 {
+    font-size: 20px;
+  }
+
+  .signin-container .welcome-text p {
+    font-size: 14px;
+  }
+
+  .signin-container .form-group input {
+    padding: 8px;
+  }
+
+  .signin-container .form-group button {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .signin-container p {
+    font-size: 14px;
+  }
 }

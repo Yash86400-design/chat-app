@@ -1,31 +1,3 @@
-// import { createSlice } from '@reduxjs/toolkit';
-
-// const initialState = {
-//   isLoggedIn: false,
-//   user: null,
-//   token: null,
-// };
-
-// const authSlice = createSlice({
-//   name: 'auth',
-//   initialState,
-//   reducers: {
-//     setAuthentication: (state, action) => {
-//       state.isLoggedIn = true;
-//       state.user = action.payload.user;
-//       state.token = action.payload.token;
-//     },
-//     clearAuthentication: (state) => {
-//       state.isLoggedIn = false;
-//       state.user = null;
-//       state.token = null;
-//     }
-//   }
-// });
-
-// export const { loginSuccess, logoutSuccess } = authSlice.actions;
-// export default authSlice.reducer;
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/authService';
 
@@ -35,11 +7,14 @@ const userProfile = JSON.parse(localStorage.getItem('userProfile'));
 
 const initialState = {
   userToken: userToken ? userToken : null,
-  userProfile: userProfile ? userProfile : null,
+  userProfile: userProfile || null,
   isError: false,
+  registerError: false,
+  registerErrorMessage: null,
   isSuccess: false,
   isLoading: false,
   message: null,
+  registerMessage: null,
   loginMessage: null,
 };
 
@@ -104,12 +79,12 @@ export const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.message = action.payload;
+        state.registerMessage = action.payload.message;
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
+        state.registerError = true;
+        state.registerErrorMessage = action.payload.message;
         state.userToken = null;
       })
       .addCase(signin.pending, (state) => {

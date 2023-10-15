@@ -7,12 +7,9 @@ class SearchService {
     // retrieve a list of suggested search terms based on the partial query
     const regex = new RegExp(`^${partialQuery}`, 'i');
 
-    // const allUserNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const allUserIds = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } });
 
-    const lowercaseQuery = partialQuery.toLowerCase();
-
-    const suggestedTerms2 = await Promise.all(
+    const suggestedTerms = await Promise.all(
       allUserIds.map(async (user) => {
         const additionalInfo = [];
 
@@ -40,20 +37,11 @@ class SearchService {
       })
     );
 
-    // const suggestedTerms = allUserNames.filter(name => name.toLowerCase().indexOf(lowercaseQuery) === 0);
-    const suggestedTerms = allUserIds.filter(user => user.name.toLowerCase().indexOf(lowercaseQuery) === 0);
-
-    return suggestedTerms2;
+    return suggestedTerms;
   }
 
   async getSearchResults(query, userId) {
     // retrieve the search results based on the query
-    /*
-    const lowercaseQuery = query.toLowerCase();
-    const results = await listOfChats.find({ name: lowercaseQuery }).distinct('name');
-    const searchResults = results.map(result => result.toObject());
-    return searchResults;
-    */
     const regex = new RegExp(`^${query}`, 'i');
     const matchingNames = await listOfChats.find({ name: regex, roomId: { $ne: userId.toString() } }).distinct('name');
     const lowercaseQuery = query.toLowerCase();

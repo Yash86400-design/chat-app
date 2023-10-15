@@ -72,9 +72,6 @@ router.post('/login', async (req, res) => {
     // Create and sign a JWT token
     const token = jwt.sign({ userId: user._id, userEmail: email }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
-    // Set the token as a cookie
-    // res.cookie('token', token, { httpOnly: true, secure: true });
-
     const userName = await User.findOne({ email }).select('name');
 
     return res.json({ message: `${userName.name} logged in successfully`, token_value: token });

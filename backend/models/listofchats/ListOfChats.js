@@ -6,7 +6,6 @@ const listSchema = new mongoose.Schema({
     required: true
   },
   roomId: {
-    // type: mongoose.Schema.Types.ObjectId,
     type: String,
     required: true
   },

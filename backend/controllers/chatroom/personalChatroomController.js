@@ -3,11 +3,7 @@ const { authenticateToken } = require('../../middlewares/authMiddleware');
 const router = express.Router();
 const multer = require('multer');
 const Message = require('../../models/message/Message');
-const User = require('../../models/user/User');
 const { isUserInJoinedPersonalChatrooms } = require('./isUserFriend');
-const Notification = require('../../models/notification/Notification');
-// const socket = require('../../server');
-
 
 const upload = multer();
 
@@ -32,17 +28,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
         { sender: receiverId, receiver: senderId }
       ]
     }).sort('createdAt');
-
-    // // Establish socket connection with the client
-    // const socket = req.app.get('socket');
-
-    // // Emit an event to the client
-    // socket.emit('connected', 'Connected to the socket server');
-
-    // // Listen for events from the client
-    // socket.on('chatMessage', (message) => {
-    //   console.log(`Received message: ${message}`);
-    // });
 
     return res.status(200).json(messages);
   } catch (error) {
@@ -71,61 +56,14 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
       content: message
     });
 
-    // Get the socket instance from the request's io object
-    // const io = req.app.get('socket');
-    // socket.ioObject.sockets.on('userMessage', (msg) => {
-    //   console.log(msg);
-    // });
-    // io.on('connection', socket => {
-    //   console.log(socket);
-    //   socket.on('userMessage', (msg) => {
-    //   });
-    // });
-    // io.on('userMessage', (msg) => {
-    //   console.log(msg);
-    // });
-    // io.on('connection', (socket) => {
-    //   console.log(socket);
-    //   socket.on('personalMessage', (data) => {
-    //     console.log('Received data:', data);
-    //     socket.emit('sendingPersonalMessageReturn', (data.message))
-    //     io.emit('helloMessage' ,'To all user')
-    //   });
-    // });
-    // Emit an event to the connected clients with the new message
-    // io.to(senderId).emit('newPersonalMessage', newMessage);
-
-
-    // Create notification for the receiver
-
-    // io.on('connection', (socket) => {
-    //   console.log('Hi');
-    //   socket.on('sendMessage', ({ socketId, message, name }) => {
-    //     io.to(socketId).emit('receiveMessage', newMessage);
-    //   });
-    // });
-
-    /* const notification = Notification({
-      type: 'personalMessage',
-      title: `${message.slice(10)}...`,
-      sender: senderId,
-      recipient: receiverId,
-      link: `/api/profile/personal-chat/${senderId}`
-    });
-    */
-
     const notification = {
       notificationType: 'personalMessage',
-      // title: `${message.slice(0, 10)}...`,
       title: `New message from ${senderInfo?.name}`,
       sender: senderId,
       recipient: receiverId,
       link: `/api/profile/personal-chat/${senderId}`
     };
 
-    // await notification.save();
-
-    // receiverInfo.notifications.push(notification);
     receiverInfo.notifications.unshift(notification);
     await receiverInfo.save();
 
@@ -175,14 +113,6 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       return res.status(200).json({ message: 'You have already sent the request to this user!!!' });
     }
 
-    // Create notification for the receiver
-    // const notification = new Notification({
-    //   type: 'friendRequest',
-    //   title: `A new friend request came from ${senderInfo.name}`,
-    //   sender: senderId,
-    //   recipient: receiverId,
-    //   link: `/api/profile/personal-chat/${senderId}`
-    // });
     const notification = {
       notificationType: 'friendRequest',
       title: `A new friend request came from ${senderInfo?.name}`,
@@ -191,9 +121,6 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
       link: `/api/profile/personal-chat/${senderId}`
     };
 
-    // await notification.save();
-
-    // receiverInfo?.notifications.push(notification);
     receiverInfo?.notifications.unshift(notification);
     receiverInfo?.pendingRequests.push(senderInfo);
     await receiverInfo.save();

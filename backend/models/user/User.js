@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   avatar: {
-    type: String, // you can store the URL of the avatar image
+    type: String, // Url string
     default: null
   },
   bio: {
@@ -42,17 +42,6 @@ const userSchema = new mongoose.Schema({
     ref: 'AuthUser'
   }]
   ,
-  /*  Cause now my joinedChats is working absolutely fine
-  joinedChatrooms: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Chatroom'
-  }],
-  // array for saving whom I'm talking to one on one
-  joinedPersonalChats: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'AuthUser'
-  }],
-  */
   joinedChats: [{
     name: {
       type: String,
@@ -93,10 +82,6 @@ const userSchema = new mongoose.Schema({
     ref: 'Chatroom'
   }],
   notifications: [{
-    // notificationId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'Notification'
-    // },
     notificationType: {
       type: String,
       required: true,

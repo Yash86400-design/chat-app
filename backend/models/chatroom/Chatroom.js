@@ -16,7 +16,7 @@ const chatRoomSchema = new mongoose.Schema({
     trim: true,
   },
   avatar: {
-    type: String, // URL of the avatar image
+    type: String, // URL string
     default: null
   },
   createdBy: {
@@ -68,10 +68,6 @@ const chatRoomSchema = new mongoose.Schema({
       required: true
     }
   }],
-  // messages: [{
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'Message',
-  // }],
   joinRequests: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'AuthUser',
@@ -81,14 +77,9 @@ const chatRoomSchema = new mongoose.Schema({
     required: true
   },
   notifications: [{
-    // notificationId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'Notification'
-    // },
     notificationType: {
       type: String,
       required: true,
-      // enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
       enum: ['groupJoinRequest', 'groupJoinAccepted', 'groupJoinRejected', 'admin_demotion', 'admin_promotion', 'user_left', 'user_joined']
     },
     sender: {
@@ -108,15 +99,6 @@ const chatRoomSchema = new mongoose.Schema({
       type: String,
       required: false
     },
-    // recipient: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: 'AuthUser',
-    //   required: true,
-    // },
-    // link: {
-    //   type: String,
-    //   required: false,
-    // },
     title: {
       type: String,
       required: false,

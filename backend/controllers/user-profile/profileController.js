@@ -10,13 +10,11 @@ const multer = require('multer');
 const searchServices = require('../../services/searchServices');
 const Joi = require('joi');
 const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
-const Notification = require('../../models/notification/Notification');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 
 const upload = multer({ dest: 'uploads/' });
-// const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const deleteFile = (filePath) => {
   fs.unlink(filePath, (err) => {
@@ -36,33 +34,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Multer for getting image in response
-
-/* Saving in server and then uploading on cloud
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.filename + '-' + Date.now());
-  }
-});
-*/
-
-// router.get('/');
-// router.post('/new-chatroom');
-// router.get('/view-profile');
-// router.post('/view-profile/edit');
-// router.post('/search-chatroom');
-// router.get('/notifications');
-// router.post('/auth/logout');
-
-
 router.get('/', authenticateToken, async (req, res) => {
   try {
     // Get the user profile data from the database
     const userProfile = await User.findById(req.user.userId);
-    // console.log(userProfile);
 
     // Return the user profile data
     return res.json(userProfile);
@@ -78,7 +53,6 @@ router.get('/user/:id', authenticateToken, async (req, res) => {
     const userProfile = await User.findById(req.params.id).select('name avatar bio');
 
     if (userProfile) {
-      // return res.json(userProfile);
       const { name, avatar, bio } = userProfile;
       return res.json({ name, avatar, bio, type: 'User', _id: req.params.id }); // Quick fix of sending type of User and id
     } else {
@@ -97,7 +71,6 @@ router.get('/group/:id', authenticateToken, async (req, res) => {
     const groupProfile = await Chatroom.findById(req.params.id).select('name avatar bio');
 
     if (groupProfile) {
-      // return res.json(groupProfile);
       const { name, avatar, bio } = groupProfile;
       return res.json({ name, avatar, bio, type: 'Chatroom', _id: req.params.id }); // Quick fix of sending type of User and id
     } else {
@@ -146,25 +119,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     }
 
     const uniqueId = uuidv4();
-    /*
-        // Get current date
-        const currentDate = new Date();
-    
-        // Options for formatting the date and time
-        const options = {
-          timeZone: 'Asia/Kolkata', // Indian time zone
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        };
-    
-        // Format the date and time as Indian date string
-        const indianDate = currentDate.toLocaleString('en-IN', options);
-        // console.log(indianDate);
-    */
+
     const chatroom = new Chatroom({ name, description, createdBy, members: [{ id: user?._id, name: user?.name, bio: user?.bio, joinedAt: new Date(), avatar: user?.avatar }], admins: [{ id: user?._id, name: user?.name, bio: user?.bio, joinedAt: new Date(), avatar: user?.avatar }], avatar: avatarUrl, socketId: uniqueId });
 
     const newListChatroom = new listOfChats({ name: name, roomId: chatroom._id.toString(), type: 'Chatroom', bio: description ? description : null, avatar: avatarUrl ? avatarUrl : null });
@@ -172,16 +127,12 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
 
     // Update the user joinedChatrooms
     user?.joinedChats.push({ name: name, id: chatroom._id, avatar: avatarUrl, bio: description, type: 'Chatroom', socketRoomId: uniqueId });
-    // user.joinedChatrooms.push(chatroom._id);
     user?.adminOf.push(chatroom._id);
 
     await user.save();
     await chatroom.save();
     await newListChatroom.save();
     return res.status(201).json({ chatroom, message: 'New Chatroom Created' });
-
-    // Redirect to the new chatroom page
-    // res.redirect(`/api/profile/chatrooms/${chatroom._id}`);  //It will cause error in frontend...
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -284,7 +235,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   // retrieve a list of suggested search terms or results that match the partial query
   const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
-  return res.json(suggestedTerms);  // return the suggested terms as a JSON object
+  return res.json(suggestedTerms);  
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
@@ -304,30 +255,16 @@ router.get('/notifications/requests/:notificationId/:userId/accept', authenticat
     const receiverId = req.params.userId;
     const senderId = req.user.userId;
 
-    // console.log(notificationId, receiverId, senderId);
-
     const { isUserFriend, senderInfo: currentUser, receiverInfo: requester } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
-
-    // console.log(`SenderInfo: ${currentUser}. Requester Info: ${requester}`, isUserFriend);
 
     if (isUserFriend) {
       return res.status(404).json({ message: 'User is already a friend' });
     }
 
     const uniqueId = uuidv4();
-    // const io = req.app.get('socket');
-    // console.log(io, uniqueId);
-    // io.emit('joinRoom', )
-    // io.on('connection', (socket) => {
-    //   socket.join(uniqueId);
-    //   console.log('Hi', uniqueId);
-    // });
+
     currentUser?.joinedChats.push({ name: requester?.name, 'id': requester?._id, avatar: requester?.avatar, bio: requester?.bio, type: 'User', socketRoomId: uniqueId });
 
-
-    // Update the current user's list and pending requests
-    // currentUser.joinedPersonalChats.push(requester._id);
-    // currentUser?.pendingRequests = currentUser?.pendingRequests.filter(request => String(request) !== String(requester?._id));
     currentUser.pendingRequests = currentUser?.pendingRequests.filter(request => String(request) !== String(requester?._id));
 
     currentUser?.notifications.map((notification) => {
@@ -336,23 +273,12 @@ router.get('/notifications/requests/:notificationId/:userId/accept', authenticat
         notification['title'] = `${requester?.name} is now your friend`;
         notification['link'] = `/api/profile/personal-chat/${receiverId}`;
         notification['read'] = true;
-        // console.log(notification);
       }
     });
 
     // Update the requester's friend list
-    // requester.joinedPersonalChats.push(currentUser._id);
     requester?.joinedChats.push({ name: currentUser?.name, 'id': currentUser?._id, avatar: currentUser?.avatar, bio: currentUser?.bio, type: 'User', socketRoomId: uniqueId });
-    // await requester.save();
 
-    // Send Notification to the requester
-    // const notification = new Notification({
-    //   recipient: requester,
-    //   sender: currentUser,
-    //   type: 'friendRequest',
-    //   title: `Your friend request to ${currentUser.name} has been accepted.`,
-    //   link: `/api/profile/personal-chat/${senderId}`
-    // });
     const notification = {
       recipient: requester?._id,
       sender: currentUser,
@@ -362,9 +288,8 @@ router.get('/notifications/requests/:notificationId/:userId/accept', authenticat
       read: true,
     };
 
-    // requester?.notifications.push(notification);
     requester?.notifications.unshift(notification);
-    // notification.save();
+
     await requester?.save();
     await currentUser?.save();
 
@@ -398,14 +323,6 @@ router.get('/notifications/requests/:notificationId/:userId/reject', authenticat
       }
     });
 
-    // Send Notification to the requester
-    // const notification = new Notification({
-    //   recipient: requester,
-    //   sender: currentUser,
-    //   type: 'friendRequest',
-    //   title: `Your friend request to ${currentUser.name} has been rejected.`,
-    // });
-
     const notification = {
       recipient: requester,
       sender: currentUser,
@@ -414,11 +331,11 @@ router.get('/notifications/requests/:notificationId/:userId/reject', authenticat
       read: true
     };
 
-    // requester.notifications.push(notification);
     requester.notifications.unshift(notification);
-    // notification.save();
+
     await requester.save();
     await currentUser.save();
+
     return res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
   } catch (error) {
     console.error(error);

@@ -8,7 +8,6 @@ async function isUserInJoinedPersonalChatrooms(senderId, receiverId) {
     return false;
   }
 
-  // const sender = await User.findById(senderId).populate('joinedChatrooms');
   const sender = await User.findById(senderId);
   const receiver = await User.findById(receiverId);
 
@@ -17,8 +16,6 @@ async function isUserInJoinedPersonalChatrooms(senderId, receiverId) {
     return false;
   }
 
-  // const joinedPersonalChatroomIds = sender.joinedPersonalChats.map((chatroom) => chatroom._id.toString());
-  // const joinedPersonalChatroomIds = sender.joinedPersonalChats.map((chatroom) => chatroom._id.toString());
   return { isUserFriend: sender.joinedChats.some((user) => user.id.toString() === receiverId.toString()), senderInfo: sender, receiverInfo: receiver };
 }
 

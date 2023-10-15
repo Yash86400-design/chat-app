@@ -3,12 +3,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* position: relative; */
-  /* top: 0;
-  left: 0; */
   height: calc(100% - 100px);
   width: 100%;
-  background-image: url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/whats_app_background_mlfbo2.png);
+  background-image: url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1697024197/Chat%20App/compressed_whats_app_bg_pqa1bn.jpg);
   overflow: hidden;
 }
 

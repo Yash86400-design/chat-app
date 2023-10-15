@@ -1,12 +1,6 @@
 .chatListContainer {
-  /* display: flex;
-  flex-direction: column; */
   height: calc(100vh - 174px);
-  /* For Small Screen*/
-  /* height: calc(100vh - 170px);  For Large Screen */
-  /* max-height: 70%; */
   overflow-y: scroll;
-  /* padding: 10px 0 10px 0; */
 }
 
 @media (max-width: 767px) {

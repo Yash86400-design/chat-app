@@ -92,7 +92,6 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [message]);
-  // Render the chat body based on the state
 
   return (
     <>

@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Spinner from '../Spinner/Spinner';
 import { addRequest, groupJoinAccept, groupJoinReject, userData } from '../../features/userSlice';
-// import { useSelector } from 'react-redux';
 
 function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
 
@@ -34,57 +33,18 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
-  // const allChats = userProfile.joinedPersonalChats.concat(userProfile.joinedChatrooms);
-
-  // const { userProfile } = useSelector((state) => state.userProfile);
-
-  // const isFriend = userProfile.joinedPersonalChats.includes(userId);
-  // const isChatroomMember = userProfile.joinedChatrooms.includes(userId);
-
   const handleAddRequest = (event) => {
     event.stopPropagation();
-    // console.log(userName, userAvatar, userBio, userType, userId);
     dispatch(addRequest({ type: userType, id: userId }));
   };
 
   const renderAddButtonContent = () => {
-    // if (isKnown && userType === 'User') {
-    //   return (
-    //     <>
-    //       <span className="tooltip">Already a friend</span>
-    //       {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
-    //       <BsPersonAdd />
-    //     </>
-    //   );
-    // } else if (isKnown && userType === 'Chatroom') {
-    //   return (
-    //     <>
-    //       <span className="tooltip">Already a member</span>
-    //       {/* <BsPersonAdd className="addPersonIcon disabled" /> */}
-    //       <BsPersonAdd />
-    //     </>
-    //   );
-    // } else {
-
-    // Now checking isKnown before this function call so no need of if condition too
-    // if (!isKnown) {
-    //   return (
-    //     <>
-    //       <span className="tooltip">
-    //         {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
-    //       </span>
-    //       {/* <BsPersonAdd className="addPersonIcon" /> */}
-    //       <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
-    //     </>
-    //   );
-    // }
 
     return (
       <>
         <span className="tooltip">
           {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
         </span>
-        {/* <BsPersonAdd className="addPersonIcon" /> */}
         <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
       </>
     );
@@ -94,31 +54,16 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     if (isKnown && userType === 'User') {
       return (
         <>
-          {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleFriendInfoClick} /> */}
-          {/* <BsThreeDotsVertical onClick={handleFriendInfoClick} /> */}
           {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} className='chat__header-container_infoIcon' />}
         </>
       );
     } else if (isKnown && userType === 'Chatroom') {
       return (
         <>
-          {/* <BsThreeDotsVertical className="infoIcon enabled" onClick={handleChatroomInfoClick} /> */}
-          {/* <BsThreeDotsVertical onClick={handleChatroomInfoClick} /> */}
           {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} className='chat__header-container_infoIcon' />}
         </>
       );
     }
-    // else {
-    //   return (
-    //     <>
-    //       <span className='tooltip'>
-    //         {userType === 'Chatroom' ? 'Only for members' : 'Only for friends'}
-    //       </span>
-    //       {/* <BsThreeDotsVertical className='infoIcon disabled' /> */}
-    //       <BsThreeDotsVertical />
-    //     </>
-    //   );
-    // }
   };
 
   const showUserFriendInfoPage = () => {
@@ -411,26 +356,14 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
             </div>
           )
         }
-        {/* {
-          userType === 'Chatroom' && !isKnown &&
-          (
-            <div className='notificationIconContainer disabled'>
-              <span>Not a member</span>
-              <AiOutlineBell />
-            </div>
-          )
-        } */}
-        {/* <div className={`addIconContainer ${isKnown ? 'disabled' : ''}`}> */}
+       
         {!isKnown && (
           <div className='addIconContainer'>
-            {/* <div className='addIconContainer'> */}
             {renderAddButtonContent()}
           </div>
         )}
 
-        {/* <div className={`infoIconContainer ${isKnown ? '' : 'disabled'}`}> */}
         <div className='infoIconContainer'>
-          {/* <div className='infoIconContainer'> */}
           {renderInfoButtonContent()}
         </div>
       </div>

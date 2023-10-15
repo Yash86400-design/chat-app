@@ -1,19 +1,6 @@
 .bodyContent {
   border-right: 1px solid rgba(0, 0, 0, 0.2);
-  /* background: yellowgreen; */
-  /* display: flex;
-  flex-direction: column; */
 }
-
-/* .bodyContent > :nth-child(-n+3) {
-  flex: 0.5;
-  height: 5%;
-}
-
-.bodyContent > :nth-child(4) {
-  flex: 8.5;
-  height: 85%;
-} */
 
 @media (max-width: 767px) {
   .bodyContent {
@@ -21,8 +8,6 @@
   }
 
   .bodyContent.bodyContainerActive {
-    /* background: pink; */
     width: 0%;
   }
-
 }

@@ -12,7 +12,6 @@ import ChatIdContext from '../../context/ChatIdContext';
 
 
 function BodyHeader({ socket: socketInstance, pageWidth }) {
-  // const { userProfile } = useSelector((state) => state.auth);
   const noProfileAvatar = 'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
   const { isLoading, userProfile, editProfileSuccess, editProfileSuccessResponse, createChatroomMessage, friendRequestResponseLoading, returnedFriendRequestResponse, addFriendResponseError } = useSelector((state) => state.userProfile);
@@ -33,8 +32,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   const userInfoBoxRef = useRef(null);
   const infoEditRef = useRef(null);
   const notificationStateRef = useRef(null);
-
-  // const { avatar, name, bio } = localStorage.getItem('userProfile');
 
   const handleInfoButton = (event) => {
     event.stopPropagation();
@@ -83,21 +80,8 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // console.log(profile, name, bio);
-    // dispatch(editInfo({ profile: profile, name: name, bio }));
 
     const formData = new FormData();
-    /*  I already handled the case of getting any value or not. 
-    if (!name) {
-      return toast.error("Name field can't be empty");
-    }
-    if (profile) {
-      formData.append('avatar', profile);
-    }
-    if (bio) {
-      formData.append('bio', bio);
-    }
-    */
 
     formData.append('name', name);
     formData.append('avatar', profile);
@@ -112,14 +96,9 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
         dispatch(userData());
       });
     setCloseIconState(false);
-    // Clear the form data --> Let's not do it, Cause through this I can show the user what's his current bio..
-    // setProfile('')
-    // setName('')
-    // setBio('')
   };
 
   const handleProfileChange = (event) => {
-    // setProfile(event.target.value); // This was the pretty damn error...
     setProfile(event.target.files[0]);
   };
 
@@ -134,7 +113,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   const handleFriendRequestAcceptAction = (notificationId, senderId, recipientId) => {
     const requiredData = { notificationId: notificationId, senderId: senderId, receiverId: recipientId };
     dispatch(acceptRequest(requiredData));
-    // dispatch(userData());
   };
 
   const handleFriendRequestRejectAction = (notificationId, senderId, recipientId) => {
@@ -146,55 +124,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   const handleNotificationReadUnreadClick = (event) => {
     event.stopPropagation();
   };
-  // useEffect(() => {
-  //   if (returnedFriendRequestResponse === 200) {
-  //     window.location.reload();
-  //   }
-  // }, [returnedFriendRequestResponse]);
-
-  /* Merged all three useEffect in a single useEffect down below... 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (infoBoxRef.current && !infoBoxRef.current.contains(event.target)) {
-        setShowInfoBox(false);
-      }
-    }
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (userInfoBoxRef.current && !userInfoBoxRef.current.contains(event.target)) {
-        setShowUserInfoBox(false);
-      }
-    }
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (infoEditRef.current && !infoEditRef.current.contains(event.target)) {
-        setInfoButton(false);
-      }
-    }
-
-    document.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-*/
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -219,17 +148,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
     };
   }, []);
 
-
-  // When the edit Info returns success --> Handled inside submit form..
-  /*
-  useEffect(() => {
-    if (isSuccess) {
-      console.log('Hi');
-      dispatch(userData());
-    }
-  }, [isSuccess, dispatch]);
-  */
-
   // Re-render the component when userProfile has some changes
   useEffect(() => {
     if (userProfile) {
@@ -242,17 +160,15 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
           count += 1;
         }
       }
-      // setNotificationCount(userProfile.notifications.length);
       setNotificationCount(count);
     }
   }, [userProfile]);
 
   useEffect(() => {
     if (editProfileSuccess && editProfileSuccessResponse?.editProfileSuccessUserId === userProfile?._id) {
-      // console.log(editProfileSuccessResponse?.editProfileSuccessUserId, userProfile?._id);
       toast.success(editProfileSuccessResponse.message);
     }
-  }, [editProfileSuccess, editProfileSuccessResponse, userProfile]);
+  }, [editProfileSuccess, editProfileSuccessResponse, userProfile?._id]);
 
   useEffect(() => {
     if (returnedFriendRequestResponse === 200) {
@@ -285,10 +201,8 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
               <img src={userProfile.avatar ? userProfile.avatar : noProfileAvatar} alt="" />
             )}
           </div>
+          
           <div className="body__header-container_icons">
-            {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
-
-            {/* I'm making a mistake here by not implementing styles on div instead using direct icons target... (Check ChatHeader.jsx for div styling) */}
             <div className="notification-icon" onClick={handleNotificationClick}>
               <AiOutlineBell className='body__header-container_notification' />
 
@@ -300,7 +214,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
             {
               isNotificationStateActive && userProfile?.notifications.length > 0 && (
                 <div className="notificationList" ref={notificationStateRef}>
-                  {/* <p>Hello Guys</p> */}
                   <ul>
                     {userProfile.notifications.map((notification, index) => (
                       <li key={index} className={`notification ${notification.notificationType} ${notification.read ? 'notificationRead' : 'notificationUnRead'}`} onClick={handleNotificationReadUnreadClick}>
@@ -380,7 +293,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
                   />
 
                   <label htmlFor="bio">New Bio: </label>
-                  {/* <textarea name="bio" id="bio" value={bio} onChange={handleBioChange} cols="30" rows="10"></textarea> */}
                   <input type='text' name="bio" id="bio" value={bio} onChange={handleBioChange} cols="30" rows="10"></input>
 
                   <button type="submit">Submit</button>
@@ -399,9 +311,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
             )}
           </div>
           <div className="body__header-container_icons">
-            {/* <BsFillChatLeftTextFill className='chat_left_icon' /> */}
-
-            {/* I'm making a mistake here by not implementing styles on div instead using direct icons target... (Check ChatHeader.jsx for div styling) */}
             <div className="notification-icon" onClick={handleNotificationClick}>
               <AiOutlineBell className='body__header-container_notification' />
 
@@ -413,7 +322,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
             {
               isNotificationStateActive && userProfile?.notifications.length > 0 && (
                 <div className="notificationList" ref={notificationStateRef}>
-                  {/* <p>Hello Guys</p> */}
                   <ul>
                     {userProfile.notifications.map((notification, index) => (
                       <li key={index} className={`notification ${notification.notificationType} ${notification.read ? 'notificationRead' : 'notificationUnRead'}`} onClick={handleNotificationReadUnreadClick}>
@@ -493,7 +401,6 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
                   />
 
                   <label htmlFor="bio">New Bio: </label>
-                  {/* <textarea name="bio" id="bio" value={bio} onChange={handleBioChange} cols="30" rows="10"></textarea> */}
                   <input type='text' name="bio" id="bio" value={bio} onChange={handleBioChange} cols="30" rows="10"></input>
 
                   <button type="submit">Submit</button>

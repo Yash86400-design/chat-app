@@ -1,6 +1,4 @@
 .emptyPage {
-  /* height: 100%;
-  width: 100%; */
   background-image: radial-gradient(circle 311px at 8.6% 27.9%, rgba(62, 147, 252, 0.57) 12.9%, rgba(239, 183, 192, 0.44) 91.2%);
   display: grid;
   height: 100vh;

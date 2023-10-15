@@ -1,24 +1,18 @@
-/* 
-New: https://res.cloudinary.com/duxhnzvyw/image/upload/v1697024197/Chat%20App/compressed_whats_app_bg_pqa1bn.jpg 
-Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/whats_app_background_mlfbo2.png
-*/
-
 .chatBody {
   background-image: url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1697024197/Chat%20App/compressed_whats_app_bg_pqa1bn.jpg );
   height: calc(100vh - 100px);
   width: 100%;
-  background-size: cover; /* Add this property */
+  background-size: cover;
   background-repeat: no-repeat;
   overflow-y: auto;
 }
-
-/* position: cover; */
 
 .chatBodyUnKnown {
   background-image: linear-gradient(rgba(4, 9, 30, 0.15), rgba(4, 9, 30, 0.1)), url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1697024197/Chat%20App/compressed_whats_app_bg_pqa1bn.jpg);
   height: calc(100vh - 100px);
   width: 100%;
-  position: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .chatBodyUnKnown p {
@@ -48,7 +42,6 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
   float: left;
   background-color: #f2f2f2;
   margin-right: 50px;
-  /* Add margin on the right side for spacing */
 }
 
 .message.left .chatRoomChatUserName {
@@ -61,7 +54,6 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
   background-color: #07c0ff;
   color: white;
   margin-left: 50px;
-  /* Add margin on the left side for spacing */
 }
 
 .message.right .chatRoomChatUserName {
@@ -80,6 +72,8 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
   background-image: url(https://res.cloudinary.com/duxhnzvyw/image/upload/v1697024197/Chat%20App/compressed_whats_app_bg_pqa1bn.jpg);
   height: calc(100vh - 100px);
   width: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .chatBodyNoMessage p {
@@ -89,30 +83,23 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
 }
 
 /* Styling for the "Back" button */
-/* Styling for the "Back" button */
 .backButtonIcon {
   position: fixed;
   top: 50%;
   left: 10px;
-  /* Adjust this value to your preference */
   transform: translateY(-75%);
   z-index: 9999;
-  /* Ensure it's above other content */
 }
 
 .backButtonIcon button {
   padding: 0;
-  /* Remove padding to prevent white color from bleeding */
   background-color: transparent;
-  /* Set background color to transparent */
   color: #0fc330;
   border: none;
   cursor: pointer;
   border-radius: 50%;
   width: 32px;
-  /* Set a fixed width for the button */
   height: 32px;
-  /* Set a fixed height for the button */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,9 +107,7 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
 
 .backButtonIcon button:hover {
   background-color: #007bff;
-  /* Apply background color on hover */
   color: #fff;
-  /* Change text color on hover */
 }
 
 @media (max-width: 767px) and (min-width:400px) {
@@ -145,7 +130,6 @@ Old: https://res.cloudinary.com/duxhnzvyw/image/upload/v1682338192/Chat%20App/wh
 
   .message.right {
     margin-left: 50px;
-    /* Add margin on the left side for spacing */
   }
 
   .message.right .chatRoomChatUserName {

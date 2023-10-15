@@ -1,7 +1,6 @@
 .body__header-container {
   height: 50px;
   background: rgba(85, 85, 85, 0.2);
-  /* border-right: 1px solid; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -23,15 +22,8 @@
 }
 
 .body__header-container_icons {
-  /* width: 10%;
-  height: 40px;
-  width: 40px;
-  border-radius: 2px solid black;
-  border-radius: 50%;
-  justify-content: space-between; */
   display: flex;
   align-items: center;
-  /* transition: 0.5s ease; */
   margin-right: 5px;
 }
 
@@ -42,7 +34,6 @@
   border-radius: 50%;
   font-size: 42px;
   padding: 10px;
-  /* transition: 0.5s ease; */
 }
 
 .body__header-container_info {
@@ -101,9 +92,6 @@
   padding: 8px;
   cursor: pointer;
   display: flex;
-  /* align-items: center; */
-  /* gap: 30px; */
-  /* display: flex; */
   flex-direction: column;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
@@ -127,10 +115,8 @@
 }
 
 .friendRequestButtonsGroup {
-  /* margin-top: 10px; */
   margin: 10px 50% 0;
   display: flex;
-  /* width: 20%; */
   justify-content: center;
   align-items: center;
   gap: 20px;
@@ -162,7 +148,6 @@
   border: 1px solid #ccc;
   padding: 10px;
   width: 200px;
-  /* width: 25vw; */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
@@ -179,28 +164,19 @@
   cursor: pointer;
 }
 
-/* @media (max-width: 767px) {
-  .userInfoBox {
-    width: 0;
-    height: 0;
-  }
-} */
 .userInfoBox {
   position: absolute;
   top: 50px;
   right: 0;
   left: 0;
-  /* bottom: 0; */
   background: linear-gradient(to bottom right, #fddb92, #d1fdff);
   z-index: 10;
   height: calc(100vh - 50px);
   padding: 100px 0px;
-  /* width: 100%; */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  /* overflow-wrap: break-word; */
   overflow: hidden;
 }
 
@@ -253,7 +229,6 @@
   left: 0;
   padding: 20px;
   background-color: #f2f2f2;
-  /* border-radius: 5px; */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   z-index: 40;
 }
@@ -270,7 +245,6 @@
 
 .infoEditForm input[type="file"],
 .infoEditForm input[type="text"] {
-  /* .infoEditForm textarea { */
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
@@ -287,15 +261,6 @@
   border-color: #3366ff;
   box-shadow: 0 0 5px rgba(51, 102, 255, 0.3);
 }
-
-/* .infoEditForm button {
-  padding: 10px 20px;
-  background-color: #3366ff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-} */
 
 .infoEditForm button[type="submit"] {
   background-color: #4CAF50;

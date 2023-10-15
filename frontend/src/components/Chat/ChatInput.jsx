@@ -29,7 +29,6 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
 
   const handleKeyUp = (event) => {
     if (event.key === 'Enter') {
-      // Submit the form when Enter key is pressed
       handleChatSubmittion();
     }
   };

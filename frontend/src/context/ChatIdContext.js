@@ -13,11 +13,8 @@ export const AppProvider = ({ children }) => {
     type: '',
     socketId: ''
   });
-  // const [chatName, setChatName] = useState('');
-  // const [chatAvatar, setChatAvatar] = useState('');
 
   return (
-    // <ChatIdContext.Provider value={{ chatId, setChatId, chatName, setChatName, chatAvatar, setChatAvatar }}>
     <ChatIdContext.Provider value={{ chatUserInfo, setChatUserInfo }}>
       {children}
     </ChatIdContext.Provider>

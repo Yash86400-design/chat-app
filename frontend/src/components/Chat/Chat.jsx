@@ -16,7 +16,7 @@ function Chat({ socket, pageWidth }) {
   useEffect(() => {
     const isKnown = userProfile?.joinedChats.some((user) => user.id === id);
     setIsKnown(isKnown);
-  }, [userProfile, id]);
+  }, [userProfile?.joinedChats, id]);
 
   return (
     <>

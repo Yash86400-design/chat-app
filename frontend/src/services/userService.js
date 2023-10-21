@@ -144,10 +144,27 @@ const createChatroomResponse = async (formData) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return response.data;
+    console.log(response.data.message);
+
+    return {
+      message: response.data.message, statusCode: response.status
+    };
   } catch (error) {
-    console.error('Error creating chatroom:', error);
-    throw error;
+    // console.error('Error creating chatroom:', error);
+    // throw error;
+    if (error.response) {
+      // If the error response contains status code and message
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: '500'
+      };
+    }
   }
 };
 
@@ -187,7 +204,7 @@ const friendRequestReject = async (requiredData) => {
     const response = await axios.get(API_URL + `notifications/requests/${requiredData.notificationId}/${requiredData.senderId}/reject`, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
-    return { message: response.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status };
   } catch (error) {
     console.error('Error rejecting friend request:', error);
     return { message: 'Error Rejecting Friend Request', statusCode: 500 };
@@ -199,7 +216,7 @@ const groupJoinRequestAccepted = async (requiredData) => {
     const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/accept`, {}, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
-    return { message: response.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status };
   } catch (error) {
     console.error('Error in joining group:', error);
     return { message: 'Error in Joining Member', statusCode: 500 };
@@ -211,7 +228,7 @@ const groupJoinRequestRejected = async (requiredData) => {
     const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/reject`, {}, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
-    return { message: response.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status };
   } catch (error) {
     console.error('Error in rejecting group request:', error);
     return { message: 'Error in Rejecting Member Request', statusCode: 500 };
@@ -228,6 +245,74 @@ const fetchChatroomInfo = async (requiredData) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching chatroom info:', error);
+    throw error;
+  }
+};
+
+// Mark one notification read
+const markNotificationAsRead = async (notificationId) => {
+  try {
+    const response = await axios.patch(API_URL + `notifications/mark-read/${notificationId}`, {}, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    console.error(`Error marking a notification as read:`, error);
+    throw error;
+  }
+};
+
+// Mark all notification read
+const markAllNotificationsAsRead = async () => {
+  try {
+    const response = await axios.patch(API_URL + 'notifications/mark-all-read', {}, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    throw error;
+  }
+};
+
+// Delete all notifications
+const deleteAllNotifications = async () => {
+  try {
+    const response = await axios.delete(API_URL + 'notifications/delete-all',
+      { headers: { Authorization: `Bearer ${userToken}` } }
+    );
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    console.error('Error deleting all notifications', error);
+    throw error;
+  }
+};
+
+// UnFriend User
+const unfriendUser = async (friendId) => {
+  try {
+    const response = await axios.post(API_URL + `personal-chat/${friendId}/info/unfriend`, {}, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    console.error('Error unfriending this user, Please refresh the page or try again later', error);
+    throw error;
+  }
+};
+
+// Exit chatroom
+const exitChatroom = async (chatroomId) => {
+  try {
+    const response = await axios.delete(API_URL + `chatroom/${chatroomId}/info/leave`, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    console.error('Error exiting this chatroom, Please refresh the page or try again later', error);
     throw error;
   }
 };
@@ -249,6 +334,11 @@ const userService = {
   groupJoinRequestAccepted,
   groupJoinRequestRejected,
   fetchChatroomInfo,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteAllNotifications,
+  unfriendUser,
+  exitChatroom,
   clearToken,
   updateToken,
 };

@@ -19,10 +19,18 @@ const initialState = {
   addRequestLoading: false,  // for both user and chatroom
   friendRequestResponseLoading: false,
   chatroomRequestResponseLoading: false,
+  unfriendUserLoading: false,
+  exitChatroomLoading: false,
   message: '',
-  editProfileSuccessResponse: null,
+  unfriendMessage: '',
+  exitChatroomMessage: '',
   createChatroomMessage: '',
+  editProfileSuccessResponse: null,
   statusCode: null,
+  notificationReadStatusCode: null,
+  notificationDeleteStatusCode: null,
+  unfriendUserStatusCode: null,
+  exitChatroomStatusCode: null,
   fetchUserResponse: null,
   fetchChatroomResponse: null,
   returnedUserMessage: null,
@@ -204,6 +212,86 @@ export const groupJoinReject = createAsyncThunk(
   }
 );
 
+// Mark one notification as read
+export const readOneNotification = createAsyncThunk(
+  '/notifications/reading',
+  async (notificationId, thunkAPI) => {
+    try {
+      return await userService.markNotificationAsRead(notificationId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Mark all notifications as read
+export const readAllNotifications = createAsyncThunk(
+  '/notifications/reading-all',
+  async (_, thunkAPI) => {
+    try {
+      return await userService.markAllNotificationsAsRead();
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Delete all notifications
+export const deleteAllNotifications = createAsyncThunk(
+  "/notifications/deleting",
+  async (_, thunkAPI) => {
+    try {
+      return await userService.deleteAllNotifications();
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Unfriend user
+export const unfriendUser = createAsyncThunk(
+  "/unfriending-user",
+  async (friendId, thunkAPI) => {
+    try {
+      return await userService.unfriendUser(friendId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Exit chatroom
+export const exitChatroom = createAsyncThunk(
+  "/exiting-chatroom",
+  async (chatroomId, thunkAPI) => {
+    try {
+      return await userService.exitChatroom(chatroomId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const userSlice = createSlice({
   name: 'userProfile',
   initialState,
@@ -286,11 +374,13 @@ export const userSlice = createSlice({
       })
       .addCase(createChatroom.fulfilled, (state, action) => {
         state.createChatroomLoading = false;
-        state.returnedCreateChatroomResponse = action.payload;
+        state.returnedCreateChatroomResponse = action.payload.statusCode;
+        state.createChatroomMessage = action.payload.message;
       })
       .addCase(createChatroom.rejected, (state, action) => {
         state.createChatroomLoading = false;
-        state.createChatroomMessage = action.payload;
+        state.returnedCreateChatroomResponse = action.payload.statusCode;
+        state.createChatroomMessage = action.payload.message;
       })
       .addCase(addRequest.pending, (state) => {
         state.addRequestLoading = true;
@@ -350,6 +440,50 @@ export const userSlice = createSlice({
         state.chatroomRequestResponseLoading = false;
         state.returnedChatroomRequestResponse = action.payload.statusCode;
         state.addMemberResponseError = action.payload.message;
+      })
+      .addCase(readOneNotification.fulfilled, (state, action) => {
+        state.notificationReadStatusCode = action.payload.statusCode;
+      })
+      .addCase(readOneNotification.rejected, (state, action) => {
+        state.notificationReadStatusCode = action.payload.statusCode;
+      })
+      .addCase(readAllNotifications.fulfilled, (state, action) => {
+        state.notificationReadStatusCode = action.payload.statusCode;
+      })
+      .addCase(readAllNotifications.rejected, (state, action) => {
+        state.notificationReadStatusCode = action.payload.statusCode;
+      })
+      .addCase(deleteAllNotifications.fulfilled, (state, action) => {
+        state.notificationDeleteStatusCode = action.payload.statusCode;
+      })
+      .addCase(deleteAllNotifications.rejected, (state, action) => {
+        state.notificationDeleteStatusCode = action.payload.statusCode;
+      })
+      .addCase(unfriendUser.pending, (state) => {
+        state.unfriendUserLoading = true;
+      })
+      .addCase(unfriendUser.fulfilled, (state, action) => {
+        state.unfriendUserLoading = false;
+        state.unfriendUserStatusCode = action.payload.statusCode;
+        state.unfriendMessage = action.payload.message;
+      })
+      .addCase(unfriendUser.rejected, (state, action) => {
+        state.unfriendUserLoading = false;
+        state.unfriendUserStatusCode = action.payload.statusCode;
+        state.unfriendMessage = action.payload.message;
+      })
+      .addCase(exitChatroom.pending, (state) => {
+        state.exitChatroomLoading = true;
+      })
+      .addCase(exitChatroom.fulfilled, (state, action) => {
+        state.exitChatroomLoading = false;
+        state.exitChatroomStatusCode = action.payload.statusCode;
+        state.exitChatroomMessage = action.payload.message;
+      })
+      .addCase(exitChatroom.rejected, (state, action) => {
+        state.exitChatroomLoading = false;
+        state.exitChatroomStatusCode = action.payload.statusCode;
+        state.exitChatroomMessage = action.payload.message;
       });
   }
 }

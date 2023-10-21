@@ -191,5 +191,70 @@ router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
   }
 });
 
+// Unfriend route
+router.post('/:id/info/unfriend', authenticateToken, async (req, res) => {
+  try {
+    const senderId = req.user.userId;
+    const receiverId = req.params.id;
+
+    const { isUserFriend, senderInfo, receiverInfo } = await isUserInJoinedPersonalChatrooms(senderId, receiverId);
+
+    if (!isUserFriend) {
+      return res.status(404).json({ message: 'Both users are not friends, so no action is needed' });
+    }
+
+    // Send notification to the receiver 
+    const unfriendNotificationForReceiver = {
+      notificationType: 'unfriend',
+      title: `You have been removed from the friend list by ${senderInfo?.name}`,
+      sender: senderId,
+      recipient: receiverId,
+      link: `/api/profile/personal-chat/${senderId}`
+    };
+
+    const unfriendNotificationForSender = {
+      notificationType: 'unfriend',
+      title: `You removed ${receiverInfo?.name} from your friend list`,
+      sender: senderId,
+      recipient: senderId,
+      link: `/api/profile/personal-chat/${receiverId}`
+    };
+
+    receiverInfo.notifications.unshift(unfriendNotificationForReceiver);
+    senderInfo.notifications.unshift(unfriendNotificationForSender);
+
+    await receiverInfo.save();
+    await senderInfo.save();
+
+    // Remove related messages from the Message collection
+    await Message.deleteMany({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId }
+      ]
+    });
+
+    // Remove each other from their friend lists
+    const senderChatIndex = senderInfo.joinedChats.findIndex(chat => chat.id.toString() === receiverId);
+    if (senderChatIndex !== -1) {
+      senderInfo.joinedChats.splice(senderChatIndex, 1);
+    }
+
+    const receiverChatIndex = receiverInfo.joinedChats.findIndex(chat => chat.id.toString() === senderId);
+    if (receiverChatIndex !== -1) {
+      receiverInfo.joinedChats.splice(receiverChatIndex, 1);
+    }
+
+    // Save the changes
+    await senderInfo.save();
+    await receiverInfo.save();
+
+    return res.status(200).json({ message: 'Unfriended successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 module.exports = router;

@@ -1,0 +1,21 @@
+.contactsListLoadingContainer {
+  height: calc(100vh - 174px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+}
+
+.contactsListLoadingContainer span {
+  background: linear-gradient(45deg, #f06, #9f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .contactsListLoadingContainer {
+    height: calc(100vh - 121px);
+  }
+}

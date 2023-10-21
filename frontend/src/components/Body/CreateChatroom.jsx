@@ -74,73 +74,37 @@ function CreateChatroom({ pageWidth }) {
 
   return (
     <>
-      {pageWidth < 768 && (
-        <div className={`createChatroomContainer ${chatUserInfo.id === '' ? 'createChatroomContainerActive' : 'createChatroomContainerInActive'}`}>
-          <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
-          {createButtonActive && (
-            <div className="createChatroomForm" ref={createChatroomRef}>
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="profile">Chatroom Profile: </label>
-                <input
-                  type='file'
-                  id='profile'
-                  name='profile'
-                  accept='image/*'
-                  onChange={handleProfileChange}
-                />
+      <div className={`createChatroomContainer ${pageWidth < 768 ? `${chatUserInfo.id === '' ? 'createChatroomContainerActive' : 'createChatroomContainerInActive'}` : ''}`}>
+        <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
+        {createButtonActive && (
+          <div className="createChatroomForm" ref={createChatroomRef}>
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="profile">Chatroom Profile: <span>(Max-Size: 10 megabytes)</span></label>
+              <input
+                type='file'
+                id='profile'
+                name='profile'
+                accept='image/*'
+                onChange={handleProfileChange}
+              />
 
-                <label htmlFor="name">Chatroom Name: </label>
-                <input
-                  type='text'
-                  id='name'
-                  name='name'
-                  value={name}
-                  onChange={handleNameChange}
-                />
+              <label htmlFor="name">Chatroom Name: </label>
+              <input
+                type='text'
+                id='name'
+                name='name'
+                value={name}
+                onChange={handleNameChange}
+              />
 
-                <label htmlFor="description">Description: </label>
-                <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
+              <label htmlFor="description">Description: </label>
+              <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
 
-                <button type="submit">Create</button>
-              </form>
-            </div>
-          )}
-        </div>
-      )}
-      {pageWidth >= 768 && (
-        <div className='createChatroomContainer'>
-          <button className='createChatroomButton' onClick={handleCreateChatroomButton}>Create Chatroom</button>
-          {createButtonActive && (
-            <div className="createChatroomForm" ref={createChatroomRef}>
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="profile">Chatroom Profile: </label>
-                <input
-                  type='file'
-                  id='profile'
-                  name='profile'
-                  accept='image/*'
-                  onChange={handleProfileChange}
-                />
-
-                <label htmlFor="name">Chatroom Name: </label>
-                <input
-                  type='text'
-                  id='name'
-                  name='name'
-                  value={name}
-                  onChange={handleNameChange}
-                />
-
-                <label htmlFor="description">Description: </label>
-                <input type="text" name="description" id="description" value={description} onChange={handleDescriptionChange} cols="30" rows="10"></input>
-
-                <button type="submit">Create</button>
-              </form>
-            </div>
-          )}
-        </div>
-
-      )}
+              <button type="submit">Create</button>
+            </form>
+          </div>
+        )}
+      </div>
     </>
   );
 }

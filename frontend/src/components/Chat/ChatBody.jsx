@@ -6,6 +6,21 @@ import ChatFetchingSpinner from '../Spinner/ChatFetchingSpinner';
 import ChatIdContext from '../../context/ChatIdContext';
 import { AiOutlineLeftCircle } from 'react-icons/ai';
 
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleString(
+    'en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }
+  );
+}
+
 function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
   const [message, setMessage] = useState([]);
   const { userProfile, fetchingMessageLoading } = useSelector((state) => state.userProfile);
@@ -98,7 +113,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
       {
         isKnown ? (
           fetchingMessageLoading ? (
-            <ChatFetchingSpinner text='Fetching...' />
+            <ChatFetchingSpinner text='Fetching messages...' />
           ) : (
             <div className="chatBodySection">
               {isKnown && message?.length > 0 && (
@@ -116,15 +131,7 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
                       >
                         {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
                         <p>{msg.content}</p>
-                        <strong><p className='messageTimestamp'>{new Date(msg.createdAt).toLocaleString('en-IN', {
-                          timeZone: 'Asia/Kolkata', // Indian time zone
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit'
-                        })}</p></strong>
+                        <strong><p className='messageTimestamp'>{formatTimestamp(msg.createdAt)}</p></strong>
                       </div>
                     ))}
                 </div>

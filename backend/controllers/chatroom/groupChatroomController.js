@@ -9,6 +9,7 @@ const Message = require("../../models/message/Message");
 const { isMember } = require("./isUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const fs = require('fs');
+const AuthUser = require("../../models/user/User");
 
 
 const upload = multer({ dest: 'uploads/' });
@@ -89,7 +90,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     if (senderId === chatroomId) {
       res.status(404).json({ message: 'Action not allowed' });
     }
-    
+
     const currentTime = new Date();
     const newMessage = new Message({
       chatroom: chatroomId,
@@ -131,7 +132,14 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
           link: `/api/profile/group-chat/${chatroomId}`
         };
 
-        await User.findByIdAndUpdate(member.id, { $push: { notifications: notification } });
+        await User.findByIdAndUpdate(member.id, {
+          $push: {
+            notifications: {
+              $each: [notification],
+              $position: 0  // Just like for user messages adding new notification in the beginning
+            }
+          }
+        });
       };
     });
 
@@ -306,7 +314,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
           recipient: member._id,
           title: notificationMessage,
           type: 'groupJoinRequest',
-          link: `/api/profile/chatrooms/${chatroomId}`
+          link: `/api/profile/chatroom/${chatroomId}`
         });
 
         await User.findByIdAndUpdate(member._id, { $push: { notifications: notification } });
@@ -402,7 +410,7 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     const notificationForUser = {
       title: notificationMessage,
       notificationType: 'groupJoinRequestSuccess',
-      link: `/api/profile/chatrooms/${chatroomId}`,
+      link: `/api/profile/chatroom/${chatroomId}`,
     };
 
     chatroomInfo?.notifications.map((notification) => {
@@ -536,7 +544,7 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
       // recipient: userId,
       // sender: senderId,
       message: `You have been promoted to admin in the chatroom ${chatroomInfo.name}`,
-      link: `/api/profile/chatrooms/${chatroomId}`,
+      link: `/api/profile/chatroom/${chatroomId}`,
       notificationType: 'groupAdminPromotion',
     };
 
@@ -601,7 +609,7 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
     const notificationForUser = {
       message: `You have been removed from the admin role in the chatroom "${chatroomInfo.name}".`,
       notificationType: 'groupAdminDemotion',
-      link: `/api/profile/chatrooms/${chatroomId}`,
+      link: `/api/profile/chatroom/${chatroomId}`,
     };
 
     const notificationForChatroom = {
@@ -668,7 +676,7 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
         const notificationForUser = {
           notificationType: 'groupAdminPromotion',
           title: `You have been promoted to admin in the chatroom ${chatroomInfo.name}`,
-          link: `/api/profile/chatrooms/${chatroomId}`
+          link: `/api/profile/chatroom/${chatroomId}`
         };
 
         const notificationForChatroom = {
@@ -692,7 +700,7 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
 
       const notificationForUser = {
         title: `You have left your admin role in the chatroom ${chatroomInfo.name}`,
-        link: `/api/profile/chatrooms/${chatroomId}`,
+        link: `/api/profile/chatroom/${chatroomId}`,
         notificationType: 'groupAdminDemotion'
       };
 
@@ -780,6 +788,116 @@ router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
     return res.status(200).json({ message: 'Message deleted successfully' });
   } catch (err) {
     console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Route to allow regular members to leave the group 
+router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
+  try {
+    const chatroomId = req.params.id;
+    const senderId = req.user.userId;
+    const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await isMember(chatroomId, senderId);
+
+    console.log(isGroupMember, chatroomInfo, senderInfo, chatroomNotFound);
+
+    if (!isGroupMember) {
+      return res.status(404).json({ message: 'User is not a member of the group' });
+    }
+    if (chatroomNotFound) {
+      console.log('chatroomNotFound');
+      return res.status(404).json({ message: 'Chatroom not found' });
+    }
+    // If the sender is not an admin, simply remove them from the group
+    if (!chatroomInfo.admins.includes(senderId)) {
+      const notificationForUser = {
+        notificationType: 'groupLeft',
+        title: `You have exited the group ${chatroomInfo?.name}`,
+        link: `/api/profile/chatroom/${chatroomId}`
+      };
+      const notificationForChatroom = {
+        notificationType: 'user_left',
+        title: `${senderInfo?.name} has left the chatroom`
+      };
+      chatroomInfo.notifications.unshift(notificationForChatroom);
+      senderInfo.notifications.unshift(notificationForUser);
+
+      senderInfo.joinedChats = senderInfo.joinedChats.filter(room => room.id.toString() !== chatroomId.toString());
+      chatroomInfo.members = chatroomInfo.members.filter(user => user.id.toString() !== senderId.toString());
+
+      // Create new objects with filtered arrays
+      // const updatedSenderInfo = new AuthUser({ ...senderInfo, joinedChats: joinedChatrooms });
+      // const updatedChatroomInfo = new Chatroom({ ...chatroomInfo, members: remainingMembers });
+      // await updatedSenderInfo.save();
+      // await updatedChatroomInfo.save();
+
+      await senderInfo.save();
+      await chatroomInfo.save();
+
+      return res.status(200).json({ message: 'You left the group' });
+    }
+    // Handle admin leaving the group
+    if (chatroomInfo.admins.length === 1) {
+      if (chatroomInfo.members.length === 1) {
+        // Only admin and one member, delete the group
+        const notificationForUser = {
+          notificationType: 'groupLeft',
+          title: `You have exited the group ${chatroomInfo?.name} and since you were the only member the group also gets deleted...`
+        };
+        senderInfo.notifications.unshift(notificationForUser);
+        await senderInfo.save();
+        await Message.deleteMany({ chatroom: chatroomId });
+        await ListOfChats.deleteOne({ roomId: chatroomId.toString() });
+        await Chatroom.deleteOne({ _id: chatroomId });
+        return res.status(200).json({ message: 'You have exited the group and Chatroom deleted successfully' });
+      } else {
+        // Notifications for both user and chatroom
+        const notificationForUser = {
+          notificationType: 'groupLeft',
+          title: `You have exited the group ${chatroomInfo?.name}`,
+          link: `/api/profile/chatroom/${chatroomId}`
+        };
+        const notificationForChatroom = {
+          notificationType: 'user_left',
+          title: `${senderInfo?.name} has left the chatroom. He was also a member.`
+        };
+
+        senderInfo.notifications.unshift(notificationForUser);
+        chatroomInfo.notifications.unshift(notificationForChatroom);
+
+        // Randomly select a new admin from group members
+        const remainingMembers = chatroomInfo?.members.filter(member => member.id.toString() !== senderId.toString());
+        const newAdminIndex = Math.floor(Math.random() * remainingMembers.length);
+        const newAdmin = remainingMembers[newAdminIndex];
+        chatroomInfo?.admins.push(newAdmin);
+
+        // Removing the user from group
+        chatroomInfo.admins = chatroomInfo?.admins.filter(admin => admin.id.toString() !== senderId.toString());
+        // const remainingMembers = senderInfo?.members.filter(member => member.id.toString() !== senderId.toString()); // Already created above so going to directly delete it
+
+        // const updatedAdminsAndMembers = new Chatroom({ ...chatroomInfo, admins: remainingAdmins, members: remainingMembers });
+
+        await senderInfo.save();
+        await chatroomInfo.save();
+        // await updatedAdminsAndMembers.save();
+        await remainingAdmins.save();
+        await remainingMembers.save();
+
+        return res.status(200).json({ message: 'You left the group' });
+      }
+    }
+    // Remove the group from the user's joined chat list
+    senderInfo.joinedChats = senderInfo.joinedChats.filter(room => room.id.toString() !== chatroomId.toString());
+    // Create a new senderInfo object with the filtered joinedChats
+    // const updatedSenderInfo = new AuthUser({ ...senderInfo, joinedChats: joinedChatrooms });
+    // await updatedSenderInfo.save();
+
+    // await joinedChatrooms.save();
+    await senderInfo.save();
+
+    res.status(200).json({ message: 'Successfully exited the group...' });
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

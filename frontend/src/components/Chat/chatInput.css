@@ -33,6 +33,10 @@
 }
 
 @media (max-width: 767px) {
+  .chatInput {
+    height: 50px;
+  }
+  
   .chatInput input {
     font-size: 16px;
     padding: 5px;

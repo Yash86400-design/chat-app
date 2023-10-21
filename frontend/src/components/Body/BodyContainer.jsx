@@ -14,7 +14,7 @@ function BodyContainer({ socket, pageWidth }) {
 
   return (
     <div className={`bodyContent ${isSmallScreen && isChatActive ? 'bodyContainerActive' : 'bodyContainerInActive'}`}>
-      <BodyHeader socket={socket} pageWidth={pageWidth} />
+      <BodyHeader socket={socket} pageWidth={pageWidth} /> 
       <CreateChatroom pageWidth={pageWidth} />
       <BodySearchContacts pageWidth={pageWidth} />
       <BodyContacts socket={socket} pageWidth={pageWidth} />

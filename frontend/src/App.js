@@ -18,9 +18,9 @@ function App() {
       <Router>
         <ErrorBoundary>
           <Routes>
-            <Route path='/' element={<Suspense fallback={<div>Loading...</div>}><Dashboard /></Suspense>} />
-            <Route path='/signin' element={<Suspense fallback={<div>Loading...</div>}><SignIn /></Suspense>} />
-            <Route path='/register' element={<Suspense fallback={<div>Loading...</div>}><Register /></Suspense>} />
+            <Route path='/' element={<Suspense fallback={<div>Dashboard Loading...</div>}><Dashboard /></Suspense>} />
+            <Route path='/signin' element={<Suspense fallback={<div>SignIn Page Loading...</div>}><SignIn /></Suspense>} />
+            <Route path='/register' element={<Suspense fallback={<div>Register Page Loading...</div>}><Register /></Suspense>} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </ErrorBoundary>

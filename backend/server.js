@@ -26,7 +26,7 @@ const io = socketIO(server, {
 // Enable CORS middleware
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELTE, PATCH');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
@@ -54,6 +54,7 @@ io.on('connection', (socket) => {
 
   socket.on('sendMessage', ({ socketId, message, name, senderId }) => {
     const createdAt = new Date();  // Mimicing the database date type
+    console.log(socketId, message, name, senderId);
     io.to(socketId).emit('receiveMessage', { message, name, createdAt, senderId });
   });
 

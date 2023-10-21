@@ -18,15 +18,23 @@
 }
 
 .createChatroomForm {
+  position: absolute;
+  /* top: 10px; */
   background-color: #f2f2f2;
   padding: 20px;
   border-radius: 5px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1;
 }
 
 .createChatroomForm label {
   font-weight: bold;
+}
+
+.createChatroomForm label span {
+  font-weight: normal;
+  font-size: 12px;
 }
 
 .createChatroomForm input[type="file"],

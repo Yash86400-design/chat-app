@@ -135,7 +135,8 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     return res.status(201).json({ chatroom, message: 'New Chatroom Created' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    // return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: error.message });
   }
 });
 
@@ -235,7 +236,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   // retrieve a list of suggested search terms or results that match the partial query
   const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
-  return res.json(suggestedTerms);  
+  return res.json(suggestedTerms);
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
@@ -285,7 +286,7 @@ router.get('/notifications/requests/:notificationId/:userId/accept', authenticat
       notificationType: 'friendRequestAccepted',
       title: `Your friend request to ${currentUser?.name} has been accepted.`,
       link: `/api/profile/personal-chat/${senderId}`,
-      read: true,
+      read: false,
     };
 
     requester?.notifications.unshift(notification);
@@ -328,7 +329,7 @@ router.get('/notifications/requests/:notificationId/:userId/reject', authenticat
       sender: currentUser,
       notificationType: 'friendRequestRejected',
       title: `Your friend request to ${currentUser.name} has been rejected.`,
-      read: true
+      read: false
     };
 
     requester.notifications.unshift(notification);
@@ -337,6 +338,93 @@ router.get('/notifications/requests/:notificationId/:userId/reject', authenticat
     await currentUser.save();
 
     return res.status(200).json({ message: `Friend request from ${requester.name} rejected successfully.` });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Marking a notification as read
+router.patch('/notifications/mark-read/:notificationId', authenticateToken, async (req, res) => {
+  try {
+    const notificationId = req.params.notificationId;
+
+    const user = await User.findById(req.user.userId);
+
+    for (const notification of user.notifications) {
+      if (notification._id.toString() === notificationId) {
+        notification.read = true;
+        break;
+      }
+    }
+
+    // Save the changes
+    await user.save();
+
+    return res.status(200).json({ message: "Notification marked as read successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// marking all unread notifications to read except friend request related
+router.patch('/notifications/mark-all-read', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+
+    for (const notification of user.notifications) {
+      if (!notification.read) {
+        if (
+          notification.notificationType !== 'friendRequest'
+        ) {
+          notification.read = true;
+        }
+      }
+    }
+
+    // Save the changes
+    await user.save();
+
+    return res.status(200).json({ message: 'All unread notifications marked as read successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Deleting all notifications
+router.delete('/notifications/delete-all', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+
+    for (const notification of user.notifications) {
+      if (notification.notificationType === 'friendRequest') {
+        const requestSender = await User.findById(notification.sender);
+        const notificationForSender = {
+          recipient: requestSender.id,
+          sender: user.id,
+          notificationType: 'friendRequestRejected',
+          title: `Your friend request to ${user.name} has been rejected.`,
+          read: false
+        };
+
+        // for request sender
+        requestSender.notifications.unshift(notificationForSender);
+
+        // For current user
+        notification['notificationType'] = 'friendRequestRejected';
+        notification['read'] = true;
+
+        await requestSender.save();
+      }
+    }
+
+    user.notifications = [];
+
+    await user.save();
+
+    return res.status(200).json({ message: 'Deleted all notifications.' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });

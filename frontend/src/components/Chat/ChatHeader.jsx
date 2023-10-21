@@ -6,7 +6,7 @@ import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Spinner from '../Spinner/Spinner';
-import { addRequest, groupJoinAccept, groupJoinReject, userData } from '../../features/userSlice';
+import { addRequest, exitChatroom, groupJoinAccept, groupJoinReject, unfriendUser, userData } from '../../features/userSlice';
 
 function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
 
@@ -28,7 +28,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const chatroomInfoRef = useRef(null);
   const chatroomNotificationStateRef = useRef(null);
 
-  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
+  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -73,7 +73,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
         </div>
         <h2>{userName ? userName : "No Name Set"}</h2>
-        <p>{userBio !== null ? 'No Bio' : userBio}</p>
+        <p>{(userBio === 'null' || userBio === null || userBio.length === 0) ? 'No Bio' : userBio}</p>
       </div>
     );
   };
@@ -86,12 +86,12 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
             <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
           </div>
           <h2> {userName ? userName : "No Name Set"} </h2>
-          <p> {userBio.length > 0 ? userBio : 'No Bio'} </p>
+          <p> {userBio !== null ? userBio : 'No Bio'} </p>
         </div>
         <div className="adminsMembersGroup">
 
           {
-            chatroomData?.admins.length > 0 && (
+            chatroomData?.admins?.length > 0 && (
               <div className="adminContainer">
                 <strong><p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p></strong>
                 <div className="admins">
@@ -114,7 +114,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           }
 
           {
-            chatroomData?.members.length > 0 && (
+            chatroomData?.members?.length > 0 && (
               <div className="memberContainer">
                 <strong><p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p></strong>
                 <div className="members">
@@ -161,6 +161,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   };
   const handleUnfriendAction = (event) => {
     event.stopPropagation();
+    dispatch(unfriendUser(userId));
+    // dispatch(userData());
   };
   const handleChatroomInfoAction = (event) => {
     event.stopPropagation();
@@ -170,6 +172,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   };
   const handleLeaveChatroomAction = (event) => {
     event.stopPropagation();
+    dispatch(exitChatroom(userId));
+    // dispatch(userData());
   };
 
   const closeIconClick = () => {
@@ -207,7 +211,6 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
       setCloseIconState(!closeIconState);
       setShowChatroomInfoBox(!showChatroomInfoBox);
       setChatroomInfoBoxActive(false);
-      console.log('Hi');
     } else if (userType === 'User') {
       event.stopPropagation();
       setCloseIconState(!closeIconState);
@@ -288,20 +291,20 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
     // Retrieve data from localStorage
     const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo'));
-
     // Assuming you have a specific chatroomId or key to access the data
     const chatroomId = userId;
-    const chatroomInfo = storedChatroomInfo[chatroomId];
-
-    if (chatroomInfo) {
-      setChatroomData(chatroomInfo);
-      let count = 0;
-      for (let i = 0; i < chatroomInfo.notifications.length; i++) {
-        if (chatroomInfo.notifications[i].read === false) {
-          count += 1;
+    if (storedChatroomInfo) {
+      const chatroomInfo = storedChatroomInfo[chatroomId];
+      if (chatroomInfo) {
+        setChatroomData(chatroomInfo);
+        let count = 0;
+        for (let i = 0; i < chatroomInfo.notifications.length; i++) {
+          if (chatroomInfo.notifications[i].read === false) {
+            count += 1;
+          }
         }
+        setNotificationCount(count);
       }
-      setNotificationCount(count);
     }
 
   }, [userId]);  // UserId is chatroom Id
@@ -329,6 +332,14 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     toast.error(addMemberResponseError);
   }
 
+  if (unfriendUserLoading) {
+    dispatch(userData());
+  }
+
+  if (exitChatroomLoading) {
+    dispatch(userData());
+  }
+
   return (
     <div className="chat__header-container">
       <div className="chat__header-container_left" onClick={handleDirectProfileView}>
@@ -339,7 +350,6 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         {userName && (
           <p>
             {userName}
-            {/* {userBio && <strong> ({userBio.slice(0, 15) + '...'}) </strong>} */}
             {userBio && <strong> ({userBio.length < 0 ? 'No Bio' : `${userBio.slice(0, 5)}...`}) </strong>}
           </p>
         )}
@@ -356,7 +366,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
             </div>
           )
         }
-       
+
         {!isKnown && (
           <div className='addIconContainer'>
             {renderAddButtonContent()}

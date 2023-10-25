@@ -48,7 +48,7 @@ function Register() {
     }
 
     if (isSuccess || user) {
-      toast.success(message);
+      // toast.success(message);
       navigate('/signin');
     }
 

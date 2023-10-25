@@ -39,10 +39,25 @@ const editInfo = async (userData) => {
       }
     });
 
-    return response.data;
+    console.log('Success');
+
+    return { message: response.data.message, statusCode: response.status, userId: response.data.editProfileSuccessUserId };
   } catch (error) {
-    console.error('Error during editInfo:', error);
-    throw error;
+    // console.error('Error during editInfo:', error);
+    // throw error;
+    if (error.response) {
+      // toast.error(error.response.data.message);
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500
+      };
+    }
   }
 };
 
@@ -118,7 +133,7 @@ const messageSendToUser = async (userId, message) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return response.data.message;
+    return {message: response.data, statusCode: response.status };
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -131,7 +146,7 @@ const messageSendToChatroom = async (chatroomId, message) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return response.data.message;
+    return {message: response.data, statusCode: response.status };
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -144,8 +159,6 @@ const createChatroomResponse = async (formData) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    console.log(response.data.message);
-
     return {
       message: response.data.message, statusCode: response.status
     };
@@ -154,6 +167,7 @@ const createChatroomResponse = async (formData) => {
     // throw error;
     if (error.response) {
       // If the error response contains status code and message
+      // toast.error(error.response.data.message);
       return {
         message: error.response.data.message || 'Unknown error',
         statusCode: error.response.status || 500
@@ -162,7 +176,7 @@ const createChatroomResponse = async (formData) => {
       // If the error is not an HTTP response (e.g., a network error)
       return {
         message: 'Network error or server unreachable',
-        statusCode: '500'
+        statusCode: 500
       };
     }
   }

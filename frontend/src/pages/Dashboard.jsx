@@ -7,13 +7,19 @@ import BodyContainer from '../components/Body/BodyContainer';
 import Chat from '../components/Chat/Chat';
 import Spinner from '../components/Spinner/Spinner';
 import { userData } from '../features/userSlice';
+import { toast } from 'react-toastify';
 
 function Dashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userToken, isLoading } = useSelector((state) => state.auth);
+  const { userToken, isLoading, loginMessage, userProfile } = useSelector((state) => state.auth);
   const socket = createSocketInstance(userToken);
   const [pageWidth, setPageWidth] = useState(window.outerWidth);
+
+  // Super helpful: Clearing the extra created toasts. It is used with ToastContainer limit specified in App.js
+  const clearWaitingQueue = () => {
+    toast.clearWaitingQueue();
+  };
 
   useEffect(() => {
     // Redirect to signin if userToken is missing
@@ -39,9 +45,15 @@ function Dashboard() {
     }
   }, [userToken, navigate, dispatch]);
 
+  if (loginMessage) {
+    toast.success(`Welcome ${userProfile?.name}, If you witness any spacing or alignment related issue, Please refresh the page🙏.`);
+  }
+
   if (isLoading) {
     return <Spinner />;
   }
+
+  clearWaitingQueue();
 
   return (
     userToken && (

@@ -12,9 +12,12 @@ const Joi = require('joi');
 const { isUserInJoinedPersonalChatrooms } = require('../chatroom/isUserFriend');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { checkFileSize } = require('../../middlewares/checkFileSize');
 
 
 const upload = multer({ dest: 'uploads/' });
+
+const max_file_size = 10485760;
 
 const deleteFile = (filePath) => {
   fs.unlink(filePath, (err) => {
@@ -87,6 +90,12 @@ router.get('/group/:id', authenticateToken, async (req, res) => {
 router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     let { name, description } = req.body;
+
+    if (req.file && req.file.size > max_file_size) {
+      deleteFile(req.file.path);
+      return res.status(413).json({ message: 'File size exceeded. Please upload a smaller image file.' });
+    }
+
     if (description.length === 0) {
       description = '';
     }
@@ -108,7 +117,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     }
 
     let avatarUrl = undefined;
-    if (avatarPath != '') {
+    if (avatarPath !== '') {
       const result = await cloudinary.uploader.upload(avatarPath, {
         folder: 'Chat App', overwrite: true, public_id: `avatar_${createdBy}`
       });
@@ -132,7 +141,7 @@ router.post('/new-chatroom', authenticateToken, upload.single('avatar'), async (
     await user.save();
     await chatroom.save();
     await newListChatroom.save();
-    return res.status(201).json({ chatroom, message: 'New Chatroom Created' });
+    return res.status(201).json({ chatroom, message: `New Chatroom ${chatroom?.name} Created` });
   } catch (error) {
     console.error(error);
     // return res.status(500).json({ message: 'Internal server error' });
@@ -154,12 +163,19 @@ router.get('/view-profile', authenticateToken, async (req, res) => {
 });
 
 // Update user profile (including avatar)
-router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), async (req, res) => {
+router.patch('/view-profile/edit', authenticateToken, checkFileSize, upload.single('avatar'), async (req, res) => {
   try {
     const { name, bio } = req.body;
     const avatarPath = req.file ? req.file.path : null;
     const userId = req.user.userId;
     let updateData = {};
+
+    console.log('Edit Profile', avatarPath);
+    if (avatarPath && req.file.size > max_file_size) {
+      deleteFile(avatarPath);
+      return res.status(413).json({ message: 'File size exceeded. Please upload a smaller image file.' });
+    }
+
     if (name) {
       updateData.name = name;
     }
@@ -171,7 +187,6 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
       const result = await cloudinary.uploader.upload(avatarPath, { folder: 'Chat App', overwrite: true, public_id: `avatar_${userId}` });
       const avatarUrl = result.url;
       updateData.avatar = avatarUrl;
-
       // Delete the temporary image file stored in the local directory
       deleteFile(avatarPath);
     }
@@ -220,7 +235,7 @@ router.patch('/view-profile/edit', authenticateToken, upload.single('avatar'), a
     );
 
     // Return success response
-    return res.json({ success: true, message: 'User profile updated successfully', editProfileSuccessUserId: userId });
+    return res.status(200).json({ message: 'User profile updated successfully', editProfileSuccessUserId: userId });
 
   } catch (error) {
     console.error(error.message);
@@ -236,7 +251,7 @@ router.get('/search', authenticateToken, async (req, res) => {
   // retrieve a list of suggested search terms or results that match the partial query
   const suggestedTerms = await searchServices.getSuggestedTerms(partialQuery, userId);
 
-  return res.json(suggestedTerms);
+  return res.status(200).json(suggestedTerms);
 });
 
 // For getting query after auto suggestion didn't work. (will work after hitting enter)
@@ -247,7 +262,7 @@ router.post('/search-result', authenticateToken, upload.single('none'), async (r
   // process the search query and retrieve the search results
   const searchResults = await searchServices.getSearchResults(query, userId);
 
-  return res.json({ searchResults });  // return the search results as a JSON object 
+  return res.status(200).json({ searchResults });  // return the search results as a JSON object 
 });
 
 router.get('/notifications/requests/:notificationId/:userId/accept', authenticateToken, async (req, res) => {

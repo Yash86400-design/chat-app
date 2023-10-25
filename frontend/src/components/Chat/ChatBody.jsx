@@ -23,7 +23,7 @@ function formatTimestamp(timestamp) {
 
 function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
   const [message, setMessage] = useState([]);
-  const { userProfile, fetchingMessageLoading } = useSelector((state) => state.userProfile);
+  const { userProfile, fetchingMessageLoading, fetchUserResponse } = useSelector((state) => state.userProfile);
   const { chatUserInfo } = useContext(ChatIdContext);
   const { setChatUserInfo } = useContext(ChatIdContext);
   const chatContainerRef = useRef(null);
@@ -107,6 +107,8 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [message]);
+
+  // console.log(fetchUserResponse);
 
   return (
     <>

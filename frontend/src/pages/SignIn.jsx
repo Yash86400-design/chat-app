@@ -16,6 +16,10 @@ function SignIn() {
 
   const { email, password } = formData;
 
+  const clearWaitingQueue = () => {
+    toast.clearWaitingQueue();
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     dispatch(signin(formData))
@@ -48,15 +52,21 @@ function SignIn() {
     dispatch(reset());
   }, [message, isError, navigate, dispatch, isSuccess, user]);
 
-  useEffect(() => {
-    if (registerMessage !== null && registerMessage.length > 0) {
-      toast.success(registerMessage);
-    }
-  }, [registerMessage]);
+  if (registerMessage) {
+    toast.success(registerMessage);
+  }
+
+  // useEffect(() => {
+  //   if (registerMessage !== null && registerMessage.length > 0) {
+  //     toast.success(registerMessage);
+  //   }
+  // }, [registerMessage]);
 
   if (isLoading) {
     return <Spinner />;
   }
+
+  clearWaitingQueue();
 
   return (
     <div className="signin-page-container">

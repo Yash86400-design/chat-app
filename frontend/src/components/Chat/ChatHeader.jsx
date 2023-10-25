@@ -33,6 +33,10 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
 
+  const clearWaitingQueue = () => {
+    toast.clearWaitingQueue();
+  };
+
   const handleAddRequest = (event) => {
     event.stopPropagation();
     dispatch(addRequest({ type: userType, id: userId }));
@@ -339,6 +343,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   if (exitChatroomLoading) {
     dispatch(userData());
   }
+
+  clearWaitingQueue();
 
   return (
     <div className="chat__header-container">

@@ -5,28 +5,38 @@ import userService from '../services/userService';
 const userProfile = JSON.parse(localStorage.getItem('userProfile'));
 
 const initialState = {
+  // Global state
   userProfile: userProfile || null,
   isError: false,
-  addRequestError: null,  // for both user and chatroom
+  isSuccess: false,
+  isLoading: false,
+  message: '',
+
+  // Add request response for user/chatroom
+  addRequestError: null, // for both user and chatroom
   addFriendResponseError: null,
   addMemberResponseError: null,
-  isSuccess: false,
-  editProfileSuccess: false,
-  isLoading: false,
+  returnedAddRequestResponse: null, // for adding request response
+  returnedFriendRequestResponse: null,
+  returnedChatroomRequestResponse: null,
+
+  // Sending Message To User/Chatroom
   sendingMessageLoading: false,
+  
   fetchingMessageLoading: false,
   createChatroomLoading: false,
-  addRequestLoading: false,  // for both user and chatroom
+  addRequestLoading: false, // for both user and chatroom
   friendRequestResponseLoading: false,
   chatroomRequestResponseLoading: false,
   unfriendUserLoading: false,
   exitChatroomLoading: false,
-  message: '',
   unfriendMessage: '',
   exitChatroomMessage: '',
   createChatroomMessage: '',
-  editProfileSuccessResponse: null,
-  statusCode: null,
+  editProfileResponseMessage: null,
+  editProfileResponseUserId: null,
+  editProfileResponseStatusCode: null,
+  messageSendSatusCode: null,
   notificationReadStatusCode: null,
   notificationDeleteStatusCode: null,
   unfriendUserStatusCode: null,
@@ -35,10 +45,8 @@ const initialState = {
   fetchChatroomResponse: null,
   returnedUserMessage: null,
   returnedChatroomMessage: null,
-  returnedCreateChatroomResponse: null,
-  returnedAddRequestResponse: null, // for adding request response
-  returnedFriendRequestResponse: null,
-  returnedChatroomRequestResponse: null,
+  fetchMessageErrorMessage: null,
+  createChatroomStatusCode: null,
 };
 
 // Fetching the user
@@ -321,13 +329,14 @@ export const userSlice = createSlice({
       })
       .addCase(editInfo.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.editProfileSuccess = true;
-        state.editProfileSuccessResponse = action.payload;
+        state.editProfileResponseMessage = action.payload.message;
+        state.editProfileResponseUserId = action.payload.userId;
+        state.editProfileResponseStatusCode = action.payload.statusCode;
       })
       .addCase(editInfo.rejected, (state, action) => {
         state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload;
+        state.editProfileResponseMessage = action.payload.message;
+        state.editProfileResponseStatusCode = action.payload.statusCode;
       })
       .addCase(fetchUserMessages.pending, (state) => {
         state.fetchingMessageLoading = true;
@@ -338,8 +347,7 @@ export const userSlice = createSlice({
       })
       .addCase(fetchUserMessages.rejected, (state) => {
         state.isLoading = false;
-        state.isError = true;
-        state.message = 'Unable to fetch messages, Please try after sometime...';
+        state.fetchMessageErrorMessage = 'Unable to fetch messages, Please try after sometime...';
       })
       .addCase(fetchChatroomMessages.pending, (state) => {
         state.fetchingMessageLoading = true;
@@ -354,16 +362,16 @@ export const userSlice = createSlice({
         state.message = 'Unable to fetch messages, Please try after sometime...';
       })
       .addCase(sendMessageToUserResponse.fulfilled, (state, action) => {
-        state.statusCode = 200;
-        state.returnedUserMessage = action.payload;
+        state.messageSendSatusCode = action.payload.statusCode;
+        state.returnedUserMessage = action.payload.message;
       })
       .addCase(sendMessageToUserResponse.rejected, (state) => {
         state.isError = true;
         state.message = 'Unable to send the message right now, Sorry for the inconvenience, Please try again after sometime!!!';
       })
       .addCase(sendMessageToChatroomResponse.fulfilled, (state, action) => {
-        state.statusCode = 200;
-        state.returnedChatroomMessage = action.payload;
+        state.messageSendSatusCode = action.payload.statusCode;
+        state.returnedChatroomMessage = action.payload.message;
       })
       .addCase(sendMessageToChatroomResponse.rejected, (state) => {
         state.isError = true;
@@ -374,12 +382,12 @@ export const userSlice = createSlice({
       })
       .addCase(createChatroom.fulfilled, (state, action) => {
         state.createChatroomLoading = false;
-        state.returnedCreateChatroomResponse = action.payload.statusCode;
+        state.createChatroomStatusCode = action.payload.statusCode;
         state.createChatroomMessage = action.payload.message;
       })
       .addCase(createChatroom.rejected, (state, action) => {
         state.createChatroomLoading = false;
-        state.returnedCreateChatroomResponse = action.payload.statusCode;
+        state.createChatroomStatusCode = action.payload.statusCode;
         state.createChatroomMessage = action.payload.message;
       })
       .addCase(addRequest.pending, (state) => {
@@ -488,6 +496,5 @@ export const userSlice = createSlice({
   }
 }
 );
-
 export const { reset } = userSlice.actions;
 export default userSlice.reducer;

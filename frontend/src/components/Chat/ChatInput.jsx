@@ -10,7 +10,7 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const inputRef = useRef(null);
   const dispatch = useDispatch();
-  const { isError, message, userProfile } = useSelector((state) => state.userProfile);
+  const { messageSendStatusCode, returnedUserMessage, returnedChatroomMessage, userProfile } = useSelector((state) => state.userProfile);
 
   const handleChatSubmittion = () => {
     const message = inputRef.current.value;
@@ -50,10 +50,12 @@ function ChatInput({ userType, isKnown, userId, socketInstance, socketId }) {
   }, [isKnown, userType]);
 
   useEffect(() => {
-    if (isError) {
-      toast.error(message);
+    if (messageSendStatusCode && messageSendStatusCode !== 200 && userType === 'User') {
+      toast.error(returnedUserMessage);
+    } else if (messageSendStatusCode && messageSendStatusCode !== 200 && userType === 'Chatroom') {
+      toast.error(returnedChatroomMessage);
     }
-  }, [isError, message]);
+  }, [messageSendStatusCode, returnedChatroomMessage, returnedUserMessage, userType]);
 
   return (
     <div className='chatInput'>

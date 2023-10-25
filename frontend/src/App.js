@@ -25,7 +25,7 @@ function App() {
           </Routes>
         </ErrorBoundary>
       </Router>
-      <ToastContainer />
+      <ToastContainer limit={1} />
     </>
   );
 }

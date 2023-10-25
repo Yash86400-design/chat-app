@@ -5,6 +5,7 @@ import ChatInput from './ChatInput';
 import ChatIdContext from '../../context/ChatIdContext';
 import './chat.css';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 function Chat({ socket, pageWidth }) {
   const { chatUserInfo } = useContext(ChatIdContext);
@@ -13,10 +14,22 @@ function Chat({ socket, pageWidth }) {
   const { userProfile } = useSelector((state) => state.userProfile);
   const [isKnown, setIsKnown] = useState(false);
 
+  const clearWaitingQueue = () => {
+    toast.clearWaitingQueue();
+  };
+
   useEffect(() => {
     const isKnown = userProfile?.joinedChats.some((user) => user.id === id);
     setIsKnown(isKnown);
   }, [userProfile?.joinedChats, id]);
+
+  useEffect(() => {
+    if (isKnown === true && type === 'Chatroom') {
+      toast.info(`Welcome to the ${name} chatroom. Please note that only admins are authorized to take actions on notifications. 🙏`);
+    }
+  }, [type, isKnown, name]);
+
+  clearWaitingQueue();
 
   return (
     <>

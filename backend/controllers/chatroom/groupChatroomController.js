@@ -10,6 +10,7 @@ const { isMember } = require("./isUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const fs = require('fs');
 const AuthUser = require("../../models/user/User");
+const { default: mongoose } = require("mongoose");
 
 
 const upload = multer({ dest: 'uploads/' });
@@ -283,6 +284,7 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
 
     // Deleting the chatroom id from the joinedChatrooms array
     senderInfo.joinedChatrooms = senderInfo.joinedChatrooms.filter(room => room._id.toString() !== chatroomId.toString());
+    senderInfo.adminOf = senderInfo.adminOf.filter(room => room._id.toString() !== chatroomId.toString());
 
     await senderInfo.save();
     await ListOfChats.deleteOne({ roomId: chatroomId.toString() });
@@ -647,8 +649,10 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
     // chatroomInfo.notifications.push(notificationForChatroom);
     chatroomInfo?.notifications.unshift(notificationForChatroom);
 
+    const chatroomIdToRemove = mongoose.Types.ObjectId(chatroomId);
+
     await chatroomInfo.save();
-    await User.findByIdAndUpdate(userId, { $push: { notifications: notificationForUser } });
+    await User.findByIdAndUpdate(userId, { $push: { notifications: notificationForUser }, $pull: { adminOf: chatroomIdToRemove } });
 
     return res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
   } catch (error) {
@@ -711,8 +715,10 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
           title: `${userName.name} has been promoted as admin, as previous left his admin role...`
         };
 
+        const chatroomIdToRemove = mongoose.Types.ObjectId(chatroomId);
+
         chatroomInfo?.notifications.unshift(notificationForChatroom);
-        await User.findByIdAndUpdate(newAdmin._id, { $push: { notifications: notificationForUser } });
+        await User.findByIdAndUpdate(newAdmin._id, { $push: { notifications: notificationForUser }, $pull: { adminOf: chatroomIdToRemove } });
       }
     } else {
       // Remove the user's admin role
@@ -737,6 +743,7 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
       };
 
       senderInfo?.notifications.unshift(notificationForUser);
+      senderInfo.adminOf = senderInfo.adminOf.filter(room => room._id.toString() !== chatroomId.toString());
 
       await senderInfo.save();
 
@@ -877,6 +884,7 @@ router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
           title: `You have exited the group ${chatroomInfo?.name} and since you were the only member the group also gets deleted...`
         };
         senderInfo.joinedChats = senderInfo.joinedChats.filter((chatroom) => chatroom.id.toString() !== chatroomId);
+        senderInfo.adminOf = senderInfo.adminOf.filter(room => room._id.toString() !== chatroomId);
         senderInfo.notifications.unshift(notificationForUser);
         await senderInfo.save();
         await Message.deleteMany({ chatroom: chatroomId });
@@ -897,6 +905,7 @@ router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
 
         senderInfo.notifications.unshift(notificationForUser);
         chatroomInfo.notifications.unshift(notificationForChatroom);
+        senderInfo.adminOf = senderInfo.adminOf.filter(room => room._id.toString() !== chatroomId);
 
         // Randomly select a new admin from group members
         const remainingMembers = chatroomInfo?.members.filter(member => member.id.toString() !== senderId.toString());
@@ -980,6 +989,7 @@ router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, 
   }
 });
 
+// Delete all notifications of the chatroom
 router.delete('/:id/notifications/delete-all', authenticateToken, async (req, res) => {
   try {
     const chatroomId = req.params.id;

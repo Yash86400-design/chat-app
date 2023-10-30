@@ -23,7 +23,7 @@ function formatTimestamp(timestamp) {
 
 function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
   const [message, setMessage] = useState([]);
-  const { userProfile, fetchingMessageLoading, fetchUserResponse } = useSelector((state) => state.userProfile);
+  const { userProfile, fetchingMessageLoading } = useSelector((state) => state.userProfile);
   const { chatUserInfo } = useContext(ChatIdContext);
   const { setChatUserInfo } = useContext(ChatIdContext);
   const chatContainerRef = useRef(null);
@@ -108,8 +108,6 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
     }
   }, [message]);
 
-  // console.log(fetchUserResponse);
-
   return (
     <>
       {
@@ -129,11 +127,11 @@ function ChatBody({ isKnown, userType, userId, socketInstance, pageWidth }) {
                     message.map((msg, index) => (
                       <div
                         key={index}
-                        className={`message ${msg.sender === userProfile._id ? 'right' : 'left'}`}
+                        className={`message ${msg.name === 'Chatroom Notifier' ? 'chatroomMessageHeadline' : (msg.sender === userProfile._id ? 'right' : 'left')}`}
                       >
-                        {userType === 'Chatroom' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
+                        {userType === 'Chatroom' && msg.name !== 'Chatroom Notifier' && (<h6 className='chatRoomChatUserName'>{msg.name}</h6>)}
                         <p>{msg.content}</p>
-                        <strong><p className='messageTimestamp'>{formatTimestamp(msg.createdAt)}</p></strong>
+                        <strong><p className={`${msg.name !== 'Chatroom Notifier' ? 'messageTimestamp' : 'notifierMessageTimestamp'}`}>{formatTimestamp(msg.createdAt)}</p></strong>
                       </div>
                     ))}
                 </div>

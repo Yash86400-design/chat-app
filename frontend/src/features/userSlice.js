@@ -10,6 +10,7 @@ const initialState = {
   isError: false,
   isSuccess: false,
   isLoading: false,
+  statusCode: null,
   message: '',
 
   // Add request response for user/chatroom
@@ -22,7 +23,7 @@ const initialState = {
 
   // Sending Message To User/Chatroom
   sendingMessageLoading: false,
-  
+
   fetchingMessageLoading: false,
   createChatroomLoading: false,
   addRequestLoading: false, // for both user and chatroom
@@ -300,12 +301,45 @@ export const exitChatroom = createAsyncThunk(
   }
 );
 
+// Read-All Chatroom Notifications (Action allowed for admins)
+export const readAllChatroomNotifications = createAsyncThunk(
+  "/chatroom/notifications/reading-all",
+  async (chatroomId, thunkAPI) => {
+    try {
+      return await userService.readAllChatroomNotifications(chatroomId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Delete-all Chatroom Notifications (Action allowed only for admins)
+export const deleteAllChatroomNotifications = createAsyncThunk(
+  "/chatroom/notifications/deleting",
+  async (chatroomId, thunkAPI) => {
+    try {
+      return await userService.deleteAllChatroomNotifications(chatroomId);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const userSlice = createSlice({
   name: 'userProfile',
   initialState,
   reducers: {
     reset: (state) => {
       state.userProfile = null;
+      state.isError = false;
+      state.isSuccess = false;
+      state.isLoading = false;
+      state.statusCode = null;
+      state.message = '';
     }
   },
   extraReducers: (builder) => {
@@ -492,6 +526,36 @@ export const userSlice = createSlice({
         state.exitChatroomLoading = false;
         state.exitChatroomStatusCode = action.payload.statusCode;
         state.exitChatroomMessage = action.payload.message;
+      })
+      .addCase(readAllChatroomNotifications.pending, (state, action) => {
+        state.isLoading = true;
+      })
+      .addCase(readAllChatroomNotifications.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = action.payload.message;
+        state.statusCode = action.payload.statusCode;
+      })
+      .addCase(readAllChatroomNotifications.rejected, (state, action) => {
+        state.isLoading = false;
+        state.message = action.error.message;
+        state.statusCode = action.error.code;
+        state.isError = true;
+      })
+      .addCase(deleteAllChatroomNotifications.pending, (state, action) => {
+        state.isLoading = true;
+      })
+      .addCase(deleteAllChatroomNotifications.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.message = action.payload.message;
+        state.statusCode = action.payload.statusCode;
+      })
+      .addCase(deleteAllChatroomNotifications.rejected, (state, action) => {
+        state.isLoading = false;
+        state.message = action.error.message;
+        state.statusCode = action.error.code;
+        state.isError = true;
       });
   }
 }

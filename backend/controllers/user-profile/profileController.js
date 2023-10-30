@@ -417,7 +417,7 @@ router.delete('/notifications/delete-all', authenticateToken, async (req, res) =
       if (notification.notificationType === 'friendRequest') {
         const requestSender = await User.findById(notification.sender);
         const notificationForSender = {
-          recipient: requestSender.id,
+          recipient: requestSender._id,
           sender: user.id,
           notificationType: 'friendRequestRejected',
           title: `Your friend request to ${user.name} has been rejected.`,

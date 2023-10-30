@@ -311,7 +311,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
             )
           }
           {
-            isNotificationStateActive && userProfile?.notifications.length === 0 && (
+            isNotificationStateActive && notifications.length === 0 && (
               <div className="notificationList" ref={notificationStateRef}>
                 <ul>
                   <li className='noNotification'>No Notification Found</li>

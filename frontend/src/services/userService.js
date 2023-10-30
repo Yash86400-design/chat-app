@@ -133,7 +133,7 @@ const messageSendToUser = async (userId, message) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return {message: response.data, statusCode: response.status };
+    return { message: response.data, statusCode: response.status };
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -146,7 +146,7 @@ const messageSendToChatroom = async (chatroomId, message) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return {message: response.data, statusCode: response.status };
+    return { message: response.data, statusCode: response.status };
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -291,6 +291,30 @@ const markAllNotificationsAsRead = async () => {
   }
 };
 
+// Mark all notification read (Chatroom)
+const readAllChatroomNotifications = async (chatroomId) => {
+  try {
+    const response = await axios.patch(API_URL + `chatroom/${chatroomId}/notifications/mark-all-read`, {}, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    if (error.response) {
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500
+      };
+    }
+  }
+};
+
 // Delete all notifications
 const deleteAllNotifications = async () => {
   try {
@@ -301,6 +325,30 @@ const deleteAllNotifications = async () => {
   } catch (error) {
     console.error('Error deleting all notifications', error);
     throw error;
+  }
+};
+
+// Delete all notifications (Chatroom)
+const deleteAllChatroomNotifications = async (chatroomId) => {
+  try {
+    const response = await axios.delete(API_URL + `chatroom/${chatroomId}/notifications/delete-all`, {
+      headers: { Authorization: `Bearer ${userToken}` }
+    });
+
+    return { message: response.data.message, statusCode: response.status };
+  } catch (error) {
+    if (error.response) {
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500
+      };
+    }
   }
 };
 
@@ -350,7 +398,9 @@ const userService = {
   fetchChatroomInfo,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  readAllChatroomNotifications,
   deleteAllNotifications,
+  deleteAllChatroomNotifications,
   unfriendUser,
   exitChatroom,
   clearToken,

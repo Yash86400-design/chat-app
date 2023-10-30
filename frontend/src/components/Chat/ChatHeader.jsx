@@ -6,7 +6,21 @@ import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Spinner from '../Spinner/Spinner';
-import { addRequest, exitChatroom, groupJoinAccept, groupJoinReject, unfriendUser, userData } from '../../features/userSlice';
+import { addRequest, deleteAllChatroomNotifications, exitChatroom, groupJoinAccept, groupJoinReject, readAllChatroomNotifications, unfriendUser, userData } from '../../features/userSlice';
+
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+
+  return date.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
 
 function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
 
@@ -21,6 +35,9 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const [notificationCount, setNotificationCount] = useState(0);
   const [currentAdminIndex, setCurrentAdminIndex] = useState(0);
   const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const friendInfoBoxRef = useRef(null);
   const chatroomInfoBoxRef = useRef(null);
@@ -28,7 +45,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const chatroomInfoRef = useRef(null);
   const chatroomNotificationStateRef = useRef(null);
 
-  const { addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
+  const { isSuccess, isLoading, isError, message, statusCode, addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -223,6 +240,40 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     }
   };
 
+  const handleChatroomReadAllNotifications = (event) => {
+    event.stopPropagation();
+
+    if (!isAdmin) {
+      toast.error('You are not allowed only admins have authority for this action.');
+    }
+
+    if (userType === 'Chatroom' && notificationCount > 0) {
+      const updatedArray = notifications.map((notification) => {
+        if (notification.notificationType !== 'groupJoinRequest') {
+          const { read, ...rest } = notification;
+          return { read: true, ...rest };
+        }
+        return notification;
+      });
+      setNotifications(updatedArray);
+      dispatch(readAllChatroomNotifications(userId));  // UserId is the id of current chatroom
+      dispatch(userData());
+    }
+  };
+
+  const handleChatroomDeleteAllNotifications = (event) => {
+    event.stopPropagation();
+
+    if (!isAdmin) {
+      toast.error('You are not allowed only admins have authority for this action.');
+    }
+
+    if (userType === 'Chatroom') {
+      setNotifications([]);
+      dispatch(deleteAllChatroomNotifications(userId));
+    }
+  };
+
   const showNextAdminCount = () => {
     if (currentAdminIndex < chatroomData.admins.length - 1) {
       setCurrentAdminIndex(currentAdminIndex + 1);
@@ -301,17 +352,33 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
       const chatroomInfo = storedChatroomInfo[chatroomId];
       if (chatroomInfo) {
         setChatroomData(chatroomInfo);
-        let count = 0;
-        for (let i = 0; i < chatroomInfo.notifications.length; i++) {
-          if (chatroomInfo.notifications[i].read === false) {
-            count += 1;
-          }
-        }
-        setNotificationCount(count);
       }
     }
 
   }, [userId]);  // UserId is chatroom Id
+
+  useEffect(() => {
+    let count = 0;
+    for (let i = 0; i < notifications.length; i++) {
+      if (notifications[i].read === false) {
+        count += 1;
+      }
+    }
+    setNotificationCount(count);
+  }, [notifications]);
+
+  useEffect(() => {
+    if (chatroomData && Object.keys(chatroomData).length !== 0) {
+      setNotifications([...chatroomData.notifications]);
+      const isCurrentUserAdmin = chatroomData.admins.some((admin) => admin.id.toString() === userProfile?._id);
+      console.log(isCurrentUserAdmin);
+
+      if (isCurrentUserAdmin) {
+        setIsAdmin(true);
+        setIsDisabled(false);
+      }
+    }
+  }, [chatroomData, userProfile]);
 
   useEffect(() => {
     if (returnedChatroomRequestResponse === 200) {
@@ -319,6 +386,29 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
       window.location.reload();
     }
   }, [returnedChatroomRequestResponse, dispatch]);
+
+  useEffect(() => {
+    if (isSuccess && statusCode === 200) {
+      toast.success(message);
+    }
+
+    if (isError) {
+      toast.error(message);
+    }
+  }, [isError, isSuccess, message, statusCode]);
+
+  if (addMemberResponseError) {
+    toast.error(addMemberResponseError);
+  }
+
+  if (unfriendUserLoading) {
+    dispatch(userData());
+  }
+
+  if (exitChatroomLoading) {
+    dispatch(userData());
+  }
+
 
   if (addRequestLoading) {
     return <Spinner />;
@@ -332,17 +422,11 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     return <Spinner />;
   }
 
-  if (addMemberResponseError) {
-    toast.error(addMemberResponseError);
+  if (isLoading) {
+    return <Spinner />;
   }
 
-  if (unfriendUserLoading) {
-    dispatch(userData());
-  }
-
-  if (exitChatroomLoading) {
-    dispatch(userData());
-  }
+  console.log(isAdmin);
 
   clearWaitingQueue();
 
@@ -384,20 +468,35 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         </div>
       </div>
       {
-        isNotificationStateActive && chatroomData.notifications.length > 0 && (
+        isNotificationStateActive && notifications.length > 0 && (
           <div className="chatroomNotificationList" ref={chatroomNotificationStateRef}>
             <ul>
-              {chatroomData.notifications.map((notification, index) => (
+              {notifications.map((notification, index) => (
                 <li key={index} className={`notification ${notification.notificationType} ${notification.read ? 'notificationRead' : 'notificationUnRead'}`}>
                   {notification.title}
+                  <p>Created At: <span>{formatTimestamp(notification.createdAt)}</span></p>
                   {notification.notificationType === 'groupJoinRequest' && (
                     <div className='joinRequestButtonsGroup'>
-                      <button className='chatroomAcceptButton' onClick={() => handleJoinRequestAcceptAction(notification._id, notification.sender, chatroomData._id)}>Accept</button>
-                      <button className='chatroomRejectButton' onClick={() => handleJoinRequestRejectAction(notification._id, notification.sender, chatroomData._id)}>Reject</button>
+                      <button className={`chatroomAcceptButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={() => handleJoinRequestAcceptAction(notification._id, notification.sender, chatroomData._id)}>Accept</button>
+                      <button className={`chatroomRejectButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={() => handleJoinRequestRejectAction(notification._id, notification.sender, chatroomData._id)}>Reject</button>
                     </div>
                   )}
                 </li>
               ))}
+            </ul>
+            <div className="notificationButtons">
+              <button className={`readAll ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} disabled={isDisabled} onClick={handleChatroomReadAllNotifications}>Read All</button>
+              <button className={`deleteAll ${isDisabled ?
+                'buttonDisabled' : 'buttonEnabled'}`} disabled={isDisabled} onClick={handleChatroomDeleteAllNotifications}>Delete All</button>
+            </div>
+          </div>
+        )
+      }
+      {
+        isNotificationStateActive && notifications.length === 0 && (
+          <div className="chatroomNotificationList" ref={chatroomNotificationStateRef}>
+            <ul>
+              <li className='noNotification'>No Notification Found</li>
             </ul>
           </div>
         )

@@ -53,15 +53,16 @@ const userSchema = new mongoose.Schema({
       required: true
     },
     id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: function () {
-        if (this.type === 'User') {
-          return 'AuthUser';
-        } else if (this.type === 'Chatroom') {
-          return 'Chatroom';
-        }
-      }
+      // type: mongoose.Schema.Types.ObjectId,
+      // required: true,
+      // ref: function () {
+      //   if (this.type === 'User') {
+      //     return 'AuthUser';
+      //   } else if (this.type === 'Chatroom') {
+      //     return 'Chatroom';
+      //   }
+      // }
+      type: String,
     },
     avatar: {
       type: String,

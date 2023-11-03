@@ -23,11 +23,11 @@ function Chat({ socket, pageWidth }) {
     setIsKnown(isKnown);
   }, [userProfile?.joinedChats, id]);
 
-  useEffect(() => {
-    if (isKnown === true && type === 'Chatroom') {
-      toast.info(`Welcome to the ${name} chatroom. Please note that only admins are authorized to take actions on notifications. 🙏`);
-    }
-  }, [type, isKnown, name]);
+  // useEffect(() => {
+  //   if (isKnown === true && type === 'Chatroom') {
+  //     toast.info(`Welcome to the ${name} chatroom. Please note that only admins are authorized to take actions on notifications. 🙏`);
+  //   }
+  // }, [type, isKnown, name]);
 
   clearWaitingQueue();
 

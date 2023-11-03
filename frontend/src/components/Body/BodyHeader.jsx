@@ -107,6 +107,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
     formData.append('name', name);
     formData.append('avatar', profile);
     formData.append('bio', bio);
+    formData.append('type', 'Chatroom');
 
     dispatch(editInfo(formData))
       .then(() => {

@@ -35,8 +35,12 @@ const initialState = {
   exitChatroomMessage: '',
   createChatroomMessage: '',
   editProfileResponseMessage: null,
+  editChatroomResponseMessage: null,
   editProfileResponseUserId: null,
+  editChatroomResponseAdminId: null,
+  editedChatroomId: null,
   editProfileResponseStatusCode: null,
+  editChatroomResponseStatusCode: null,
   messageSendSatusCode: null,
   notificationReadStatusCode: null,
   notificationDeleteStatusCode: null,
@@ -76,6 +80,21 @@ export const editInfo = createAsyncThunk(
     } catch (error) {
       const message =
         (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Editing Chatroom Info
+export const editChatroomInfo = createAsyncThunk(
+  "/edit-chatroom-info",
+  async (chatroomData, thunkAPI) => {
+    try {
+      return await userService.chatroomEditInfo(chatroomData);
+    } catch (error) {
+      const message =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message || error.toString();
       return thunkAPI.rejectWithValue(message);
     }
   }
@@ -340,6 +359,19 @@ export const userSlice = createSlice({
       state.isLoading = false;
       state.statusCode = null;
       state.message = '';
+    },
+    toastReset: (state) => {
+      state.editedChatroomId = null;
+      state.editChatroomResponseAdminId = null;
+      state.editProfileResponseStatusCode = null;
+      state.editChatroomResponseMessage = null;
+    },
+    resetState: (state) => {
+      state.isError = false;
+      state.isSuccess = false;
+      state.isLoading = false;
+      state.statusCode = null;
+      state.message = '';
     }
   },
   extraReducers: (builder) => {
@@ -371,6 +403,21 @@ export const userSlice = createSlice({
         state.isLoading = false;
         state.editProfileResponseMessage = action.payload.message;
         state.editProfileResponseStatusCode = action.payload.statusCode;
+      })
+      .addCase(editChatroomInfo.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(editChatroomInfo.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.editChatroomResponseMessage = action.payload.message;
+        state.editChatroomResponseAdminId = action.payload.adminId;
+        state.editChatroomResponseStatusCode = action.payload.statusCode;
+        state.editedChatroomId = action.payload.editedChatroomId;
+      })
+      .addCase(editChatroomInfo.rejected, (state, action) => {
+        state.isLoading = false;
+        state.editChatroomResponseMessage = action.payload.message;
+        state.editChatroomResponseStatusCode = action.payload.statusCode;
       })
       .addCase(fetchUserMessages.pending, (state) => {
         state.fetchingMessageLoading = true;
@@ -560,5 +607,5 @@ export const userSlice = createSlice({
   }
 }
 );
-export const { reset } = userSlice.actions;
+export const { reset, toastReset, resetState } = userSlice.actions;
 export default userSlice.reducer;

@@ -25,7 +25,7 @@ function App() {
           </Routes>
         </ErrorBoundary>
       </Router>
-      <ToastContainer limit={1} />
+      <ToastContainer limit={1} pauseOnHover />
     </>
   );
 }

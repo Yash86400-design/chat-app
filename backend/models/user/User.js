@@ -22,10 +22,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  date: {
-    type: Date,
-    default: Date.now
-  },
   location: {
     type: String
   },
@@ -53,15 +49,6 @@ const userSchema = new mongoose.Schema({
       required: true
     },
     id: {
-      // type: mongoose.Schema.Types.ObjectId,
-      // required: true,
-      // ref: function () {
-      //   if (this.type === 'User') {
-      //     return 'AuthUser';
-      //   } else if (this.type === 'Chatroom') {
-      //     return 'Chatroom';
-      //   }
-      // }
       type: String,
     },
     avatar: {
@@ -86,7 +73,6 @@ const userSchema = new mongoose.Schema({
     notificationType: {
       type: String,
       required: true,
-      // enum: ['friendRequest', 'groupJoinRequest', 'personalMessage', 'groupMessage', 'admin_demotion', 'admin_promotion']
       enum: ['friendRequest', 'friendRequestAccepted', 'friendRequestRejected', 'personalMessage', 'groupMessage', 'groupJoinRequestSuccess', 'groupJoinRequestRejected', 'groupAdminPromotion', 'groupAdminDemotion', 'unfriend', 'groupLeft']
     },
     sender: {

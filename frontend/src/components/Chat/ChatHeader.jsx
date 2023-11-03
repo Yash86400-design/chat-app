@@ -6,7 +6,7 @@ import { RxCross1 } from 'react-icons/rx';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Spinner from '../Spinner/Spinner';
-import { addRequest, deleteAllChatroomNotifications, exitChatroom, groupJoinAccept, groupJoinReject, readAllChatroomNotifications, unfriendUser, userData } from '../../features/userSlice';
+import { addRequest, deleteAllChatroomNotifications, editChatroomInfo, exitChatroom, groupJoinAccept, groupJoinReject, readAllChatroomNotifications, resetState, toastReset, unfriendUser, userData } from '../../features/userSlice';
 
 function formatTimestamp(timestamp) {
   const date = new Date(timestamp);
@@ -29,9 +29,13 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const [chatroomInfoBoxActive, setChatroomInfoBoxActive] = useState(false);
   const [showFriendInfoBox, setShowFriendInfoBox] = useState(false);
   const [showChatroomInfoBox, setShowChatroomInfoBox] = useState(false);
+  const [chatroomInfoButtonState, setChatroomInfoButtonState] = useState(false);
   const [closeIconState, setCloseIconState] = useState(false);
   const [isNotificationStateActive, setIsNotificationStateActive] = useState(false);
   const [chatroomData, setChatroomData] = useState(null);
+  const [chatroomName, setChatroomName] = useState('');
+  const [chatroomDescription, setChatroomDescription] = useState('');
+  const [chatroomProfile, setChatroomProfile] = useState('');
   const [notificationCount, setNotificationCount] = useState(0);
   const [currentAdminIndex, setCurrentAdminIndex] = useState(0);
   const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
@@ -44,8 +48,9 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const friendInfoRef = useRef(null);
   const chatroomInfoRef = useRef(null);
   const chatroomNotificationStateRef = useRef(null);
+  const chatroomInfoEditRef = useRef(null);
 
-  const { isSuccess, isLoading, isError, message, statusCode, addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, userProfile } = useSelector((state) => state.userProfile);
+  const { isSuccess, isLoading, isError, message, statusCode, addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, editChatroomResponseStatusCode, editChatroomResponseMessage, editChatroomResponseAdminId, editedChatroomId, userProfile } = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -59,107 +64,13 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     dispatch(addRequest({ type: userType, id: userId }));
   };
 
-  const renderAddButtonContent = () => {
-
-    return (
-      <>
-        <span className="tooltip">
-          {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
-        </span>
-        <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
-      </>
-    );
+  const handleChatroomEditProfileButton = (event) => {
+    event.stopPropagation();
+    setCloseIconState(true);
+    setChatroomInfoButtonState(!chatroomInfoButtonState);
+    // setShowChatroomInfoBox(false);
   };
 
-  const renderInfoButtonContent = () => {
-    if (isKnown && userType === 'User') {
-      return (
-        <>
-          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} className='chat__header-container_infoIcon' />}
-        </>
-      );
-    } else if (isKnown && userType === 'Chatroom') {
-      return (
-        <>
-          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} className='chat__header-container_infoIcon' />}
-        </>
-      );
-    }
-  };
-
-  const showUserFriendInfoPage = () => {
-    return (
-      <div className="friendInfoBox" ref={friendInfoRef}>
-        <div className="imgBox">
-          <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
-        </div>
-        <h2>{userName ? userName : "No Name Set"}</h2>
-        <p>{(userBio === 'null' || userBio === null || userBio.length === 0) ? 'No Bio' : userBio}</p>
-      </div>
-    );
-  };
-
-  const showChatroomInfoPage = () => {
-    return (
-      <div className="chatroomInfoBox" ref={chatroomInfoRef}>
-        <div className="chatroomMainDetailBox">
-          <div className="imgBox">
-            <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
-          </div>
-          <h2> {userName ? userName : "No Name Set"} </h2>
-          <p> {userBio !== null ? userBio : 'No Bio'} </p>
-        </div>
-        <div className="adminsMembersGroup">
-
-          {
-            chatroomData?.admins?.length > 0 && (
-              <div className="adminContainer">
-                <strong><p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p></strong>
-                <div className="admins">
-                  <div className="adminImgContainer">
-                    <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
-                  </div>
-                  <div className="adminInfoContainer">
-                    <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
-                    <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
-                    <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
-                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
-                  </div>
-                </div>
-                <div className="adminNavigation">
-                  <button onClick={showPreviousAdminCount} disabled={currentAdminIndex === 0}>Previous</button>
-                  <button onClick={showNextAdminCount} disabled={currentAdminIndex === chatroomData.admins.length - 1}>Next</button>
-                </div>
-              </div>
-            )
-          }
-
-          {
-            chatroomData?.members?.length > 0 && (
-              <div className="memberContainer">
-                <strong><p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p></strong>
-                <div className="members">
-                  <div className="memberImgContainer">
-                    <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
-                  </div>
-                  <div className="memberInfoContainer">
-                    <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
-                    <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
-                    <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
-                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
-                  </div>
-                </div>
-                <div className="memberNavigation">
-                  <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
-                  <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
-                </div>
-              </div>
-            )
-          }
-        </div>
-      </div>
-    );
-  };
 
   const handleFriendInfoClick = (event) => {
     event.stopPropagation();
@@ -205,8 +116,10 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     } else if (closeIconState && (showChatroomInfoBox || chatroomInfoBoxActive)) {
       setShowChatroomInfoBox(false);
       setChatroomInfoBoxActive(false);
+      setChatroomInfoButtonState(false);
       setCloseIconState(false);
     }
+    // else if (closeIconState && (showChatroomInfoBox))
   };
 
   const handleNotificationClick = (event) => {
@@ -298,9 +211,167 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     }
   };
 
-  // const handleChatroomInfoCloseClick = () => {
 
-  // };
+  const renderAddButtonContent = () => {
+
+    return (
+      <>
+        <span className="tooltip">
+          {userType === 'Chatroom' ? 'Become a member' : 'Add Friend'}
+        </span>
+        <BsPersonAdd onClick={handleAddRequest} className='chat__header-container_addIcon' />
+      </>
+    );
+  };
+
+  const renderInfoButtonContent = () => {
+    if (isKnown && userType === 'User') {
+      return (
+        <>
+          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleFriendInfoClick} className='chat__header-container_infoIcon' />}
+        </>
+      );
+    } else if (isKnown && userType === 'Chatroom') {
+      return (
+        <>
+          {closeIconState ? <RxCross1 onClick={closeIconClick} className='crossIcon' /> : <BsThreeDotsVertical onClick={handleChatroomInfoClick} className='chat__header-container_infoIcon' />}
+        </>
+      );
+    }
+  };
+
+  const showUserFriendInfoPage = () => {
+    return (
+      <div className="friendInfoBox" ref={friendInfoRef}>
+        <div className="imgBox">
+          <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+        </div>
+        <h2>{userName ? userName : "No Name Set"}</h2>
+        <p>{(userBio === 'null' || userBio === null || userBio.length === 0) ? 'No Bio' : userBio}</p>
+      </div>
+    );
+  };
+
+  const handleChatroomProfileChange = (event) => {
+    setChatroomProfile(event.target.files[0]);
+  };
+
+  const handleChatroomNameChange = (event) => {
+    setChatroomName(event.target.value);
+  };
+
+  const handleChatroomBioChange = (event) => {
+    setChatroomDescription(event.target.value);
+  };
+
+  const handleChatroomEditFormSubmit = (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append('name', chatroomName);
+    formData.append('avatar', chatroomProfile);
+    formData.append('description', chatroomDescription);
+
+    dispatch(editChatroomInfo({ formData, chatroomId: userId }))
+      .then(() => {
+        setChatroomName('');
+        setChatroomDescription('');
+        setChatroomProfile('');
+        setChatroomInfoButtonState(false);
+        dispatch(userData());
+      });
+    setCloseIconState(false);
+  };
+  const showChatroomInfoPage = () => {
+    return (
+      <div className="chatroomInfoBox" ref={chatroomInfoRef}>
+        <div className="chatroomMainDetailBox">
+          <div className="imgBox">
+            <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
+          </div>
+          <h2> {userName ? userName : "No Name Set"} </h2>
+          <p> {userBio !== null ? userBio : 'No Bio'} </p>
+          <button onClick={handleChatroomEditProfileButton} disabled={isDisabled} className='chatroomInfoEditButton'>Edit</button>
+        </div>
+        <div className="adminsMembersGroup">
+
+          {
+            chatroomData?.admins?.length > 0 && (
+              <div className="adminContainer">
+                <strong><p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p></strong>
+                <div className="admins">
+                  <div className="adminImgContainer">
+                    <img src={chatroomData?.admins[currentAdminIndex].avatar ? chatroomData?.admins[currentAdminIndex].avatar : noProfileAvatar} alt="" />
+                  </div>
+                  <div className="adminInfoContainer">
+                    <p>Name: {chatroomData?.admins[currentAdminIndex]?.name}</p>
+                    <p>Bio: {chatroomData?.admins[currentAdminIndex]?.bio}</p>
+                    <p>ID: {chatroomData?.admins[currentAdminIndex]?.id}</p>
+                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
+                  </div>
+                </div>
+                <div className="adminNavigation">
+                  <button onClick={showPreviousAdminCount} disabled={currentAdminIndex === 0}>Previous</button>
+                  <button onClick={showNextAdminCount} disabled={currentAdminIndex === chatroomData.admins.length - 1}>Next</button>
+                </div>
+              </div>
+            )
+          }
+
+          {
+            chatroomData?.members?.length > 0 && (
+              <div className="memberContainer">
+                <strong><p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p></strong>
+                <div className="members">
+                  <div className="memberImgContainer">
+                    <img src={chatroomData?.members[currentMemberIndex].avatar ? chatroomData?.members[currentMemberIndex].avatar : noProfileAvatar} alt="" />
+                  </div>
+                  <div className="memberInfoContainer">
+                    <p>Name: {chatroomData?.members[currentMemberIndex]?.name}</p>
+                    <p>Bio: {chatroomData?.members[currentMemberIndex]?.bio}</p>
+                    <p>ID: {chatroomData?.members[currentMemberIndex]?.id}</p>
+                    <p>Joined At: {new Date(chatroomData?.admins[currentAdminIndex]?.joinedAt).toLocaleDateString('IN')}</p>
+                  </div>
+                </div>
+                <div className="memberNavigation">
+                  <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
+                  <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
+                </div>
+              </div>
+            )
+          }
+        </div>
+        {chatroomInfoButtonState && (
+          <div className="infoEditForm chatroomForm" ref={chatroomInfoEditRef}>
+            <form onSubmit={handleChatroomEditFormSubmit}>
+              <h5>Click Anywhere outside the form to close this form!</h5>
+              <label htmlFor="profile">New Profile: </label>
+              <input
+                type='file'
+                id='profile'
+                name='profile'
+                accept='image/*'
+                onChange={handleChatroomProfileChange}
+              />
+              <label htmlFor="name">New Name: </label>
+              <input
+                type='text'
+                id='name'
+                name='name'
+                value={chatroomName}
+                onChange={handleChatroomNameChange}
+              />
+              <label htmlFor="description">New Description: </label>
+              <input type='text' name="description" id="description" value={chatroomDescription} onChange={handleChatroomBioChange} cols="30" rows="10"></input>
+              <button type="submit">Submit</button>
+            </form>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -320,6 +391,12 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         setShowFriendInfoBox(false);
         setShowChatroomInfoBox(false);
         setIsNotificationStateActive(false);
+      }
+      if (
+        (chatroomInfoEditRef.current &&
+          !chatroomInfoEditRef.current.contains(event.target))
+      ) {
+        setChatroomInfoButtonState(false);
       }
     }
     document.addEventListener('click', handleClickOutside);
@@ -371,7 +448,6 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     if (chatroomData && Object.keys(chatroomData).length !== 0) {
       setNotifications([...chatroomData.notifications]);
       const isCurrentUserAdmin = chatroomData.admins.some((admin) => admin.id.toString() === userProfile?._id);
-      console.log(isCurrentUserAdmin);
 
       if (isCurrentUserAdmin) {
         setIsAdmin(true);
@@ -390,12 +466,24 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   useEffect(() => {
     if (isSuccess && statusCode === 200) {
       toast.success(message);
+      dispatch(resetState());
     }
 
     if (isError) {
       toast.error(message);
+      dispatch(resetState());
     }
-  }, [isError, isSuccess, message, statusCode]);
+  }, [isError, isSuccess, message, statusCode, dispatch]);
+
+  useEffect(() => {
+    if (editChatroomResponseStatusCode === 200 && editChatroomResponseAdminId === userProfile._id && userId === editedChatroomId) {
+      toast.success(editChatroomResponseMessage);
+      dispatch(toastReset());
+    } else if (editChatroomResponseStatusCode !== 200 && editChatroomResponseAdminId === userProfile._id && userId === editedChatroomId) {
+      toast.error(editChatroomResponseMessage);
+      dispatch(toastReset());
+    }
+  }, [editChatroomResponseMessage, editChatroomResponseAdminId, editChatroomResponseStatusCode, userProfile, editedChatroomId, userId, dispatch]);
 
   if (addMemberResponseError) {
     toast.error(addMemberResponseError);
@@ -425,8 +513,6 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   if (isLoading) {
     return <Spinner />;
   }
-
-  console.log(isAdmin);
 
   clearWaitingQueue();
 

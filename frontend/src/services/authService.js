@@ -1,6 +1,5 @@
 import axios from 'axios';
 import userService from './userService';
-import { toast } from 'react-toastify';
 
 const API_URL = 'http://localhost:5000/auth/';
 

@@ -179,7 +179,7 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
 });
 
 // Put request to update chatroom details
-router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), async (req, res) => {
+router.patch('/:id/info/edit', authenticateToken, upload.single('avatar'), async (req, res) => {
 
   try {
     const chatroomId = req.params.id;
@@ -199,6 +199,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
 
     const { name, description } = req.body;
     const avatarPath = req.file ? req.file.path : null;
+    console.log("Name:", name, "Description:", description, "AvatarPath:", avatarPath);
 
     // Check if the user is authorized to update the chatroom
     const isAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === senderId);
@@ -206,8 +207,8 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (avatarPath.length <= 0 && !name && !description) {
-      return res.status(200).json({ message: "Profile updated. No changes made. Fill in required fields to update." });
+    if (!avatarPath && name.length === 0 && description.length === 0) {
+      return res.status(200).json({ message: 'No changes found', editChatroomAdminId: senderInfo._id, editedChatroomId: chatroomId });
     }
 
     // Update the avatar of group if exist
@@ -252,7 +253,7 @@ router.patch('/:id/info/update', authenticateToken, upload.single('avatar'), asy
       { $set: { 'joinedChats.$.name': updateData.name, 'joinedChats.$.type': updateData.type, 'joinedChats.$.avatar': updateData.avatar, 'joinedChats.$.bio': updateData.description } } // Update operation to set specific fields of the matched joinedChats array element
     );
 
-    return res.status(200).json({ chatroomInfo, message: `${chatroomInfo.name} Info Updated Successfully.` });
+    return res.status(200).json({ chatroomInfo, message: `${chatroomInfo.name} Info Updated Successfully.`, editChatroomAdminId: senderInfo._id, editedChatroomId: chatroomId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -491,7 +492,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     chatroomInfo?.notifications.map((notification) => {
       if (notification._id.toString() === notificationId) {
         notification['notificationType'] = 'groupJoinRejected';
-        notification['title'] = `${requesterData?.name} join request has been rejected...`;
+        notification['title'] = `${requesterData?.name} join request has been rejected... (by ${senderInfo.name})`;
         notification['read'] = true;
       }
     });

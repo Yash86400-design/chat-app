@@ -100,7 +100,7 @@
 /* Styling for the "Back" button */
 .backButtonIcon {
   position: fixed;
-  top: 50%;
+  top: 70%;
   left: 10px;
   transform: translateY(-75%);
   z-index: 9999;

@@ -38,15 +38,37 @@ const editInfo = async (userData) => {
         'Content-Type': 'multipart/form-data'
       }
     });
-
-    console.log('Success');
-
     return { message: response.data.message, statusCode: response.status, userId: response.data.editProfileSuccessUserId };
   } catch (error) {
     // console.error('Error during editInfo:', error);
     // throw error;
     if (error.response) {
       // toast.error(error.response.data.message);
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500
+      };
+    }
+  }
+};
+
+const chatroomEditInfo = async ({ formData, chatroomId }) => {
+  try {
+    const response = await axios.patch(API_URL + `chatroom/${chatroomId}/info/edit`, formData, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return { message: response.data.message, statusCode: response.status, adminId: response.data.editChatroomAdminId, editedChatroomId: response.data.editedChatroomId };
+  } catch (error) {
+    if (error.response) {
       return {
         message: error.response.data.message || 'Unknown error',
         statusCode: error.response.status || 500
@@ -382,6 +404,7 @@ const exitChatroom = async (chatroomId) => {
 const userService = {
   signedUser,
   editInfo,
+  chatroomEditInfo,
   fetchSuggestedTerms,
   userInfo,
   groupInfo,

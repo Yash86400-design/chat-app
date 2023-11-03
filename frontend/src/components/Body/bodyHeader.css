@@ -275,59 +275,6 @@
   opacity: 1;
 }
 
-.infoEditForm {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  left: 0;
-  padding: 20px;
-  background-color: #f2f2f2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  z-index: 40;
-}
-
-.infoEditForm form {
-  display: flex;
-  flex-direction: column;
-}
-
-.infoEditForm label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.infoEditForm input[type="file"],
-.infoEditForm input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing: border-box;
-  outline: none;
-}
-
-.infoEditForm input[type="file"]:focus,
-.infoEditForm input[type="text"]:focus,
-.infoEditForm textarea:focus {
-  outline: none;
-  border-color: #3366ff;
-  box-shadow: 0 0 5px rgba(51, 102, 255, 0.3);
-}
-
-.infoEditForm button[type="submit"] {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.infoEditForm button:hover {
-  background-color: #45a049;
-}
-
 @media (max-width: 767px) {
   .body__header-container.bodyHeaderInActive {
     width: 0%;

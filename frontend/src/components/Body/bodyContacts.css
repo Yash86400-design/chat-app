@@ -1,5 +1,5 @@
 .chatListContainer {
-  height: calc(100vh - 174px);
+  height: calc(100vh - 160px);
   overflow-y: scroll;
 }
 

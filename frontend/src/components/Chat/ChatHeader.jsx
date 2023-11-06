@@ -287,12 +287,14 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     return (
       <div className="chatroomInfoBox" ref={chatroomInfoRef}>
         <div className="chatroomMainDetailBox">
-          <div className="imgBox">
+          <div className="item infoBoxTextContent">
+            <h2> {userName ? userName : "No Name Set"} </h2>
+            <p> {userBio !== null ? userBio : 'No Bio'} </p>
+            <button onClick={handleChatroomEditProfileButton} disabled={isDisabled} className='chatroomInfoEditButton'>Edit</button>
+          </div>
+          <div className="item imgBox">
             <img src={userAvatar ? userAvatar : noProfileAvatar} alt="" />
           </div>
-          <h2> {userName ? userName : "No Name Set"} </h2>
-          <p> {userBio !== null ? userBio : 'No Bio'} </p>
-          <button onClick={handleChatroomEditProfileButton} disabled={isDisabled} className='chatroomInfoEditButton'>Edit</button>
         </div>
         <div className="adminsMembersGroup">
 

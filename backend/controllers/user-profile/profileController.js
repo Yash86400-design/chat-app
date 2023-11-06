@@ -238,8 +238,15 @@ router.patch('/view-profile/edit', authenticateToken, checkFileSize, upload.sing
     return res.status(200).json({ message: 'User profile updated successfully', editProfileSuccessUserId: userId });
 
   } catch (error) {
-    console.error(error.message);
-    return res.status(500).send('Server Error');
+    console.error(error);
+    const avatarPath = req.file ? req.file.path : null;
+
+    if (avatarPath) {
+      deleteFile(avatarPath);
+    }
+
+    return res.status(500).json({ message: 'Internal server error. Unable to update profile info.' });
+
   }
 });
 

@@ -293,10 +293,30 @@
   background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
 }
 
+.chatroomInfoBox .chatroomMainDetailBox {
+  width: 80%;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.chatroomInfoBox .chatroomMainDetailBox .item {
+  flex: 1;
+}
+
+.chatroomInfoBox .chatroomMainDetailBox .infoBoxTextContent {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: space-evenly;
+}
+
 .chatroomInfoBox .imgBox {
+  flex: 2;
   height: 350px;
   width: 350px;
   border-radius: 10%;
+  margin: auto 0;
 }
 
 .chatroomInfoBox .imgBox img {
@@ -320,6 +340,8 @@
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-top: 5px;
+  width: 200px;
 }
 
 .chatroomInfoBox .chatroomInfoEditButton:hover {
@@ -443,6 +465,16 @@
 @media (min-width: 768px) and (max-width: 1200px) {
   .chatroomNotificationList {
     width: 50%;
+  }
+
+  .chatroomInfoBox .chatroomMainDetailBox {
+    gap: 20px;
+    height: 50%;
+  }
+
+  .chatroomInfoBox .chatroomMainDetailBox .imgBox {
+    height: 250px;
+    width: 250px;
   }
 
   .adminsMembersGroup {
@@ -594,8 +626,23 @@
 
   .chatroomInfoBox .imgBox,
   .friendInfoBox .imgBox {
-    height: 100px;
-    width: 100px;
+    height: 175px;
+    width: 175px;
+  }
+
+  .chatroomInfoBox h2 {
+    font-size: 18px;
+  }
+
+  .chatroomInfoBox p {
+    font-size: 12px;
+  }
+
+  .chatroomInfoBox .chatroomInfoEditButton {
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
   }
 
   .adminsMembersGroup p {

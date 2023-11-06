@@ -64,7 +64,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     return res.status(200).json(filteredMessages);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing your request.' });
   }
 });
 
@@ -149,7 +149,7 @@ router.post('/:id', authenticateToken, upload.none(), async (req, res) => {
     return res.status(200).json({ message: 'Message sent successfully', savedMessage });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing your message.' });
   }
 });
 
@@ -173,7 +173,7 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     return res.status(200).json(chatroomInfo);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while fetching chat group information.' });
   }
 
 });
@@ -199,7 +199,6 @@ router.patch('/:id/info/edit', authenticateToken, upload.single('avatar'), async
 
     const { name, description } = req.body;
     const avatarPath = req.file ? req.file.path : null;
-    console.log("Name:", name, "Description:", description, "AvatarPath:", avatarPath);
 
     // Check if the user is authorized to update the chatroom
     const isAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === senderId);
@@ -256,7 +255,13 @@ router.patch('/:id/info/edit', authenticateToken, upload.single('avatar'), async
     return res.status(200).json({ chatroomInfo, message: `${chatroomInfo.name} Info Updated Successfully.`, editChatroomAdminId: senderInfo._id, editedChatroomId: chatroomId });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    const avatarPath = req.file ? req.file.path : null;
+
+    if (avatarPath) {
+      deleteFile(avatarPath);
+    }
+
+    return res.status(500).json({ message: 'Internal server error. Unable to update chatroom info.' });
   }
 });
 
@@ -296,7 +301,7 @@ router.delete("/:id/info/delete", authenticateToken, async (req, res) => {
     return res.status(200).json({ message: 'Chatroom deleted successfully' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while deleting the chatroom.' });
   }
 });
 
@@ -342,7 +347,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     return res.status(200).json({ message: 'Join request sent successfully', id: senderId });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the join request.' });
   }
 });
 
@@ -365,7 +370,7 @@ router.get('/:id/requests', authenticateToken, async (req, res) => {
     return res.status(200).json(chatroomInfo.joinRequests);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while fetching pending requests.' });
   }
 });
 
@@ -448,7 +453,7 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     return res.status(200).json({ message: `${requestedUserData.name} has been added to the chatroom` });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while accepting the join request.' });
   }
 });
 
@@ -515,7 +520,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     return res.status(200).json({ message: 'Join request has been rejected' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while rejecting the join request.' });
   }
 });
 
@@ -592,7 +597,7 @@ router.patch('/:id/admins/:userId/make-admin', authenticateToken, async (req, re
     return res.status(200).json({ message: 'User has been promoted to an admin of the chatroom' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while promoting the user as an admin.' });
   }
 });
 
@@ -658,7 +663,7 @@ router.put('/:id/members/:userId/remove-admin', authenticateToken, async (req, r
     return res.status(200).json({ message: 'User has been removed from the admin role in the chatroom' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while removing the admin role from the user.' });
   }
 });
 
@@ -756,7 +761,7 @@ router.put('/:id/members/leave-admin', authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'User has left their admin role in the chatroom' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the request to leave the admin role in the chatroom.' });
   }
 });
 
@@ -791,7 +796,7 @@ router.patch('/:id/:messageId/edit', authenticateToken, upload.none(), async (re
     return res.status(200).json({ message: 'Message updated successfully', message: updatedMessage });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the request to update the message in the group chatroom.' });
   }
 });
 
@@ -823,7 +828,7 @@ router.delete('/:id/:messageId/delete', authenticateToken, async (req, res) => {
     return res.status(200).json({ message: 'Message deleted successfully' });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the request to delete the message in the group chatroom.' });
   }
 });
 
@@ -947,10 +952,11 @@ router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'Successfully exited the group...' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the request to leave the group.' });
   }
 });
 
+// Mark all notification read
 router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, res) => {
   try {
     const chatroomId = req.params.id;
@@ -986,7 +992,7 @@ router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, 
     res.status(200).json({ message: 'All unread notifications marked as read successfully except user join requests.' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Failed to read all notifications. Please try again later.' });
   }
 });
 
@@ -1046,7 +1052,7 @@ router.delete('/:id/notifications/delete-all', authenticateToken, async (req, re
     return res.status(200).json({ message: 'Deleted all notifications. Successfully.' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Failed to delete all notifications. Please try again later.' });
   }
 });
 

@@ -29,7 +29,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ]
     }).sort('createdAt');
 
-    return res.status(200).json(messages);
+    return res.status(200).json({ messages: messages, senderId: senderId, receiverId: receiverId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -125,7 +125,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     receiverInfo?.pendingRequests.push(senderInfo);
     await receiverInfo.save();
 
-    return res.status(200).json({ message: 'Request Sent Successfully' });
+    return res.status(200).json({ message: 'Request Sent Successfully', senderId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });

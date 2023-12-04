@@ -192,7 +192,7 @@ router.patch('/view-profile/edit', authenticateToken, checkFileSize, upload.sing
     }
 
     if (!name && !bio && !avatarPath) {
-      return res.status(400).json({ success: false, message: 'No profile updates were provided' });
+      return res.status(204).json({ success: false, message: 'No profile updates were provided' });
     }
 
     // Updating the name, bio, avatar in chatrooms where user has joined

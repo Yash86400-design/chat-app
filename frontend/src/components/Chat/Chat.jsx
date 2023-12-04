@@ -45,7 +45,7 @@ function Chat({ socket, pageWidth }) {
       }
 
       {
-        !name && userProfile && (
+        !name && userProfile && window.innerWidth > 768 && (
           <div className="emptyPage">
             <p>No Chat Selected</p>
           </div>

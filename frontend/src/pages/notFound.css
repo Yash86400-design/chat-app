@@ -1,5 +1,3 @@
-/* NotFound.css */
-
 .not-found-container {
   position: relative;
   display: flex;
@@ -7,7 +5,7 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: linear-gradient(to right, #ff6b6b, #ffa07a); /* Background gradient */
+  background: linear-gradient(to right, #ff6b6b, #ffa07a);
 
   /* Clip text effect */
   -webkit-background-clip: text;
@@ -21,7 +19,7 @@
 
 .not-found-message {
   font-size: 18px;
-  color: #3498db; /* Text color */
+  color: #3498db; 
   margin-top: 20px;
 }
 

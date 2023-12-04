@@ -21,7 +21,16 @@ async function isMember(chatroomId, userId) {
     return false;
   }
 
-  const isCurrentUserMember = chatroom.members.some((user) => user.id.toString() === userId.toString())
+  const userJoinedDate = chatroom.members.find((member) => member.id.toString() === userId).joinedAt;
+  const userComparisonTime = new Date(userJoinedDate).toISOString();
+
+  // const filteredMessages = groupMessages.filter((message) => new Date(message.createdAt).toISOString() >= userComparisonTime);
+
+  const isCurrentUserMember = chatroom.members.some((user) => user.id.toString() === userId.toString());
+
+  const notificationForUser = chatroom.notifications.filter((notification) => new Date(notification.createdAt).toISOString() >= userComparisonTime);
+
+  chatroom.notifications = notificationForUser;
 
   return { isGroupMember: isCurrentUserMember, chatroomInfo: chatroom, senderInfo: user, chatroomNotFound: chatroomNotFound, socketId: chatroom.socketId };
 }

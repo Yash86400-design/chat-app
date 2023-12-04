@@ -31,12 +31,22 @@
   -moz-text-fill-color: transparent;
 }
 
+/* .chatBodySection { 
+  I targeted the whole p tag in signin.css that was applying text-align center and mt-20px
+  text-align: left;
+} */
+
 .message {
   clear: both;
   margin: 0px 0 5px 0;
   padding: 5px;
   border-radius: 10px;
 }
+
+/* .message p {
+  I targeted the whole p tag in signin.css that was applying text-align center and mt-20px
+  margin-top: 0px;
+} */
 
 .chatroomMessageHeadline {
   text-align: center;

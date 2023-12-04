@@ -3,10 +3,11 @@ import './chatHeader.css';
 import { BsPersonAdd, BsThreeDotsVertical } from 'react-icons/bs';
 import { AiOutlineBell } from 'react-icons/ai';
 import { RxCross1 } from 'react-icons/rx';
+import { TbRefresh } from "react-icons/tb";
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import Spinner from '../Spinner/Spinner';
-import { addRequest, deleteAllChatroomNotifications, editChatroomInfo, exitChatroom, groupJoinAccept, groupJoinReject, readAllChatroomNotifications, resetState, toastReset, unfriendUser, userData } from '../../features/userSlice';
+import { addRequest, chatroomInfo, deleteAllChatroomNotifications, editChatroomInfo, exitChatroom, fetchChatroomMessages, fetchUserMessages, groupJoinAccept, groupJoinReject, readAllChatroomNotifications, toastReset, unfriendUser, userData } from '../../features/userSlice';
+import ChatroomHeaderSpinner from '../Spinner/ChatroomHeaderSpinner';
 
 function formatTimestamp(timestamp) {
   const date = new Date(timestamp);
@@ -20,6 +21,20 @@ function formatTimestamp(timestamp) {
     minute: '2-digit',
     second: '2-digit'
   });
+}
+
+function getChatroomInfoFromLocalStorage(userId) {
+  // Retrieve data from localStorage
+  const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo'));
+  // Assuming you have a specific chatroomId or key to access the data
+  const chatroomId = userId;
+  if (storedChatroomInfo) {
+    const chatroomInfo = storedChatroomInfo[chatroomId];
+    if (chatroomInfo) {
+      return chatroomInfo;
+    }
+  }
+  return null;
 }
 
 function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }) {
@@ -50,7 +65,31 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   const chatroomNotificationStateRef = useRef(null);
   const chatroomInfoEditRef = useRef(null);
 
-  const { isSuccess, isLoading, isError, message, statusCode, addRequestLoading, returnedAddRequestResponse, addRequestError, addMemberResponseError, chatroomResponseLoading, chatroomRequestResponseLoading, unfriendUserLoading, exitChatroomLoading, returnedChatroomRequestResponse, editChatroomResponseStatusCode, editChatroomResponseMessage, editChatroomResponseAdminId, editedChatroomId, userProfile } = useSelector((state) => state.userProfile);
+  const
+    {
+      userProfile,
+      addRequestLoading,
+      addRequestResponseMessage,
+      addRequestResponseSenderId,
+      addRequestResponseChatroomId,
+      addRequestResponseStatusCode,
+      addMemberResponseError,
+      fetchChatroomLoading,
+      chatroomRequestResponseLoading,
+      unfriendUserLoading,
+      exitChatroomLoading,
+      editChatroomResponseStatusCode,
+      editChatroomResponseMessage,
+      editChatroomResponseAdminId,
+      editedChatroomId,
+      chatroomNotificationReadDeleteAdminId, chatroomNotificationReadDeleteMessage, chatroomNotificationReadDeleteStatusCode, chatroomNotificationReadDeleteRoomId, chatroomNotificationReadDeleteLoading,
+      chatroomJoinRejectLoading,
+      chatroomJoinRejectMessage,
+      chatroomJoinRejectStatusCode,
+      chatroomJoinRejectRoomId,
+      chatroomJoinRejectAdminId
+    }
+      = useSelector((state) => state.userProfile);
 
   const noProfileAvatar =
     'https://res.cloudinary.com/duxhnzvyw/image/upload/v1685522479/Chat%20App/No_Profile_Image_xqa17x.jpg';
@@ -61,7 +100,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
   const handleAddRequest = (event) => {
     event.stopPropagation();
-    dispatch(addRequest({ type: userType, id: userId }));
+    dispatch(addRequest({ type: userType, id: userId, senderId: userProfile._id }));
   };
 
   const handleChatroomEditProfileButton = (event) => {
@@ -130,12 +169,15 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
   };
 
   const handleJoinRequestAcceptAction = (notificationId, senderId, chatroomId) => {
-    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
+    setIsNotificationStateActive(false);
+    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId, acceptedByAdminId: userProfile._id };
+    // Sending accepterAdminId for error handling
     dispatch(groupJoinAccept(requiredData));
   };
 
   const handleJoinRequestRejectAction = (notificationId, senderId, chatroomId) => {
-    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId };
+    setIsNotificationStateActive(false);
+    const requiredData = { notificationId: notificationId, senderId: senderId, chatroomId: chatroomId, rejectedByAdminId: userProfile._id };
     dispatch(groupJoinReject(requiredData));
   };
 
@@ -159,18 +201,18 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     if (!isAdmin) {
       toast.error('You are not allowed only admins have authority for this action.');
     }
-
     if (userType === 'Chatroom' && notificationCount > 0) {
       const updatedArray = notifications.map((notification) => {
-        if (notification.notificationType !== 'groupJoinRequest') {
+        if (notification.notificationType !== 'groupJoinRequest' && notification.read !== true) {
           const { read, ...rest } = notification;
           return { read: true, ...rest };
         }
         return notification;
       });
       setNotifications(updatedArray);
-      dispatch(readAllChatroomNotifications(userId));  // UserId is the id of current chatroom
-      dispatch(userData());
+      const requiredData = { chatroomId: userId, adminId: userProfile._id };
+      dispatch(readAllChatroomNotifications(requiredData));  // UserId is the id of current chatroom
+      // dispatch(userData());
     }
   };
 
@@ -183,7 +225,8 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
     if (userType === 'Chatroom') {
       setNotifications([]);
-      dispatch(deleteAllChatroomNotifications(userId));
+      const requiredData = { chatroomId: userId, adminId: userProfile._id };
+      dispatch(deleteAllChatroomNotifications(requiredData));
     }
   };
 
@@ -211,9 +254,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     }
   };
 
-
   const renderAddButtonContent = () => {
-
     return (
       <>
         <span className="tooltip">
@@ -299,7 +340,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         <div className="adminsMembersGroup">
 
           {
-            chatroomData?.admins?.length > 0 && (
+            chatroomData?.admins?.length > 0 && isKnown && (
               <div className="adminContainer">
                 <strong><p className='adminFirstParagraph'>Admins ({chatroomData?.admins.length}): </p></strong>
                 <div className="admins">
@@ -322,7 +363,7 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
           }
 
           {
-            chatroomData?.members?.length > 0 && (
+            chatroomData?.members?.length > 0 && isKnown && (
               <div className="memberContainer">
                 <strong><p className='memberFirstParagraph'>Members ({chatroomData?.members.length}): </p></strong>
                 <div className="members">
@@ -340,6 +381,16 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
                   <button onClick={showPreviousMemberCount} disabled={currentMemberIndex === 0}>Previous</button>
                   <button onClick={showNextMemberCount} disabled={currentMemberIndex === chatroomData.members.length - 1}>Next</button>
                 </div>
+              </div>
+            )
+          }
+
+          {
+            !isKnown && (
+              <div className='messageForUnknownUser'>
+                <p>
+                  Become a member to view the list of members and admins...
+                </p>
               </div>
             )
           }
@@ -372,6 +423,21 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
         )}
       </div>
     );
+  };
+
+  const handleRefreshChatRoomAction = () => {
+    dispatch(chatroomInfo({ id: userId }))
+      // .then(() => {
+      //   const updatedChatroomInfo = getChatroomInfoFromLocalStorage(userId);
+      //   if (updatedChatroomInfo) {
+      //     setChatroomData(updatedChatroomInfo);
+      //   }
+      // });
+    if (userType === 'User') {
+      dispatch(fetchUserMessages(userId));
+    } else if (userType === 'Chatroom') {
+      dispatch(fetchChatroomMessages(userId));
+    }
   };
 
   useEffect(() => {
@@ -410,31 +476,42 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
 
   // Add request use-effect
   useEffect(() => {
-    if (returnedAddRequestResponse) {
-      toast.success(returnedAddRequestResponse);
+    if (addRequestResponseMessage.length > 0 && userProfile._id === addRequestResponseSenderId && userId === addRequestResponseChatroomId && addRequestResponseStatusCode === 200) {
+      toast.success(addRequestResponseMessage);
     }
 
-    if (addRequestError) {
-      toast.error(addRequestError);
+    if (addRequestResponseMessage.length > 0 && userProfile._id === addRequestResponseSenderId && userId === addRequestResponseChatroomId && addRequestResponseStatusCode !== 200) {
+      toast.error(addRequestResponseMessage);
     }
 
-  }, [addRequestError, returnedAddRequestResponse, userProfile]);
+  }, [addRequestResponseMessage, userProfile, addRequestResponseChatroomId, addRequestResponseSenderId, userId, addRequestResponseStatusCode]);
 
   // Fetching the Chatroom Info from localstorage
   useEffect(() => {
-
-    // Retrieve data from localStorage
-    const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo'));
-    // Assuming you have a specific chatroomId or key to access the data
-    const chatroomId = userId;
-    if (storedChatroomInfo) {
-      const chatroomInfo = storedChatroomInfo[chatroomId];
-      if (chatroomInfo) {
-        setChatroomData(chatroomInfo);
-      }
+    // Fetch the chatroomInfo from localStorage
+    const chatroomInfoFromLocalStorage = getChatroomInfoFromLocalStorage(userId);
+    if (chatroomInfoFromLocalStorage) {
+      setChatroomData(chatroomInfoFromLocalStorage);
     }
 
-  }, [userId]);  // UserId is chatroom Id
+    // If join request accepted or rejected
+    if (
+      chatroomJoinRejectStatusCode === 200 &&
+      userProfile._id === chatroomJoinRejectAdminId &&
+      chatroomJoinRejectRoomId === userId
+    ) {
+      // Dispatch the request to get fresh data of the chatroom
+      dispatch(chatroomInfo({ id: userId }))
+        .then(() => {
+          // Retrieve data from localStorage after the request is completed
+          const updatedChatroomInfo = getChatroomInfoFromLocalStorage(userId);
+          if (updatedChatroomInfo) {
+            setChatroomData(updatedChatroomInfo);
+          }
+        });
+    }
+
+  }, [chatroomJoinRejectAdminId, chatroomJoinRejectMessage, chatroomJoinRejectRoomId, chatroomJoinRejectStatusCode, dispatch, userId, userProfile]);  // UserId is chatroom Id
 
   useEffect(() => {
     let count = 0;
@@ -450,32 +527,35 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     if (chatroomData && Object.keys(chatroomData).length !== 0) {
       setNotifications([...chatroomData.notifications]);
       const isCurrentUserAdmin = chatroomData.admins.some((admin) => admin.id.toString() === userProfile?._id);
-
       if (isCurrentUserAdmin) {
         setIsAdmin(true);
         setIsDisabled(false);
       }
     }
+
   }, [chatroomData, userProfile]);
 
   useEffect(() => {
-    if (returnedChatroomRequestResponse === 200) {
-      dispatch(userData());
-      window.location.reload();
+    if (chatroomNotificationReadDeleteStatusCode === 200 && userProfile._id === chatroomNotificationReadDeleteAdminId && chatroomNotificationReadDeleteRoomId === userId) {
+      dispatch(chatroomInfo({ id: userId }))
+        .then(() => {
+          // Retrieve data from localStorage after the request is completed
+          const updatedChatroomInfo = getChatroomInfoFromLocalStorage(userId);
+          if (updatedChatroomInfo) {
+            setChatroomData(updatedChatroomInfo);
+          }
+        });
+      toast.success(chatroomNotificationReadDeleteMessage);
+      dispatch(toastReset());
+      setIsNotificationStateActive(false);
     }
-  }, [returnedChatroomRequestResponse, dispatch]);
 
-  useEffect(() => {
-    if (isSuccess && statusCode === 200) {
-      toast.success(message);
-      dispatch(resetState());
+    if (chatroomNotificationReadDeleteStatusCode !== 200 && userProfile._id === chatroomNotificationReadDeleteAdminId && chatroomNotificationReadDeleteRoomId === userId) {
+      toast.error(chatroomNotificationReadDeleteMessage);
+      dispatch(toastReset());
+      setIsNotificationStateActive(false);
     }
-
-    if (isError) {
-      toast.error(message);
-      dispatch(resetState());
-    }
-  }, [isError, isSuccess, message, statusCode, dispatch]);
+  }, [chatroomNotificationReadDeleteAdminId, chatroomNotificationReadDeleteMessage, chatroomNotificationReadDeleteStatusCode, chatroomNotificationReadDeleteRoomId, userId, userProfile, dispatch]);
 
   useEffect(() => {
     if (editChatroomResponseStatusCode === 200 && editChatroomResponseAdminId === userProfile._id && userId === editedChatroomId) {
@@ -499,21 +579,20 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
     dispatch(userData());
   }
 
-
-  if (addRequestLoading) {
-    return <Spinner />;
+  if (chatroomNotificationReadDeleteLoading || chatroomJoinRejectLoading) {
+    return <ChatroomHeaderSpinner />;
   }
 
-  if (chatroomResponseLoading) {
-    return <Spinner />;
+  if (addRequestLoading) {
+    return <ChatroomHeaderSpinner />;
   }
 
   if (chatroomRequestResponseLoading) {
-    return <Spinner />;
+    return <ChatroomHeaderSpinner />;
   }
 
-  if (isLoading) {
-    return <Spinner />;
+  if (fetchChatroomLoading) {
+    return <ChatroomHeaderSpinner />;
   }
 
   clearWaitingQueue();
@@ -550,10 +629,18 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
             {renderAddButtonContent()}
           </div>
         )}
+        {isKnown && (
+          <div className="refreshChatroomIconContainer" onClick={handleRefreshChatRoomAction}>
+            <TbRefresh className='chat__header-container_refreshIcon' />
+            <div className="hoverTextForRefreshIcon">Refresh</div>
+          </div>
+        )}
 
-        <div className='infoIconContainer'>
-          {renderInfoButtonContent()}
-        </div>
+        {isKnown && (
+          <div className='infoIconContainer'>
+            {renderInfoButtonContent()}
+          </div>
+        )}
       </div>
       {
         isNotificationStateActive && notifications.length > 0 && (
@@ -565,8 +652,15 @@ function ChatHeader({ userId, userName, userAvatar, userBio, userType, isKnown }
                   <p>Created At: <span>{formatTimestamp(notification.createdAt)}</span></p>
                   {notification.notificationType === 'groupJoinRequest' && (
                     <div className='joinRequestButtonsGroup'>
-                      <button className={`chatroomAcceptButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={() => handleJoinRequestAcceptAction(notification._id, notification.sender, chatroomData._id)}>Accept</button>
-                      <button className={`chatroomRejectButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={() => handleJoinRequestRejectAction(notification._id, notification.sender, chatroomData._id)}>Reject</button>
+                      <button className={`chatroomAcceptButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={(event) => {
+                        event.stopPropagation();
+                        handleJoinRequestAcceptAction(notification._id, notification.sender, chatroomData._id);
+                      }}
+                      >Accept</button>
+                      <button className={`chatroomRejectButton ${isDisabled ? 'buttonDisabled' : 'buttonEnabled'}`} onClick={(event) => {
+                        event.stopPropagation();
+                        handleJoinRequestRejectAction(notification._id, notification.sender, chatroomData._id);
+                      }}>Reject</button>
                     </div>
                   )}
                 </li>

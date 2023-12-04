@@ -38,6 +38,9 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [profile, setProfile] = useState('');
+  const [formChangedName, setFormChangedName] = useState('');
+  const [formChangedBio, setFormChangedBio] = useState('');
+  const [formChangedProfile, setFormChangedProfile] = useState('');
   const [closeIconState, setCloseIconState] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -104,16 +107,16 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
 
     const formData = new FormData();
 
-    formData.append('name', name);
-    formData.append('avatar', profile);
-    formData.append('bio', bio);
+    formData.append('name', formChangedName);
+    formData.append('avatar', formChangedProfile);
+    formData.append('bio', formChangedBio);
     formData.append('type', 'Chatroom');
 
     dispatch(editInfo(formData))
       .then(() => {
-        setProfile('');
-        setName('');
-        setBio('');
+        setFormChangedProfile('');
+        setFormChangedName('');
+        setFormChangedBio('');
         setInfoButton(false);
         dispatch(userData());
       });
@@ -121,15 +124,13 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   };
 
   const handleProfileChange = (event) => {
-    setProfile(event.target.files[0]);
+    setFormChangedProfile(event.target.files[0]);
   };
-
   const handleNameChange = (event) => {
-    setName(event.target.value);
+    setFormChangedName(event.target.value);
   };
-
   const handleBioChange = (event) => {
-    setBio(event.target.value);
+    setFormChangedBio(event.target.value);
   };
 
   const handleFriendRequestAcceptAction = (notificationId, senderId, recipientId) => {
@@ -224,14 +225,14 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
   }, [notifications]);
 
   useEffect(() => {
-    if (editProfileResponseStatusCode === 200 && editProfileResponseUserId === userProfile?._id) {
+    if ((editProfileResponseStatusCode === 200 || editProfileResponseStatusCode === 204) && editProfileResponseUserId === userProfile?._id) {
       toast.success(editProfileResponseMessage);
     }
-
     if (editProfileResponseStatusCode !== 200) {
       toast.error(editProfileResponseMessage);
     }
   }, [editProfileResponseStatusCode, editProfileResponseMessage, editProfileResponseUserId, userProfile?._id]);
+
 
   useEffect(() => {
     if (returnedFriendRequestResponse === 200) {
@@ -264,7 +265,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
       <div className={`body__header-container ${pageWidth < 768 ? `${chatUserInfo.id === '' ? 'bodyHeaderActive' : 'bodyHeaderInActive'}` : ''}`}>
         <div className="body__header-container_profile">
           {userProfile && (
-            <img src={userProfile.avatar ? userProfile.avatar : noProfileAvatar} alt="" />
+            <img src={profile ? profile : noProfileAvatar} alt="" />
           )}
         </div>
         <div className="body__header-container_icons">
@@ -322,7 +323,7 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
           }
           {closeIconState
             ?
-            <RxCross1 className='body__header-container_info crossIcon' onClick={closeIconClick} />  // Same class cause of styles applied on className
+            <RxCross1 className='body__header-container_info crossIcon' onClick={closeIconClick} /> // Same class cause of styles applied on className
             :
             <BsThreeDotsVertical className='body__header-container_info' onClick={handleInfoButton} />
           }
@@ -341,10 +342,10 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
           (
             <div className="userInfoBox" ref={userInfoBoxRef}>
               <div className="imgBox">
-                <img src={userProfile.avatar ? userProfile.avatar : ''} alt="" />
+                <img src={profile ? profile : ''} alt="" />
               </div>
-              <h2>{userProfile.name ? userProfile.name : ''}</h2>
-              <p>{userProfile.bio ? userProfile.bio : 'Add a bio'}</p>
+              <h2>{name ? name : ''}</h2>
+              <p>{bio ? bio : 'Add a bio'}</p>
               <button onClick={handleEditProfileButton}>Edit</button>
             </div>
           )
@@ -366,11 +367,11 @@ function BodyHeader({ socket: socketInstance, pageWidth }) {
                   type='text'
                   id='name'
                   name='name'
-                  value={name}
+                  value={formChangedName}
                   onChange={handleNameChange}
                 />
                 <label htmlFor="bio">New Bio: </label>
-                <input type='text' name="bio" id="bio" value={bio} onChange={handleBioChange} cols="30" rows="10"></input>
+                <input type='text' name="bio" id="bio" value={formChangedBio} onChange={handleBioChange} cols="30" rows="10"></input>
                 <button type="submit">Submit</button>
               </form>
             </div>

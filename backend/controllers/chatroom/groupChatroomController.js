@@ -9,7 +9,6 @@ const Message = require("../../models/message/Message");
 const { isMember } = require("./isUserMember");
 const ListOfChats = require("../../models/listofchats/ListOfChats");
 const fs = require('fs');
-const AuthUser = require("../../models/user/User");
 const { default: mongoose } = require("mongoose");
 
 
@@ -61,7 +60,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const filteredMessages = groupMessages.filter((message) => new Date(message.createdAt).toISOString() >= userComparisonTime);
 
-    return res.status(200).json(filteredMessages);
+    return res.status(200).json({ messages: filteredMessages, roomId: chatroomId, memberId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing your request.' });
@@ -163,14 +162,14 @@ router.get('/:id/info', authenticateToken, async (req, res) => {
     const { isGroupMember, chatroomInfo, chatroomNotFound } = await (isMember(chatroomId, senderId));
 
     if (!isGroupMember) {
-      return res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group', roomId: chatroomId, memberId: senderId });
     }
 
     if (chatroomNotFound) {
       return res.status(404).json({ message: 'Chatroom not found' });
     }
 
-    return res.status(200).json(chatroomInfo);
+    return res.status(200).json({ chatroomInfo: chatroomInfo, roomId: chatroomId, memberId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while fetching chat group information.' });
@@ -344,7 +343,7 @@ router.post('/:id/request', authenticateToken, async (req, res) => {
     chatroomInfo?.notifications.unshift(notification);
     await chatroomInfo.save();
 
-    return res.status(200).json({ message: 'Join request sent successfully', id: senderId });
+    return res.status(200).json({ message: 'Join request sent successfully', senderId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while processing the join request.' });
@@ -388,7 +387,7 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     // console.log(isAdmin);
 
     if (!isGroupMember) {
-      return res.status(404).json({ message: 'User is not a member of group' });
+      return res.status(404).json({ message: 'User is not a member of group', roomId: chatroomId, adminId: senderId });
     }
 
     if (chatroomNotFound) {
@@ -396,14 +395,14 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     }
 
     if (!isAdmin) {
-      return res.status(403).json({ message: 'Only admins can accept join requests' });
+      return res.status(403).json({ message: 'Only admins can accept join requests', roomId: chatroomId, adminId: senderId });
     }
 
     // Find the user in the join requests array
     const joinRequestIndex = chatroomInfo?.joinRequests.findIndex(request => request._id.toString() === requestedUserId.toString());
 
     if (joinRequestIndex === -1) {
-      return res.status(404).json({ message: 'Join request not found' });
+      return res.status(404).json({ message: 'Join request not found', roomId: chatroomId, adminId: senderId });
     }
 
     // Remove the user from the join requests array and add them to the members array
@@ -424,8 +423,8 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     chatroomInfo?.notifications.map((notification) => {
       if (notification._id.toString() === notificationId) {
         notification['notificationType'] = 'groupJoinAccepted';
-        notification['title'] = `${requestedUserData?.name} has joined our chatroom (admin: ${senderInfo.name} accepted the request)🥳🥳🥳...`;
-        notification['read'] = true;
+        notification['title'] = `${requestedUserData?.name} has joined our chatroom (${senderInfo.name} (admin) accepted the request)🥳🥳🥳...`;
+        notification['read'] = false;
       }
     });
 
@@ -450,7 +449,7 @@ router.put('/:id/requests/:notificationId/:userId/accept', authenticateToken, as
     await requestedUserData.save();
     // await notification.save();
 
-    return res.status(200).json({ message: `${requestedUserData.name} has been added to the chatroom` });
+    return res.status(200).json({ message: `${requestedUserData.name} has been added to the chatroom`, roomId: chatroomId, adminId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while accepting the join request.' });
@@ -469,7 +468,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     const isAdmin = chatroomInfo.admins.some((user) => user.id.toString() === senderId);
 
     if (!isGroupMember) {
-      return res.status(200).json({ message: 'You are not a member of this group' });
+      return res.status(200).json({ message: 'You are not a member of this group', roomId: chatroomId, adminId: senderId });
     }
 
     if (chatroomNotFound) {
@@ -477,7 +476,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     }
 
     if (!isAdmin) {
-      return res.status(200).json({ message: 'Only admins can reject join requests' });
+      return res.status(200).json({ message: 'Only admins can reject join requests', roomId: chatroomId, adminId: senderId });
     }
 
     // Find the user in the join requests array
@@ -497,8 +496,8 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     chatroomInfo?.notifications.map((notification) => {
       if (notification._id.toString() === notificationId) {
         notification['notificationType'] = 'groupJoinRejected';
-        notification['title'] = `${requesterData?.name} join request has been rejected... (by ${senderInfo.name})`;
-        notification['read'] = true;
+        notification['title'] = `${requesterData?.name} join request has been rejected by ${senderInfo.name} (Admin)`;
+        notification['read'] = false;
       }
     });
 
@@ -517,7 +516,7 @@ router.put('/:id/requests/:notificationId/:userId/reject', authenticateToken, as
     await chatroomInfo.save();
     await requestedUserData.save();
 
-    return res.status(200).json({ message: 'Join request has been rejected' });
+    return res.status(200).json({ message: 'Join request has been rejected', roomId: chatroomId, adminId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error. An unexpected error occurred while rejecting the join request.' });
@@ -855,7 +854,8 @@ router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
       };
       const notificationForChatroom = {
         notificationType: 'user_left',
-        title: `${senderInfo?.name} has left the chatroom`
+        title: `${senderInfo?.name} has left the chatroom`,
+        read: false,
       };
       chatroomInfo.notifications.unshift(notificationForChatroom);
       senderInfo.notifications.unshift(notificationForUser);
@@ -906,7 +906,8 @@ router.delete("/:id/info/leave", authenticateToken, async (req, res) => {
         };
         const notificationForChatroom = {
           notificationType: 'user_left',
-          title: `${senderInfo?.name} has left the chatroom. He was also a member.`
+          title: `${senderInfo?.name} has left the chatroom. He was also a member.`,
+          read: false,
         };
 
         senderInfo.notifications.unshift(notificationForUser);
@@ -965,7 +966,7 @@ router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, 
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await isMember(chatroomId, senderId);
 
     if (!isGroupMember) {
-      return res.status(403).json({ message: `${senderInfo?.name} is not a member of chatroom.` });
+      return res.status(403).json({ message: `${senderInfo?.name} is not a member of chatroom.`, chatroomId: chatroomId, adminId: senderId });
     }
 
     if (chatroomNotFound) {
@@ -975,7 +976,7 @@ router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, 
     // Check if user is admin 
     const isAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === senderId);
     if (!isAdmin) {
-      return res.status(403).json({ message: 'You do not have the necessary permissions to perform this action. This task is restricted to administrators. Please contact an administrator for assistance.' });
+      return res.status(403).json({ message: 'You do not have the necessary permissions to perform this action. This task is restricted to administrators. Please contact an administrator for assistance.', chatroomId: chatroomId, adminId: senderId });
     }
 
     for (const notification of chatroomInfo.notifications) {
@@ -989,7 +990,7 @@ router.patch('/:id/notifications/mark-all-read', authenticateToken, async (req, 
     // Save the changes
     await chatroomInfo.save();
 
-    res.status(200).json({ message: 'All unread notifications marked as read successfully except user join requests.' });
+    res.status(200).json({ message: 'All unread notifications marked as read successfully except user join requests.', chatroomId: chatroomId, adminId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Failed to read all notifications. Please try again later.' });
@@ -1005,17 +1006,17 @@ router.delete('/:id/notifications/delete-all', authenticateToken, async (req, re
     const { isGroupMember, chatroomInfo, senderInfo, chatroomNotFound } = await isMember(chatroomId, senderId);
 
     if (!isGroupMember) {
-      return res.status(403).json({ message: `${senderInfo?.name} is not a member of chatroom.` });
+      return res.status(403).json({ message: `${senderInfo?.name} is not a member of chatroom.`, chatroomId: chatroomId, adminId: senderId });
     }
 
     if (chatroomNotFound) {
-      return res.status(404).json({ message: 'Chatroom not found' });
+      return res.status(404).json({ message: 'Chatroom not found', chatroomId: chatroomId, adminId: senderId });
     }
 
     // Check if user is admin 
     const isAdmin = chatroomInfo.admins.some((admin) => admin.id.toString() === senderId);
     if (!isAdmin) {
-      return res.status(403).json({ message: 'You do not have the necessary permissions to perform this action. This task is restricted to administrators. Please contact an administrator for assistance.' });
+      return res.status(403).json({ message: 'You do not have the necessary permissions to perform this action. This task is restricted to administrators. Please contact an administrator for assistance.', chatroomId: chatroomId, adminId: senderId });
     }
 
     for (const notification of chatroomInfo.notifications) {
@@ -1049,7 +1050,7 @@ router.delete('/:id/notifications/delete-all', authenticateToken, async (req, re
 
     await newMessage.save();
 
-    return res.status(200).json({ message: 'Deleted all notifications. Successfully.' });
+    return res.status(200).json({ message: 'Deleted all notifications. Successfully.', chatroomId: chatroomId, adminId: senderId });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Failed to delete all notifications. Please try again later.' });

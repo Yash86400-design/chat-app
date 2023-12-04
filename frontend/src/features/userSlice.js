@@ -14,21 +14,43 @@ const initialState = {
   message: '',
 
   // Add request response for user/chatroom
+  addRequestLoading: false, // for both user and chatroom
   addRequestError: null, // for both user and chatroom
+  addRequestResponseMessage: '', // for adding request response
+  addRequestResponseSenderId: null,
+  addRequestResponseStatusCode: null,
+  addRequestResponseChatroomId: null,
+
+  // Friend Request / Group Add Request Response
+  friendRequestResponseLoading: false,
   addFriendResponseError: null,
-  addMemberResponseError: null,
-  returnedAddRequestResponse: null, // for adding request response
   returnedFriendRequestResponse: null,
+  chatroomRequestResponseLoading: false,
+  addMemberResponseError: null,
   returnedChatroomRequestResponse: null,
 
-  // Sending Message To User/Chatroom
-  sendingMessageLoading: false,
+  // fetching chatroom info
+  fetchChatroomLoading: false,
+  fetchChatroomInfoMessage: '',
+  fetchChatroomStatusCode: null,
+  fetchChatroomRoomId: null,
+  fetchChatroomMemberId: null,
+  
+  // Message fetching for both user and chatroom
+  fetchingUserMessageLoading: false,
+  fetchingUserMessageUserId: null,
+  fetchingUserMessageReceiverId: null,
+  fetchingUserMessageStatusCode: null,
+  fetchingUserMessagesErrorMessage: '',
 
-  fetchingMessageLoading: false,
+  // Message fetching for chatroom
+  fetchingChatroomMessageLoading: false,
+  fetchingChatroomMessageMemberId: null,
+  fetchingChatroomMessageRoomId: null,
+  fetchingChatroomMessageStatusCode: null,
+  fetchingChatroomMessageErrorMessage: '',
+
   createChatroomLoading: false,
-  addRequestLoading: false, // for both user and chatroom
-  friendRequestResponseLoading: false,
-  chatroomRequestResponseLoading: false,
   unfriendUserLoading: false,
   exitChatroomLoading: false,
   unfriendMessage: '',
@@ -52,6 +74,20 @@ const initialState = {
   returnedChatroomMessage: null,
   fetchMessageErrorMessage: null,
   createChatroomStatusCode: null,
+
+  // ChatroomNotifications states
+  chatroomNotificationReadDeleteLoading: false,
+  chatroomNotificationReadDeleteMessage: '',
+  chatroomNotificationReadDeleteStatusCode: null,
+  chatroomNotificationReadDeleteRoomId: null,
+  chatroomNotificationReadDeleteAdminId: null,
+
+  // Group Join/Reject State
+  chatroomJoinRejectLoading: false,
+  chatroomJoinRejectMessage: '',
+  chatroomJoinRejectStatusCode: null,
+  chatroomJoinRejectRoomId: null,
+  chatroomJoinRejectAdminId: null
 };
 
 // Fetching the user
@@ -60,6 +96,23 @@ export const userData = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       return await userService.signedUser();
+    } catch (error) {
+      const message = (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Fetching Chatroom Info
+export const chatroomInfo = createAsyncThunk(
+  "/fetching-chatroominfo",
+  async (chatroomId, thunkAPI) => {
+    try {
+      return await userService.fetchChatroomInfo(chatroomId);
     } catch (error) {
       const message = (
         error.response &&
@@ -365,6 +418,14 @@ export const userSlice = createSlice({
       state.editChatroomResponseAdminId = null;
       state.editProfileResponseStatusCode = null;
       state.editChatroomResponseMessage = null;
+
+      // Chatroom Notification Operations
+      state.chatroomNotificationReadDeleteLoading = false;
+      state.chatroomNotificationReadDeleteMessage = '';
+      state.chatroomNotificationReadDeleteStatusCode = null;
+      state.chatroomNotificationReadDeleteRoomId = null;
+      state.chatroomNotificationReadDeleteAdminId = null;
+
     },
     resetState: (state) => {
       state.isError = false;
@@ -389,6 +450,21 @@ export const userSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         state.userProfile = null;
+      })
+      .addCase(chatroomInfo.pending, (state) => {
+        state.fetchChatroomLoading = true;
+      })
+      .addCase(chatroomInfo.fulfilled, (state, action) => {
+        state.fetchChatroomLoading = false;
+        state.fetchChatroomInfoMessage = action.payload.message;
+        state.fetchChatroomStatusCode = action.payload.statusCode;
+        state.fetchChatroomMemberId = action.payload.memberId;
+        state.fetchChatroomRoomId = action.payload.roomId;
+      })
+      .addCase(chatroomInfo.rejected, (state, action) => {
+        state.fetchChatroomLoading = false;
+        state.fetchChatroomStatusCode = action.payload.statusCode;
+        state.fetchChatroomInfoMessage = action.payload.message;
       })
       .addCase(editInfo.pending, (state) => {
         state.isLoading = true;
@@ -420,27 +496,34 @@ export const userSlice = createSlice({
         state.editChatroomResponseStatusCode = action.payload.statusCode;
       })
       .addCase(fetchUserMessages.pending, (state) => {
-        state.fetchingMessageLoading = true;
+        state.fetchingUserMessageLoading = true;
       })
       .addCase(fetchUserMessages.fulfilled, (state, action) => {
-        state.fetchingMessageLoading = false;
-        state.fetchUserResponse = action.payload;
+        state.fetchingUserMessageLoading = false;
+        state.fetchingUserMessageUserId = action.payload.senderId;
+        state.fetchingUserMessageReceiverId = action.payload.receiverId;
+        state.fetchingUserMessageStatusCode = action.payload.statusCode;
       })
-      .addCase(fetchUserMessages.rejected, (state) => {
-        state.isLoading = false;
-        state.fetchMessageErrorMessage = 'Unable to fetch messages, Please try after sometime...';
+      .addCase(fetchUserMessages.rejected, (state, action) => {
+        state.fetchingUserMessageLoading = false;
+        // state.fetchingUserMessagesErrorMessage = 'Unable to fetch messages, Please try after sometime...';
+        state.fetchingUserMessagesErrorMessage = action.payload.message;
+        state.fetchingUserMessageStatusCode = action.payload.statusCode
       })
       .addCase(fetchChatroomMessages.pending, (state) => {
-        state.fetchingMessageLoading = true;
+        state.fetchingChatroomMessageLoading = true;
       })
       .addCase(fetchChatroomMessages.fulfilled, (state, action) => {
-        state.fetchingMessageLoading = false;
-        state.fetchChatroomResponse = action.payload;
+        state.fetchingChatroomMessageLoading = false;
+        state.fetchingChatroomMessageMemberId = action.payload.memberId;
+        state.fetchingChatroomMessageRoomId = action.payload.roomId;
+        state.fetchingChatroomMessageStatusCode = action.payload.statusCode
       })
-      .addCase(fetchChatroomMessages.rejected, (state) => {
-        state.fetchingMessageLoading = false;
-        state.isError = true;
-        state.message = 'Unable to fetch messages, Please try after sometime...';
+      .addCase(fetchChatroomMessages.rejected, (state, action) => {
+        state.fetchingChatroomMessageLoading = false;
+        // state.fetchingChatroomMessageErrorMessage = 'Unable to fetch messages, Please try after sometime...';
+        state.fetchingChatroomMessageErrorMessage = action.payload.message;
+        state.fetchingChatroomMessageStatusCode = action.payload.statusCode
       })
       .addCase(sendMessageToUserResponse.fulfilled, (state, action) => {
         state.messageSendSatusCode = action.payload.statusCode;
@@ -476,11 +559,17 @@ export const userSlice = createSlice({
       })
       .addCase(addRequest.fulfilled, (state, action) => {
         state.addRequestLoading = false;
-        state.returnedAddRequestResponse = action.payload;
+        state.addRequestResponseMessage = action.payload.message;
+        state.addRequestResponseSenderId = action.payload.senderId;
+        state.addRequestResponseStatusCode = action.payload.statusCode;
+        state.addRequestResponseChatroomId = action.payload.chatroomId;
       })
       .addCase(addRequest.rejected, (state, action) => {
         state.addRequestLoading = false;
-        state.addRequestError = action.payload;
+        state.addRequestResponseMessage = action.payload.message;
+        state.addRequestResponseSenderId = action.payload.senderId;
+        state.addRequestResponseStatusCode = action.payload.statusCode;
+        state.addRequestResponseChatroomId = action.payload.chatroomId;
       })
       .addCase(acceptRequest.pending, (state) => {
         state.friendRequestResponseLoading = true;
@@ -507,28 +596,38 @@ export const userSlice = createSlice({
         state.addFriendResponseError = action.payload.message;
       })
       .addCase(groupJoinAccept.pending, (state) => {
-        state.chatroomRequestResponseLoading = true;
+        state.chatroomJoinRejectLoading = true;
       })
       .addCase(groupJoinAccept.fulfilled, (state, action) => {
-        state.chatroomRequestResponseLoading = false;
-        state.returnedChatroomRequestResponse = action.payload.statusCode;
+        state.chatroomJoinRejectLoading = false;
+        state.chatroomJoinRejectMessage = action.payload.message;
+        state.chatroomJoinRejectStatusCode = action.payload.statusCode;
+        state.chatroomJoinRejectRoomId = action.payload.roomId;
+        state.chatroomJoinRejectAdminId = action.payload.adminId;
       })
       .addCase(groupJoinAccept.rejected, (state, action) => {
-        state.chatroomRequestResponseLoading = false;
-        state.returnedChatroomRequestResponse = action.payload.statusCode;
-        state.addMemberResponseError = action.payload.message;
+        state.chatroomJoinRejectLoading = false;
+        state.chatroomJoinRejectMessage = action.response.message;
+        state.chatroomJoinRejectStatusCode = action.response.statusCode;
+        state.chatroomJoinRejectRoomId = action.response.roomId;
+        state.chatroomJoinRejectAdminId = action.response.adminId;
       })
       .addCase(groupJoinReject.pending, (state) => {
-        state.chatroomRequestResponseLoading = true;
+        state.chatroomJoinRejectLoading = true;
       })
       .addCase(groupJoinReject.fulfilled, (state, action) => {
-        state.chatroomRequestResponseLoading = false;
-        state.returnedChatroomRequestResponse = action.payload.statusCode;
+        state.chatroomJoinRejectLoading = false;
+        state.chatroomJoinRejectMessage = action.payload.message;
+        state.chatroomJoinRejectStatusCode = action.payload.statusCode;
+        state.chatroomJoinRejectRoomId = action.payload.roomId;
+        state.chatroomJoinRejectAdminId = action.payload.adminId;
       })
       .addCase(groupJoinReject.rejected, (state, action) => {
-        state.chatroomRequestResponseLoading = false;
-        state.returnedChatroomRequestResponse = action.payload.statusCode;
-        state.addMemberResponseError = action.payload.message;
+        state.chatroomJoinRejectLoading = false;
+        state.chatroomJoinRejectMessage = action.response.message;
+        state.chatroomJoinRejectStatusCode = action.response.statusCode;
+        state.chatroomJoinRejectRoomId = action.response.roomId;
+        state.chatroomJoinRejectAdminId = action.response.adminId;
       })
       .addCase(readOneNotification.fulfilled, (state, action) => {
         state.notificationReadStatusCode = action.payload.statusCode;
@@ -574,35 +673,39 @@ export const userSlice = createSlice({
         state.exitChatroomStatusCode = action.payload.statusCode;
         state.exitChatroomMessage = action.payload.message;
       })
-      .addCase(readAllChatroomNotifications.pending, (state, action) => {
-        state.isLoading = true;
+      .addCase(readAllChatroomNotifications.pending, (state) => {
+        state.chatroomNotificationReadDeleteLoading = true;
       })
       .addCase(readAllChatroomNotifications.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.message = action.payload.message;
-        state.statusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteLoading = false;
+        state.chatroomNotificationReadDeleteMessage = action.payload.message;
+        state.chatroomNotificationReadDeleteStatusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteRoomId = action.payload.chatroomId;
+        state.chatroomNotificationReadDeleteAdminId = action.payload.adminId;
       })
       .addCase(readAllChatroomNotifications.rejected, (state, action) => {
-        state.isLoading = false;
-        state.message = action.error.message;
-        state.statusCode = action.error.code;
-        state.isError = true;
+        state.chatroomNotificationReadDeleteLoading = false;
+        state.chatroomNotificationReadDeleteMessage = action.payload.message;
+        state.chatroomNotificationReadDeleteStatusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteRoomId = action.payload.chatroomId;
+        state.chatroomNotificationReadDeleteAdminId = action.payload.adminId;
       })
-      .addCase(deleteAllChatroomNotifications.pending, (state, action) => {
-        state.isLoading = true;
+      .addCase(deleteAllChatroomNotifications.pending, (state) => {
+        state.chatroomNotificationReadDeleteLoading = true;
       })
       .addCase(deleteAllChatroomNotifications.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.message = action.payload.message;
-        state.statusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteLoading = false;
+        state.chatroomNotificationReadDeleteMessage = action.payload.message;
+        state.chatroomNotificationReadDeleteStatusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteRoomId = action.payload.chatroomId;
+        state.chatroomNotificationReadDeleteAdminId = action.payload.adminId;
       })
       .addCase(deleteAllChatroomNotifications.rejected, (state, action) => {
-        state.isLoading = false;
-        state.message = action.error.message;
-        state.statusCode = action.error.code;
-        state.isError = true;
+        state.chatroomNotificationReadDeleteLoading = false;
+        state.chatroomNotificationReadDeleteMessage = action.payload.message;
+        state.chatroomNotificationReadDeleteStatusCode = action.payload.statusCode;
+        state.chatroomNotificationReadDeleteRoomId = action.payload.chatroomId;
+        state.chatroomNotificationReadDeleteAdminId = action.payload.adminId;
       });
   }
 }

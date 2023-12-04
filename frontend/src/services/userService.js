@@ -110,15 +110,23 @@ const userInfo = async (userId) => {
   }
 };
 
-const groupInfo = async (groupId) => {
+const fetchChatroomInfo = async (requiredData) => {
   try {
-    const response = await axios.get(API_URL + `group/${groupId}`, {
-      headers: { Authorization: `Bearer ${userToken}` }
+    const response = await axios.get(API_URL + `chatroom/${requiredData.id}/info`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`
+      }
     });
 
-    return response.data;
+    const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo')) || {};
+
+    storedChatroomInfo[requiredData.id] = response.data.chatroomInfo;
+
+    localStorage.setItem('chatroomInfo', JSON.stringify(storedChatroomInfo));
+
+    return { chatroomInfo: response.data.chatroomInfo, roomId: response.data.roomId, memberId: response.data.memberId };
   } catch (error) {
-    console.error('Error fetching group detail:', error);
+    console.error('Error fetching chatroom info:', error);
     throw error;
   }
 };
@@ -129,20 +137,45 @@ const fetchUserMessages = async (userId) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return response.data;
+    const storedMessages = localStorage.getItem('messages');
+    const parsedMessages = storedMessages ? JSON.parse(storedMessages) : {};
+    parsedMessages[userId] = response.data.messages;
+    localStorage.setItem('messages', JSON.stringify(parsedMessages));
+
+    // return { userMessages: response.data.messages, senderId: response.data.senderId, receiverId: response.data.receiverId };
+    return { senderId: response.data.senderId, receiverId: response.data.receiverId, statusCode: response.status };
   } catch (error) {
-    console.error('Error fetching messages:', error);
-    throw error;
+    console.error('Error in fetching user messages:', error);
+    // return {'Error in Adding Request'};
+    if (error.response) {
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500,
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500,
+      };
+    }
   }
 };
 
 const fetchGroupMessages = async (groupId) => {
+  console.log("userService");
   try {
     const response = await axios.get(API_URL + `chatroom/${groupId}`, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return response.data;
+    const storedMessages = localStorage.getItem('messages');
+    const parsedMessages = storedMessages ? JSON.parse(storedMessages) : {};
+    parsedMessages[groupId] = response.data.messages;
+    localStorage.setItem('messages', JSON.stringify(parsedMessages));
+
+    // return { chatroomMessages: response.data.messages, roomId: response.data.roomId, memberId: response.data.memberId };
+    return { roomId: response.data.roomId, memberId: response.data.memberId, statusCode: response.status };
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
@@ -210,16 +243,32 @@ const joinRequest = async (requiredData) => {
       const response = await axios.post(API_URL + `personal-chat/${requiredData.id}/request`, {}, {
         headers: { Authorization: `Bearer ${userToken}` }
       });
-      return response.data.message;
+      return { message: response.data.message, statusCode: response.status, senderId: response.data.senderId };
     } else if (requiredData.type === 'Chatroom') {
       const response = await axios.post(API_URL + `chatroom/${requiredData.id}/request`, {}, {
         headers: { Authorization: `Bearer ${userToken}` }
       });
-      return response.data.message;
+      return { message: response.data.message, statusCode: response.status, senderId: response.data.senderId, chatroomId: requiredData.id };
     }
   } catch (error) {
     console.error('Error in adding request:', error);
-    return 'Error in Adding Request';
+    // return {'Error in Adding Request'};
+    if (error.response) {
+      return {
+        message: error.response.data.message || 'Unknown error',
+        statusCode: error.response.status || 500,
+        senderId: requiredData.senderId,
+        chatroomId: requiredData.id
+      };
+    } else {
+      // If the error is not an HTTP response (e.g., a network error)
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500,
+        senderId: requiredData.senderId,
+        chatroomId: requiredData.id
+      };
+    }
   }
 };
 
@@ -252,10 +301,24 @@ const groupJoinRequestAccepted = async (requiredData) => {
     const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/accept`, {}, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
-    return { message: response.data.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status, roomId: response.data.roomId, adminId: response.data.adminId };
   } catch (error) {
     console.error('Error in joining group:', error);
-    return { message: 'Error in Joining Member', statusCode: 500 };
+    if (error.response) {
+      return {
+        message: 'Error in Joining Member',
+        statusCode: 500,
+        roomId: requiredData.chatroomId,
+        adminId: requiredData.acceptedByAdminId
+      };
+    } else {
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500,
+        roomId: requiredData.chatroomId,
+        adminId: requiredData.acceptedByAdminId
+      };
+    }
   }
 };
 
@@ -264,24 +327,24 @@ const groupJoinRequestRejected = async (requiredData) => {
     const response = await axios.put(API_URL + `chatroom/${requiredData.chatroomId}/requests/${requiredData.notificationId}/${requiredData.senderId}/reject`, {}, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
-    return { message: response.data.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status, roomId: response.data.roomId, adminId: response.data.adminId };
   } catch (error) {
     console.error('Error in rejecting group request:', error);
-    return { message: 'Error in Rejecting Member Request', statusCode: 500 };
-  }
-};
-
-const fetchChatroomInfo = async (requiredData) => {
-  try {
-    const response = await axios.get(API_URL + `chatroom/${requiredData.id}/info`, {
-      headers: {
-        Authorization: `Bearer ${userToken}`
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching chatroom info:', error);
-    throw error;
+    if (error.response) {
+      return {
+        message: 'Error in Rejecting Member Request',
+        statusCode: 500,
+        roomId: requiredData.chatroomId,
+        adminId: requiredData.rejectedByAdminId
+      };
+    } else {
+      return {
+        message: 'Network error or server unreachable',
+        statusCode: 500,
+        roomId: requiredData.chatroomId,
+        adminId: requiredData.rejectedByAdminId
+      };
+    }
   }
 };
 
@@ -292,7 +355,7 @@ const markNotificationAsRead = async (notificationId) => {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return { message: response.data.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status, chatroomId: response.chatroomId };
   } catch (error) {
     console.error(`Error marking a notification as read:`, error);
     throw error;
@@ -314,24 +377,32 @@ const markAllNotificationsAsRead = async () => {
 };
 
 // Mark all notification read (Chatroom)
-const readAllChatroomNotifications = async (chatroomId) => {
+const readAllChatroomNotifications = async ({ chatroomId, adminId }) => {
   try {
     const response = await axios.patch(API_URL + `chatroom/${chatroomId}/notifications/mark-all-read`, {}, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return { message: response.data.message, statusCode: response.status };
+    return {
+      message: response.data.message,
+      statusCode: response.status,
+      chatroomId: response.data.chatroomId,
+      adminId: response.data.adminId
+    };
   } catch (error) {
     if (error.response) {
       return {
         message: error.response.data.message || 'Unknown error',
-        statusCode: error.response.status || 500
+        statusCode: error.response.status || 500,
+        chatroomId: error.response.chatroomId, adminId: error.response.adminId
       };
     } else {
       // If the error is not an HTTP response (e.g., a network error)
       return {
         message: 'Network error or server unreachable',
-        statusCode: 500
+        statusCode: 500,
+        chatroomId: chatroomId,
+        adminId: adminId
       };
     }
   }
@@ -351,24 +422,28 @@ const deleteAllNotifications = async () => {
 };
 
 // Delete all notifications (Chatroom)
-const deleteAllChatroomNotifications = async (chatroomId) => {
+const deleteAllChatroomNotifications = async ({ chatroomId, adminId }) => {
   try {
     const response = await axios.delete(API_URL + `chatroom/${chatroomId}/notifications/delete-all`, {
       headers: { Authorization: `Bearer ${userToken}` }
     });
 
-    return { message: response.data.message, statusCode: response.status };
+    return { message: response.data.message, statusCode: response.status, chatroomId: response.data.chatroomId, adminId: response.data.adminId };
   } catch (error) {
     if (error.response) {
       return {
         message: error.response.data.message || 'Unknown error',
-        statusCode: error.response.status || 500
+        statusCode: error.response.status || 500,
+        chatroomId: error.response.chatroomId,
+        adminId: error.response.adminId
       };
     } else {
       // If the error is not an HTTP response (e.g., a network error)
       return {
         message: 'Network error or server unreachable',
-        statusCode: 500
+        statusCode: 500,
+        chatroomId: chatroomId,
+        adminId: adminId
       };
     }
   }
@@ -404,10 +479,10 @@ const exitChatroom = async (chatroomId) => {
 const userService = {
   signedUser,
   editInfo,
+  fetchChatroomInfo,
   chatroomEditInfo,
   fetchSuggestedTerms,
   userInfo,
-  groupInfo,
   fetchUserMessages,
   fetchGroupMessages,
   messageSendToUser,
@@ -418,7 +493,6 @@ const userService = {
   joinRequest,
   groupJoinRequestAccepted,
   groupJoinRequestRejected,
-  fetchChatroomInfo,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   readAllChatroomNotifications,

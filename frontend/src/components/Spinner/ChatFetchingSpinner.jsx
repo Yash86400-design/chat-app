@@ -5,7 +5,7 @@ function ChatFetchingSpinner({ text }) {
   return (
     <div className='fetchSpinnerContainer'>
       <div className="fetchSpinner"></div>
-      <div className="fetchSpinnerText">{text}</div> {/* Added the "Loading..." text */}
+      <div className="fetchSpinnerText">{text || 'Fetching Messages...'}</div> {/* Added the "Loading..." text */}
     </div>
   );
 }

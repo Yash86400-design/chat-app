@@ -22,9 +22,9 @@ function BodyContacts({ socket, pageWidth }) {
           if (userProfile?.joinedChats[chat].type === 'Chatroom') {
             const chatroomId = userProfile.joinedChats[chat].id;
             userService.fetchChatroomInfo({ id: chatroomId })
-              .then((chatroomInfo) => {
+              .then((chatroomInfos) => {
                 const storedChatroomInfo = JSON.parse(localStorage.getItem('chatroomInfo')) || {};
-                storedChatroomInfo[chatroomId] = chatroomInfo;
+                storedChatroomInfo[chatroomId] = chatroomInfos.chatroomInfo;
                 localStorage.setItem('chatroomInfo', JSON.stringify(storedChatroomInfo));
               })
               .catch((error) => {
